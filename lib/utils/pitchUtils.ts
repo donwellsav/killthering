@@ -127,3 +127,30 @@ export function harmonicSeries(fundamental: number, count: number = 8): number[]
   }
   return harmonics
 }
+
+/**
+ * Format an ISO date string (or epoch ms as string) into a human-readable date.
+ * e.g. "Mar 2, 2026"
+ */
+export function formatDate(dateStr: string): string {
+  const d = new Date(dateStr)
+  if (isNaN(d.getTime())) return dateStr
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+/**
+ * Format the elapsed time between two ISO timestamps.
+ * endedAt may be null (session still running) — returns "In progress" in that case.
+ * e.g. "3m 42s" or "58s"
+ */
+export function formatDuration(startedAt: string, endedAt: string | null): string {
+  if (!endedAt) return 'In progress'
+  const startMs = new Date(startedAt).getTime()
+  const endMs = new Date(endedAt).getTime()
+  if (isNaN(startMs) || isNaN(endMs)) return '—'
+  const totalSeconds = Math.max(0, Math.round((endMs - startMs) / 1000))
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  if (minutes === 0) return `${seconds}s`
+  return `${minutes}m ${seconds}s`
+}
