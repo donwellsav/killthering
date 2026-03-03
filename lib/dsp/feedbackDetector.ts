@@ -12,10 +12,12 @@ import {
 } from '@/lib/utils/mathHelpers'
 import type { DetectedPeak, AnalysisConfig, DetectorSettings } from '@/types/advisory'
 import { DEFAULT_CONFIG } from '@/types/advisory'
+import type { CombPatternResult } from './advancedDetection'
 
 export interface FeedbackDetectorCallbacks {
   onPeakDetected?: (peak: DetectedPeak) => void
   onPeakCleared?: (peak: { binIndex: number; frequencyHz: number; timestamp: number }) => void
+  onCombPatternDetected?: (pattern: CombPatternResult) => void
 }
 
 export interface FeedbackDetectorState {
