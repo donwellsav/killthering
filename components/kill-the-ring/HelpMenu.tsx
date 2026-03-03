@@ -1,5 +1,7 @@
 'use client'
 
+// Help menu for Kill The Ring application
+// Updated with advanced algorithm documentation from DAFx-16, DBX, and KU Leuven research
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,930 +11,661 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { HelpCircle, BookOpen, Layout, Calculator, MessageCircleQuestion, Wrench } from 'lucide-react'
-
-// =============================================================================
-// KILL THE RING — COMPREHENSIVE OPERATOR'S MANUAL
-// For Live Sound Engineers
-// =============================================================================
-
-type HelpTab = 'gui' | 'tutorial' | 'math' | 'faq' | 'troubleshoot'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { HelpCircle } from 'lucide-react'
 
 export function HelpMenu() {
   const [open, setOpen] = useState(false)
-  const [activeTab, setActiveTab] = useState<HelpTab>('gui')
-
-  const tabs: { id: HelpTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'gui', label: 'Interface', icon: <Layout className="w-3.5 h-3.5" /> },
-    { id: 'tutorial', label: 'Tutorial', icon: <Wrench className="w-3.5 h-3.5" /> },
-    { id: 'math', label: 'Algorithms', icon: <Calculator className="w-3.5 h-3.5" /> },
-    { id: 'faq', label: 'FAQ', icon: <MessageCircleQuestion className="w-3.5 h-3.5" /> },
-    { id: 'troubleshoot', label: 'Fix It', icon: <HelpCircle className="w-3.5 h-3.5" /> },
-  ]
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-          aria-label="Help"
-        >
+        <Button suppressHydrationWarning variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" aria-label="Help">
           <HelpCircle className="w-4 h-4" />
           <span className="hidden sm:inline text-xs">Help</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 gap-0 flex flex-col" aria-describedby={undefined}>
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border bg-card/50 flex-shrink-0">
-          <DialogTitle className="text-xl flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <span className="block">Kill The Ring</span>
-              <span className="text-xs font-normal text-muted-foreground">Operator&apos;s Manual v3.0</span>
-            </div>
-          </DialogTitle>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle className="text-lg">Kill The Ring Help</DialogTitle>
         </DialogHeader>
 
-        {/* Tab Bar */}
-        <div className="px-4 pt-2 border-b border-border bg-card/30 flex-shrink-0">
-          <div className="flex gap-1">
-            {tabs.map(t => (
-              <button
-                key={t.id}
-                onClick={() => setActiveTab(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-2 text-xs rounded-t-lg transition-colors ${
-                  activeTab === t.id
-                    ? 'bg-background border border-b-0 border-border text-foreground font-medium -mb-px'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                {t.icon}
-                <span className="hidden sm:inline">{t.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        <Tabs defaultValue="overview" className="mt-4">
+          <TabsList className="grid w-full grid-cols-4 mb-1">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="controls">Controls</TabsTrigger>
+            <TabsTrigger value="modes">Modes</TabsTrigger>
+            <TabsTrigger value="algorithms">Algorithms</TabsTrigger>
+          </TabsList>
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="tips">Tips</TabsTrigger>
+            <TabsTrigger value="troubleshoot">Troubleshoot</TabsTrigger>
+            <TabsTrigger value="technical">Technical</TabsTrigger>
+            <TabsTrigger value="math">The Math</TabsTrigger>
+          </TabsList>
 
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="p-6">
+          {/* OVERVIEW */}
+          <TabsContent value="overview" className="mt-4 space-y-4">
+            <Section title="What is Kill The Ring?">
+              <p>
+                Kill The Ring is a real-time acoustic feedback detection and analysis tool for professional live sound engineers.
+                It uses multiple detection algorithms based on peer-reviewed acoustic research to identify feedback frequencies, 
+                resonant rings, and problematic tones with high accuracy and minimal false positives.
+              </p>
+              <p className="mt-2">
+                The system provides specific EQ recommendations and tracks algorithm confidence scores to help you make 
+                informed decisions during live events.
+              </p>
+            </Section>
 
-            {/* ============================================================
-                TAB 1: INTERFACE GUIDE
-                ============================================================ */}
-            {activeTab === 'gui' && (
-              <div className="space-y-8">
-                <section>
-                  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                    <Layout className="w-5 h-5 text-primary" />
-                    Interface Overview
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Kill The Ring uses a simple three-area layout. Everything you need is visible at once — 
-                    no hunting through menus during a show.
-                  </p>
+            <Section title="Quick Start">
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Click the flashing <strong>START</strong> speaker button in the header to begin monitoring</li>
+                <li>Detected issues appear in the <strong>Active Issues</strong> sidebar, sorted by frequency</li>
+                <li>Each issue card shows frequency, pitch, severity, and recommended GEQ/PEQ cuts</li>
+                <li>Tap <strong>Apply</strong> on a card to log the cut to the <strong>EQ Notepad</strong> tab</li>
+                <li>Use the <strong>Algo</strong> tab in Settings to tune advanced detection algorithms</li>
+                <li>Enable <strong>Show Algorithm Scores</strong> to see real-time MSD, Phase, and Compression status</li>
+                <li>Export session logs for post-event analysis</li>
+              </ol>
+            </Section>
 
-                  {/* Large Interactive Diagram */}
-                  <div className="relative bg-background rounded-xl border-2 border-border overflow-hidden shadow-lg">
-                    
-                    {/* Header Bar */}
-                    <div className="bg-card border-b-2 border-border p-3">
-                      <div className="flex items-center gap-4">
-                        {/* Start Button */}
-                        <div className="relative group">
-                          <div className="w-14 h-14 rounded-full border-3 border-primary bg-primary/10 flex items-center justify-center cursor-help transition-transform hover:scale-105">
-                            <svg className="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.31-2.5-4.06v8.12c1.48-.75 2.5-2.29 2.5-4.06z"/>
-                            </svg>
-                          </div>
-                          <div className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white text-sm font-bold flex items-center justify-center shadow-lg">1</div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover border border-border rounded-lg p-3 shadow-xl z-50 w-48 text-xs pointer-events-none">
-                            <div className="font-bold text-foreground mb-1">START / STOP</div>
-                            <div className="text-muted-foreground">Click to begin or end audio analysis. Ring pulses when active.</div>
-                          </div>
-                        </div>
+            <Section title="Key Features">
+              <ul className="space-y-2">
+                <li><strong>Multi-Algorithm Detection:</strong> MSD, Phase Coherence, Spectral Flatness, and Comb Pattern analysis working together</li>
+                <li><strong>Compression Detection:</strong> Automatically adapts thresholds for dynamically compressed content</li>
+                <li><strong>Content-Aware:</strong> Detects speech vs music vs compressed audio and adjusts sensitivity</li>
+                <li><strong>Comb Pattern Prediction:</strong> Identifies feedback acoustic paths and predicts future feedback frequencies</li>
+                <li><strong>Real-Time Algorithm Status:</strong> See exactly what each algorithm is detecting</li>
+              </ul>
+            </Section>
 
-                        {/* Logo */}
-                        <div className="flex flex-col">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="text-lg font-black">KILL THE</span>
-                            <span className="text-xl font-black text-primary">RING</span>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Don Wells AV</span>
-                        </div>
+            <Section title="Display Areas">
+              <ul className="space-y-2">
+                <li><strong>Large Panel (top):</strong> Selected graph enlarged for detail. Switch between RTA Spectrum, 31-Band GEQ, and Controls.</li>
+                <li><strong>Small Panels (bottom row):</strong> Two configurable panels - choose RTA, GEQ, or Controls for each.</li>
+                <li><strong>Left Sidebar - Issues tab:</strong> Active detected issues with Apply buttons. RUNAWAY issues pulse red.</li>
+                <li><strong>Left Sidebar - EQ Notepad tab:</strong> Accumulates applied cuts for easy reference and export.</li>
+                <li><strong>Algorithm Status Bar:</strong> Shows current algorithm mode, content type, MSD buffer status, and compression detection (enable in Settings).</li>
+              </ul>
+            </Section>
+          </TabsContent>
 
-                        {/* Input Meter */}
-                        <div className="flex-1 mx-4 relative group">
-                          <div className="h-8 bg-muted rounded-lg overflow-hidden border border-border">
-                            <div className="h-full bg-gradient-to-r from-green-500/70 via-yellow-500/70 to-green-500/70" style={{ width: '45%' }} />
-                          </div>
-                          <div className="absolute top-1/2 left-[45%] -translate-y-1/2 w-1 h-6 bg-foreground rounded" />
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-blue-500 text-white text-sm font-bold flex items-center justify-center shadow-lg">2</div>
-                          <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover border border-border rounded-lg p-3 shadow-xl z-50 w-56 text-xs pointer-events-none">
-                            <div className="font-bold text-foreground mb-1">INPUT GAIN METER</div>
-                            <div className="text-muted-foreground">Drag to adjust sensitivity (-40 to +40 dB). Aim for peaks in the yellow zone. Green = good, Red = too hot.</div>
-                          </div>
-                        </div>
+          {/* CONTROLS */}
+          <TabsContent value="controls" className="mt-4 space-y-4">
+            <Section title="Header Controls">
+              <ul className="space-y-3">
+                <li>
+                  <strong>Start / Stop (Speaker Button):</strong> Begin or pause audio analysis. The LIVE indicator appears while running.
+                </li>
+                <li>
+                  <strong>Input Gain (meter slider):</strong> Digital boost applied before analysis (-40 to +40 dB, default +15 dB). Increase if feedback is not being detected; reduce if clipping.
+                </li>
+                <li>
+                  <strong>Mode:</strong> Detection sensitivity preset. Default is <strong>Feedback Hunt</strong>.
+                </li>
+                <li>
+                  <strong>Logs / Sessions / Settings:</strong> Access session data, history, and configuration.
+                </li>
+              </ul>
+            </Section>
 
-                        {/* Header Buttons */}
-                        <div className="flex items-center gap-2 relative group">
-                          <div className="flex gap-1.5">
-                            {['History', 'Help', 'Settings'].map(btn => (
-                              <div key={btn} className="px-3 py-2 bg-muted rounded-lg text-xs text-muted-foreground border border-border">
-                                {btn}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="absolute -top-2 right-0 w-7 h-7 rounded-full bg-purple-500 text-white text-sm font-bold flex items-center justify-center shadow-lg">3</div>
-                          <div className="absolute top-full right-0 mt-2 opacity-0 group-hover:opacity-100 transition-opacity bg-popover border border-border rounded-lg p-3 shadow-xl z-50 w-48 text-xs pointer-events-none">
-                            <div className="font-bold text-foreground mb-1">HEADER TOOLS</div>
-                            <div className="text-muted-foreground">History: past sessions. Help: this manual. Settings: all options.</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+            <Section title="Sidebar - Detection Controls">
+              <p className="mb-2">Primary real-time tuning tools in the left sidebar:</p>
+              <ul className="space-y-2">
+                <li><strong>Mode dropdown:</strong> Sets detection sensitivity preset.</li>
+                <li><strong>Freq Range chips:</strong> Four presets - Vocal (200-8kHz), Monitor (300-3kHz), Full (20-20kHz), Sub (20-250Hz).</li>
+                <li><strong>Auto Music-Aware toggle:</strong> Automatically switches sensitivity when the band starts/stops playing.</li>
+                <li><strong>Threshold:</strong> Primary sensitivity (4-8 dB aggressive, 10-14 dB balanced, 16+ dB conservative).</li>
+                <li><strong>Ring:</strong> Resonance detection sensitivity (2-4 dB calibration, 5-7 dB normal, 8+ dB shows).</li>
+                <li><strong>Growth:</strong> Amplitude growth rate threshold (0.5-1 dB/s catches early, 3+ dB/s only runaway).</li>
+              </ul>
+            </Section>
 
-                    {/* Main Content */}
-                    <div className="flex min-h-[320px]">
-                      
-                      {/* Left Sidebar */}
-                      <div className="w-56 border-r-2 border-border bg-card/50 flex flex-col relative">
-                        <div className="absolute -top-2 right-2 w-7 h-7 rounded-full bg-orange-500 text-white text-sm font-bold flex items-center justify-center shadow-lg z-10">4</div>
-                        
-                        {/* Algorithm Status */}
-                        <div className="p-3 border-b border-border bg-primary/5">
-                          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Algorithm Status</div>
-                          <div className="flex flex-wrap gap-1">
-                            <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded text-[10px] font-mono">MSD: 0.87</span>
-                            <span className="px-2 py-1 bg-blue-500/20 text-blue-500 rounded text-[10px] font-mono">PHASE: 0.92</span>
-                          </div>
-                          <div className="mt-2 text-[10px] text-muted-foreground">
-                            Mode: <span className="text-foreground">Combined</span> | Content: <span className="text-green-500">Speech</span>
-                          </div>
-                        </div>
+            <Section title="Settings Panel Tabs">
+              <ul className="space-y-2">
+                <li><strong>Analysis tab:</strong> FFT Size, Spectrum Smoothing, Hold Time, Confidence Threshold, Room Acoustics.</li>
+                <li><strong>Algo tab:</strong> Algorithm Mode, MSD History Buffer, Phase Coherence Threshold, Fusion Threshold, Compression Detection, Comb Pattern Detection, Algorithm Score Display.</li>
+                <li><strong>Display tab:</strong> Max Issues Shown, Graph Label Size, EQ Recommendation Style.</li>
+                <li><strong>Export tab:</strong> Session log export in CSV, JSON, or plain text formats.</li>
+              </ul>
+            </Section>
 
-                        {/* Active Issues */}
-                        <div className="flex-1 p-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Active Issues</span>
-                            <span className="text-xs font-mono text-primary">3</span>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="p-2 rounded-lg border-2 border-red-500/50 bg-red-500/10 animate-pulse">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-mono text-red-500 font-bold">2.5 kHz</span>
-                                <span className="px-1.5 py-0.5 bg-red-500 text-white text-[9px] rounded font-bold">RUNAWAY</span>
-                              </div>
-                              <div className="text-[10px] text-red-400 mt-1">+8.2 dB/s growth</div>
-                            </div>
-                            <div className="p-2 rounded-lg border border-yellow-500/50 bg-yellow-500/10">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-mono text-yellow-500">800 Hz</span>
-                                <span className="px-1.5 py-0.5 bg-yellow-500/80 text-yellow-950 text-[9px] rounded font-bold">RESONANCE</span>
-                              </div>
-                              <div className="text-[10px] text-yellow-400 mt-1">Q: 45, persistent</div>
-                            </div>
-                            <div className="p-2 rounded-lg border border-border bg-muted/30">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-mono text-muted-foreground">6.3 kHz</span>
-                                <span className="px-1.5 py-0.5 bg-muted text-muted-foreground text-[9px] rounded">RING</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="mt-3 flex gap-1">
-                            <button className="flex-1 px-2 py-1.5 bg-primary/10 text-primary text-[10px] rounded border border-primary/30 hover:bg-primary/20">Apply</button>
-                            <button className="flex-1 px-2 py-1.5 bg-muted text-muted-foreground text-[10px] rounded border border-border hover:bg-muted/80">Dismiss</button>
-                          </div>
-                        </div>
-                      </div>
+            <Section title="EQ Recommendations">
+              <ul className="space-y-2">
+                <li><strong>GEQ:</strong> Nearest ISO 31-band center frequency with suggested cut depth.</li>
+                <li><strong>PEQ:</strong> Precise frequency, Q value, and gain for parametric EQ.</li>
+                <li><strong>EQ Style:</strong> Surgical (narrow Q, deep cuts) vs Heavy (wide Q, moderate cuts).</li>
+              </ul>
+            </Section>
+          </TabsContent>
 
-                      {/* Main Graph Area */}
-                      <div className="flex-1 flex flex-col">
-                        
-                        {/* Tab Chips */}
-                        <div className="flex items-center gap-1 p-2 border-b border-border bg-muted/30 relative">
-                          <div className="absolute -top-2 right-2 w-7 h-7 rounded-full bg-green-500 text-white text-sm font-bold flex items-center justify-center shadow-lg z-10">5</div>
-                          <button className="px-4 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg">RTA</button>
-                          <button className="px-4 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg border border-border hover:bg-muted/80">GEQ</button>
-                          <button className="px-4 py-1.5 bg-muted text-muted-foreground text-xs rounded-lg border border-border hover:bg-muted/80">Controls</button>
-                        </div>
+          {/* MODES */}
+          <TabsContent value="modes" className="mt-4 space-y-4">
+            <Section title="Operation Modes">
+              <ul className="space-y-3">
+                <li>
+                  <strong>Feedback Hunt (Default):</strong> Balanced PA mode. Threshold 8 dB, Ring 4 dB, Growth 1.5 dB/s. Good general sensitivity with fewer false positives.
+                </li>
+                <li>
+                  <strong>Aggressive:</strong> Maximum sensitivity for system calibration. Threshold 6 dB, Ring 3 dB, Growth 1 dB/s.
+                </li>
+                <li>
+                  <strong>Vocal Ring:</strong> Tuned for speech frequencies (200 Hz-8 kHz). Threshold 6 dB, Ring 4 dB, Growth 1.5 dB/s.
+                </li>
+                <li>
+                  <strong>Music-Aware:</strong> Reduced sensitivity for performance. Threshold 12 dB, Ring 5 dB, Growth 3 dB/s, music filter enabled.
+                </li>
+                <li>
+                  <strong>Calibration:</strong> Ultra-sensitive for initial setup. Threshold 4 dB, Ring 4 dB, Growth 0.5 dB/s.
+                </li>
+              </ul>
+            </Section>
 
-                        {/* Main Graph */}
-                        <div className="flex-1 bg-[#0a0a0c] relative p-4">
-                          <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-cyan-500 text-white text-sm font-bold flex items-center justify-center shadow-lg z-10">6</div>
-                          
-                          {/* Y-axis labels */}
-                          <div className="absolute left-1 top-4 bottom-20 flex flex-col justify-between text-[9px] font-mono text-muted-foreground/50">
-                            <span>0dB</span>
-                            <span>-20</span>
-                            <span>-40</span>
-                            <span>-60</span>
-                          </div>
+            <Section title="Auto Music-Aware">
+              <p className="mb-2">
+                The <strong>Auto Music-Aware</strong> toggle automatically switches sensitivity based on signal level:
+              </p>
+              <ul className="space-y-2">
+                <li>When signal rises 15 dB above noise floor, enters music-aware mode</li>
+                <li>When signal drops back, returns to base mode after 1 second</li>
+                <li>A Speech/Music pill shows the current automatic state</li>
+              </ul>
+            </Section>
 
-                          {/* Spectrum visualization */}
-                          <div className="ml-6 h-full relative">
-                            <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
-                              <defs>
-                                <linearGradient id="specGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.6" />
-                                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
-                                </linearGradient>
-                              </defs>
-                              {/* Spectrum area */}
-                              <path
-                                d="M0,120 C20,115 40,110 60,100 S100,85 120,90 S160,70 180,65 S220,30 240,25 S280,60 300,70 S340,75 360,80 S400,85 420,90 S460,95 480,100 L500,105 L500,150 L0,150 Z"
-                                fill="url(#specGrad)"
-                              />
-                              <path
-                                d="M0,120 C20,115 40,110 60,100 S100,85 120,90 S160,70 180,65 S220,30 240,25 S280,60 300,70 S340,75 360,80 S400,85 420,90 S460,95 480,100 L500,105"
-                                fill="none"
-                                stroke="hsl(var(--primary))"
-                                strokeWidth="2"
-                              />
-                              {/* Feedback spike at 2.5kHz */}
-                              <line x1="240" y1="25" x2="240" y2="150" stroke="hsl(var(--destructive))" strokeWidth="3" strokeDasharray="6,3" />
-                              <circle cx="240" cy="25" r="6" fill="hsl(var(--destructive))" className="animate-pulse" />
-                              {/* Resonance at 800Hz */}
-                              <circle cx="180" cy="65" r="5" fill="hsl(45, 93%, 47%)" />
-                            </svg>
-                            
-                            {/* Frequency labels */}
-                            <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[9px] font-mono text-muted-foreground/50 px-2">
-                              <span>20Hz</span>
-                              <span>100</span>
-                              <span>500</span>
-                              <span>2k</span>
-                              <span>10k</span>
-                              <span>20kHz</span>
-                            </div>
+            <Section title="Choosing a Mode">
+              <ul className="space-y-2">
+                <li>Default / general soundcheck: <strong>Feedback Hunt</strong></li>
+                <li>Initial system setup / ring-out: <strong>Calibration</strong> or <strong>Aggressive</strong></li>
+                <li>Monitor tuning: <strong>Vocal Ring</strong></li>
+                <li>During live performance: <strong>Music-Aware</strong> or enable <strong>Auto Music-Aware</strong></li>
+              </ul>
+            </Section>
+          </TabsContent>
 
-                            {/* Feedback callout */}
-                            <div className="absolute top-2 left-[45%] bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold shadow-lg">
-                              2.5 kHz FEEDBACK
-                            </div>
-                          </div>
-                        </div>
+          {/* ALGORITHMS - NEW TAB */}
+          <TabsContent value="algorithms" className="mt-4 space-y-4">
+            <Section title="Advanced Detection System">
+              <p>
+                Kill The Ring uses multiple detection algorithms from peer-reviewed acoustic research. 
+                Each algorithm detects different characteristics of feedback, and they vote together 
+                for maximum accuracy and minimal false positives.
+              </p>
+            </Section>
 
-                        {/* Bottom Panels */}
-                        <div className="grid grid-cols-2 border-t-2 border-border relative">
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full bg-pink-500 text-white text-sm font-bold flex items-center justify-center shadow-lg z-10">7</div>
-                          
-                          <div className="border-r border-border p-3 bg-card/30">
-                            <div className="flex items-center gap-1 mb-2">
-                              <span className="px-2 py-0.5 bg-muted text-[10px] rounded">GEQ</span>
-                            </div>
-                            <div className="flex items-end justify-between h-16 gap-0.5">
-                              {[35, 50, 65, 80, 45, 30, 55, 70, 40, 25, 45, 60, 35, 50, 40].map((h, i) => (
-                                <div key={i} className="flex-1 bg-primary/60 rounded-t" style={{ height: `${h}%` }} />
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div className="p-3 bg-card/30">
-                            <div className="flex items-center gap-1 mb-2">
-                              <span className="px-2 py-0.5 bg-primary/20 text-primary text-[10px] rounded font-medium">Controls</span>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-muted-foreground">Mode</span>
-                                <span className="text-[10px] font-medium">Feedback Hunt</span>
-                              </div>
-                              <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div className="h-full bg-primary rounded-full" style={{ width: '60%' }} />
-                              </div>
-                              <div className="flex items-center justify-between">
-                                <span className="text-[10px] text-muted-foreground">Threshold: 8 dB</span>
-                                <span className="text-[10px] text-muted-foreground">Growth: 2 dB/s</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <Section title="MSD - Magnitude Slope Deviation">
+              <p className="mb-2">
+                From the <strong>DAFx-16 paper</strong>. The key insight: feedback amplitude grows 
+                <strong> linearly in dB scale</strong> over time, meaning its second derivative is near zero.
+              </p>
+              <ul className="space-y-1">
+                <li><strong>Speech accuracy:</strong> 100% with just 7 frames (~160ms)</li>
+                <li><strong>Classical music:</strong> 100% with 13 frames (~300ms)</li>
+                <li><strong>Rock/compressed:</strong> Requires compression detection assistance</li>
+              </ul>
+              <p className="mt-2 text-xs">
+                Low MSD = likely feedback. High MSD = likely music (amplitude varies).
+              </p>
+            </Section>
 
-                  {/* Legend */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
-                    {[
-                      { num: '1', color: 'bg-red-500', label: 'Start/Stop', desc: 'Begin or end analysis' },
-                      { num: '2', color: 'bg-blue-500', label: 'Input Meter', desc: 'Adjust gain, watch level' },
-                      { num: '3', color: 'bg-purple-500', label: 'Header Tools', desc: 'History, Help, Settings' },
-                      { num: '4', color: 'bg-orange-500', label: 'Sidebar', desc: 'Status & Issues list' },
-                      { num: '5', color: 'bg-green-500', label: 'View Tabs', desc: 'RTA, GEQ, or Controls' },
-                      { num: '6', color: 'bg-cyan-500', label: 'Main Graph', desc: 'Large spectrum display' },
-                      { num: '7', color: 'bg-pink-500', label: 'Bottom Panels', desc: 'Two extra views' },
-                    ].map(item => (
-                      <div key={item.num} className="flex items-start gap-2 p-3 rounded-lg border border-border bg-card/30">
-                        <div className={`w-6 h-6 rounded-full ${item.color} text-white text-xs font-bold flex items-center justify-center flex-shrink-0`}>
-                          {item.num}
-                        </div>
-                        <div>
-                          <div className="text-xs font-medium">{item.label}</div>
-                          <div className="text-[10px] text-muted-foreground">{item.desc}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
+            <Section title="Phase Coherence Analysis">
+              <p className="mb-2">
+                From <strong>Nyquist stability theory</strong>. True feedback maintains constant phase 
+                relationships across consecutive frames because it's a pure regenerative tone. 
+                Music has random phase variations.
+              </p>
+              <ul className="space-y-1">
+                <li><strong>High coherence (&gt;0.85):</strong> Likely feedback (phase-locked)</li>
+                <li><strong>Medium coherence (0.65-0.85):</strong> Uncertain</li>
+                <li><strong>Low coherence (&lt;0.65):</strong> Likely music (random phase)</li>
+              </ul>
+            </Section>
 
-                {/* Controls Deep Dive */}
-                <section className="pt-6 border-t border-border">
-                  <h3 className="text-base font-semibold mb-4">Controls Panel Explained</h3>
-                  <div className="space-y-4">
-                    <ControlExplainer
-                      name="Operation Mode"
-                      what="Presets that adjust all detection settings at once."
-                      options={[
-                        { name: 'Feedback Hunt', when: 'Default. Good for most PA work.' },
-                        { name: 'Vocal Ring', when: 'Speech systems. More sensitive to voice frequencies.' },
-                        { name: 'Music-Aware', when: 'During live performance. Ignores musical content.' },
-                        { name: 'Aggressive', when: 'Corporate/conference. Zero tolerance for feedback.' },
-                        { name: 'Calibration', when: 'Initial ring-out. Maximum sensitivity.' },
-                      ]}
-                    />
-                    <ControlExplainer
-                      name="Threshold Slider"
-                      what="How prominent a peak must be (above surrounding frequencies) to be flagged."
-                      options={[
-                        { name: '4-8 dB', when: 'Aggressive. Catches everything including minor resonances.' },
-                        { name: '10-14 dB', when: 'Balanced. Good for most situations.' },
-                        { name: '16+ dB', when: 'Conservative. Only flags obvious problems.' },
-                      ]}
-                    />
-                    <ControlExplainer
-                      name="Growth Slider"
-                      what="How fast a peak must be growing (dB per second) to trigger detection."
-                      options={[
-                        { name: '0.5-1 dB/s', when: 'Catches slow-building feedback early.' },
-                        { name: '2-3 dB/s', when: 'Normal operation. Good balance.' },
-                        { name: '4+ dB/s', when: 'Only triggers on runaway feedback.' },
-                      ]}
-                    />
-                  </div>
-                </section>
+            <Section title="Spectral Flatness + Kurtosis">
+              <p className="mb-2">
+                Feedback is a <strong>near-pure tone</strong> with very low spectral flatness around the 
+                frequency. The amplitude distribution also has high kurtosis (very peaky, not gaussian).
+              </p>
+              <ul className="space-y-1">
+                <li><strong>Spectral Flatness &lt;0.05:</strong> Pure tone (feedback)</li>
+                <li><strong>Kurtosis &gt;10:</strong> Strongly peaked distribution</li>
+                <li><strong>Combined:</strong> High confidence feedback indicator</li>
+              </ul>
+            </Section>
+
+            <Section title="Comb Filter Pattern Detection">
+              <p className="mb-2">
+                From the <strong>DBX paper</strong>. Multiple feedback frequencies appear at 
+                <strong> regular intervals</strong> due to the round-trip acoustic delay path.
+              </p>
+              <ul className="space-y-1">
+                <li><strong>Frequency spacing:</strong> f_n = n * c / (2 * d) where d = path length</li>
+                <li><strong>Pattern detection:</strong> Finds common frequency spacing between peaks</li>
+                <li><strong>Prediction:</strong> Calculates where future feedback will occur</li>
+              </ul>
+              <p className="mt-2 text-xs">
+                When a comb pattern is detected, the system can predict the next feedback frequencies 
+                before they become audible.
+              </p>
+            </Section>
+
+            <Section title="Compression Detection">
+              <p className="mb-2">
+                The DAFx-16 research found that <strong>dynamically compressed content</strong> (rock/pop music) 
+                causes false positives because sustained notes look like early feedback. 
+                Compression detection identifies this and adjusts thresholds.
+              </p>
+              <ul className="space-y-1">
+                <li><strong>Crest Factor:</strong> Peak-to-RMS ratio. Normal: 12 dB. Compressed: &lt;6 dB</li>
+                <li><strong>Dynamic Range:</strong> Normal: &gt;20 dB. Compressed: &lt;8 dB</li>
+                <li><strong>Adaptation:</strong> When compressed content detected, phase coherence gets more weight</li>
+              </ul>
+            </Section>
+
+            <Section title="Algorithm Fusion">
+              <p className="mb-2">
+                All algorithms vote together with content-aware weighting:
+              </p>
+              <ul className="space-y-1">
+                <li><strong>Speech:</strong> MSD 45%, Phase 25%, Spectral 15%, Comb 5%, Legacy 10%</li>
+                <li><strong>Music:</strong> MSD 20%, Phase 40%, Spectral 15%, Comb 10%, Legacy 15%</li>
+                <li><strong>Compressed:</strong> MSD 15%, Phase 45%, Spectral 20%, Comb 10%, Legacy 10%</li>
+              </ul>
+              <p className="mt-2 text-xs">
+                The system automatically detects content type and applies appropriate weights.
+              </p>
+            </Section>
+
+            <Section title="Algorithm Settings (Algo Tab)">
+              <ul className="space-y-2">
+                <li><strong>Algorithm Mode:</strong> Auto, MSD Only, Phase Only, Combined (MSD+Phase), or All</li>
+                <li><strong>MSD History Buffer:</strong> Number of frames (7-50). More = accurate but slower</li>
+                <li><strong>Phase Coherence Threshold:</strong> 40-95%. Higher = stricter, fewer false positives</li>
+                <li><strong>Fusion Feedback Threshold:</strong> 40-90%. Combined probability needed for positive detection</li>
+                <li><strong>Compression Detection:</strong> Enable/disable adaptive threshold adjustment</li>
+                <li><strong>Comb Pattern Detection:</strong> Enable/disable acoustic path identification</li>
+              </ul>
+            </Section>
+          </TabsContent>
+
+          {/* TIPS */}
+          <TabsContent value="tips" className="mt-4 space-y-4">
+            <Section title="Workflow Best Practices">
+              <ol className="list-decimal list-inside space-y-2">
+                <li>Start with <strong>Calibration</strong> mode during initial system setup</li>
+                <li>Enable <strong>Show Algorithm Scores</strong> to see what each algorithm is detecting</li>
+                <li>Watch the <strong>MSD frame count</strong> - wait for 15+ frames before trusting results</li>
+                <li>If you see <strong>COMPRESSED</strong> in the status bar, phase coherence is most reliable</li>
+                <li>Use <strong>Comb Pattern</strong> predictions to preemptively address upcoming feedback frequencies</li>
+                <li>Switch to <strong>Feedback Hunt</strong> for general PA monitoring</li>
+                <li>Enable <strong>Auto Music-Aware</strong> so sensitivity adjusts automatically during shows</li>
+                <li>Apply cuts conservatively - start with 3 dB and increase only if needed</li>
+              </ol>
+            </Section>
+
+            <Section title="Getting Better Results">
+              <ul className="space-y-2">
+                <li><strong>Position matters:</strong> Place your analysis mic where feedback occurs</li>
+                <li><strong>Gain staging:</strong> Ensure signal is strong but not clipping (default +15 dB)</li>
+                <li><strong>Increase MSD frames:</strong> For compressed music, try 30-50 frames</li>
+                <li><strong>Lower Phase threshold:</strong> For noisy environments, try 65-70%</li>
+                <li><strong>Watch Content Type:</strong> The auto-detected type tells you which algorithms are most reliable</li>
+              </ul>
+            </Section>
+
+            <Section title="Understanding Algorithm Scores">
+              <ul className="space-y-2">
+                <li><strong>MSD HIGH:</strong> Second derivative near zero - strong feedback indicator</li>
+                <li><strong>Phase LOCKED:</strong> Consistent phase relationship - strong feedback indicator</li>
+                <li><strong>Spectral PURE:</strong> Very low flatness - single tone present</li>
+                <li><strong>Comb PATTERN:</strong> Regular frequency spacing - feedback loop identified</li>
+                <li><strong>COMPRESSED:</strong> Dynamic compression detected - phase is most reliable</li>
+              </ul>
+            </Section>
+
+            <Section title="Common Feedback Frequency Ranges">
+              <ul className="space-y-2">
+                <li><strong>200-500 Hz:</strong> Muddy buildup, boxy vocals, room modes</li>
+                <li><strong>500 Hz-1 kHz:</strong> Nasal/honky tones, vocal feedback zone</li>
+                <li><strong>1-3 kHz:</strong> Presence/intelligibility range, harsh feedback</li>
+                <li><strong>3-6 kHz:</strong> Sibilance, cymbal harshness, piercing feedback</li>
+                <li><strong>6-8 kHz:</strong> Air/brightness, high-frequency ringing</li>
+              </ul>
+            </Section>
+          </TabsContent>
+
+          {/* TROUBLESHOOT */}
+          <TabsContent value="troubleshoot" className="mt-4 space-y-4">
+            <Section title="No Audio Input">
+              <ul className="space-y-2">
+                <li>Check browser microphone permissions (camera/mic icon in address bar)</li>
+                <li>Ensure correct input device is selected in system audio settings</li>
+                <li>Try refreshing the page and granting permissions again</li>
+                <li>Microphone access requires HTTPS in most browsers</li>
+              </ul>
+            </Section>
+
+            <Section title="Too Many False Positives">
+              <ul className="space-y-2">
+                <li>Switch to <strong>Music-Aware</strong> mode during performance</li>
+                <li>In the <strong>Algo tab</strong>: Raise Phase Coherence Threshold to 80-85%</li>
+                <li>In the <strong>Algo tab</strong>: Raise Fusion Feedback Threshold to 75-85%</li>
+                <li>Increase <strong>MSD History Buffer</strong> to 30-50 frames for compressed music</li>
+                <li>Enable <strong>Compression Detection</strong> for rock/pop content</li>
+                <li>Raise <strong>Threshold</strong> in sidebar (try 10-14 dB)</li>
+              </ul>
+            </Section>
+
+            <Section title="Missing Feedback Detection">
+              <ul className="space-y-2">
+                <li>Lower <strong>Threshold</strong> in sidebar (try 4-6 dB)</li>
+                <li>Increase <strong>Input Gain</strong> if signal level is low</li>
+                <li>Switch to <strong>Aggressive</strong> or <strong>Calibration</strong> mode</li>
+                <li>In the <strong>Algo tab</strong>: Lower Phase Coherence Threshold to 60-65%</li>
+                <li>In the <strong>Algo tab</strong>: Lower Fusion Feedback Threshold to 50-55%</li>
+                <li>Increase <strong>FFT Size</strong> to 16384 for better low-frequency resolution</li>
+              </ul>
+            </Section>
+
+            <Section title="Compressed Music False Positives">
+              <p className="mb-2">
+                Dynamically compressed music (rock, pop, EDM) can trigger false positives because 
+                sustained notes have flat amplitude curves similar to early feedback.
+              </p>
+              <ul className="space-y-2">
+                <li>Enable <strong>Compression Detection</strong> in the Algo tab</li>
+                <li>Increase <strong>MSD History Buffer</strong> to 40-50 frames</li>
+                <li>Watch the Algorithm Status Bar - when it shows COMPRESSED, phase coherence is most reliable</li>
+                <li>Use <strong>Phase Only</strong> algorithm mode for heavily compressed content</li>
+              </ul>
+            </Section>
+
+            <Section title="Slow or Laggy Display">
+              <ul className="space-y-2">
+                <li>Reduce <strong>FFT Size</strong> to 4096 in Settings</li>
+                <li>Reduce <strong>MSD History Buffer</strong> to 15-20 frames</li>
+                <li>Disable <strong>Show Algorithm Scores</strong> and <strong>Show Phase Display</strong></li>
+                <li>Close other browser tabs to free CPU resources</li>
+              </ul>
+            </Section>
+          </TabsContent>
+
+          {/* TECHNICAL */}
+          <TabsContent value="technical" className="mt-4 space-y-4">
+            <Section title="Analysis Engine">
+              <ul className="space-y-2">
+                <li><strong>FFT Analysis:</strong> Fast Fourier Transform via Web Audio API. Default 8192 bins at 48 kHz = ~5.9 Hz resolution</li>
+                <li><strong>Peak Detection:</strong> Local maxima exceeding adaptive noise floor and detection threshold</li>
+                <li><strong>Track Persistence:</strong> Peaks tracked across frames to distinguish sustained feedback from transients (50 cents tolerance)</li>
+                <li><strong>Harmonic Filtering:</strong> Suppresses harmonics (up to 8th) of detected fundamentals</li>
+                <li><strong>Algorithm Fusion:</strong> MSD, Phase, Spectral, and Comb algorithms vote with content-aware weighting</li>
+              </ul>
+            </Section>
+
+            <Section title="Default Configuration">
+              <ul className="space-y-2">
+                <li><strong>Mode:</strong> Feedback Hunt</li>
+                <li><strong>Frequency range:</strong> 200 Hz - 8 kHz (vocal-focused)</li>
+                <li><strong>Feedback threshold:</strong> 8 dB</li>
+                <li><strong>Ring threshold:</strong> 4 dB</li>
+                <li><strong>Growth rate:</strong> 1.5 dB/s</li>
+                <li><strong>FFT size:</strong> 8192</li>
+                <li><strong>Smoothing:</strong> 60%</li>
+                <li><strong>Hold time:</strong> 3 s</li>
+                <li><strong>Input gain:</strong> +15 dB</li>
+                <li><strong>Confidence threshold:</strong> 40%</li>
+                <li><strong>Algorithm mode:</strong> Combined (MSD + Phase)</li>
+                <li><strong>MSD min frames:</strong> 15</li>
+                <li><strong>Phase coherence threshold:</strong> 75%</li>
+                <li><strong>Fusion feedback threshold:</strong> 65%</li>
+              </ul>
+            </Section>
+
+            <Section title="Severity Levels">
+              <ul className="space-y-2">
+                <li><strong className="text-red-500">RUNAWAY:</strong> Active feedback rapidly increasing - address immediately</li>
+                <li><strong className="text-orange-500">GROWING:</strong> Feedback building but not yet critical</li>
+                <li><strong className="text-yellow-500">RESONANCE:</strong> Stable resonant peak that could become feedback</li>
+                <li><strong className="text-purple-500">RING:</strong> Subtle ring that may need attention</li>
+                <li><strong className="text-cyan-500">WHISTLE:</strong> Detected whistle or sibilance</li>
+                <li><strong className="text-green-500">INSTRUMENT:</strong> Likely musical content, not feedback</li>
+              </ul>
+            </Section>
+
+            <Section title="GEQ Band Mapping">
+              <p className="mb-2">Detected frequencies map to nearest ISO 31-band center frequency:</p>
+              <p className="text-xs font-mono bg-muted p-2 rounded leading-relaxed">
+                20, 25, 31.5, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1k, 1.25k, 1.6k, 2k, 2.5k, 3.15k, 4k, 5k, 6.3k, 8k, 10k, 12.5k, 16k, 20k Hz
+              </p>
+            </Section>
+
+            <Section title="Browser Requirements">
+              <ul className="space-y-2">
+                <li><strong>Web Audio API + getUserMedia:</strong> Required for real-time audio processing</li>
+                <li><strong>Supported:</strong> Chrome 74+, Firefox 76+, Safari 14.1+, Edge 79+</li>
+                <li><strong>Sample rate:</strong> Uses system default (typically 44.1 kHz or 48 kHz)</li>
+                <li><strong>HTTPS:</strong> Required for microphone access in production</li>
+              </ul>
+            </Section>
+          </TabsContent>
+
+          {/* THE MATH - Deep dive into algorithms */}
+          <TabsContent value="math" className="mt-4 space-y-4">
+            <Section title="FFT and Spectral Analysis">
+              <p className="mb-2">
+                The core analysis uses the <strong>Fast Fourier Transform</strong> to decompose audio into frequency bins:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p>Frequency resolution: <strong>df = fs / N</strong></p>
+                <p>At 8192pt @ 48kHz: df = 48000 / 8192 = <strong>5.86 Hz/bin</strong></p>
+                <p>Bin to Hz: <strong>f = bin * (fs / N)</strong></p>
               </div>
-            )}
-
-            {/* ============================================================
-                TAB 2: TUTORIAL
-                ============================================================ */}
-            {activeTab === 'tutorial' && (
-              <div className="space-y-8">
-                <section>
-                  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                    <Wrench className="w-5 h-5 text-primary" />
-                    How to Ring Out a PA System
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Follow these steps to find and eliminate feedback frequencies before your show. 
-                    This process takes 10-15 minutes and should be done during soundcheck.
-                  </p>
-
-                  <div className="space-y-6">
-                    <TutorialStep
-                      number={1}
-                      title="Setup Your Device"
-                      time="2 min"
-                      steps={[
-                        'Open Kill The Ring in Chrome, Edge, or Safari',
-                        'Position your device at FOH (front of house) or near the listening position',
-                        'Click the big microphone button and allow browser access to your mic',
-                        'Check that the input meter moves when you speak into the PA',
-                      ]}
-                      tip="The built-in mic works fine for most uses. For precision, use a measurement mic via USB."
-                    />
-
-                    <TutorialStep
-                      number={2}
-                      title="Configure Detection"
-                      time="1 min"
-                      steps={[
-                        'Click the Controls tab or view the Controls panel',
-                        'Select "Calibration" mode for maximum sensitivity',
-                        'Set frequency range to "Vocal (200-8k)" for speech systems',
-                        'Adjust input gain so peaks hit the yellow zone (not red)',
-                      ]}
-                      tip="Calibration mode will flag even subtle resonances. That is what you want during ring-out."
-                    />
-
-                    <TutorialStep
-                      number={3}
-                      title="Establish Baseline"
-                      time="1 min"
-                      steps={[
-                        'Mute all channels on your mixing console',
-                        'Let the system idle for 30 seconds',
-                        'Watch the spectrum settle to show the room noise floor',
-                        'Note any existing peaks (HVAC rumble, lighting buzz, etc.)',
-                      ]}
-                      tip="These baseline noises are automatically excluded from feedback detection."
-                    />
-
-                    <TutorialStep
-                      number={4}
-                      title="Ring Out Vocals"
-                      time="5-8 min"
-                      steps={[
-                        'Unmute your vocal channel with the fader at unity',
-                        'Slowly raise the fader until you hear the first ring or squeal',
-                        'Watch the Issues list — it will show you the exact frequency',
-                        'Click APPLY to save that frequency to your EQ Notepad',
-                        'On your console, make a narrow cut (-3 to -6 dB) at that frequency',
-                        'Continue raising the fader until the next ring appears',
-                        'Repeat until you can achieve full gain without feedback',
-                      ]}
-                      tip="Stop after 3-5 cuts per channel. More than that usually means a mic placement problem."
-                    />
-
-                    <TutorialStep
-                      number={5}
-                      title="Verify During Soundcheck"
-                      time="2 min"
-                      steps={[
-                        'Switch to "Feedback Hunt" mode for balanced detection',
-                        'Have talent speak or perform at show levels',
-                        'Watch for any new issues that appear during real use',
-                        'Fine-tune your EQ cuts based on actual performance',
-                      ]}
-                      tip="If running a show with music, switch to Music-Aware mode during performance."
-                    />
-                  </div>
-                </section>
-
-                {/* Common Scenarios */}
-                <section className="pt-6 border-t border-border">
-                  <h3 className="text-base font-semibold mb-4">Quick Settings by Venue Type</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <ScenarioCard
-                      title="Corporate Presentation"
-                      mode="Aggressive"
-                      range="Speech (300-4k)"
-                      tip="Zero tolerance. Lavaliers near monitors are common culprits."
-                    />
-                    <ScenarioCard
-                      title="Live Band"
-                      mode="Music-Aware"
-                      range="Full (20-20k)"
-                      tip="Music has harmonics that look like feedback. Trust sustained tones only."
-                    />
-                    <ScenarioCard
-                      title="House of Worship"
-                      mode="Vocal Ring"
-                      range="Vocal (200-8k)"
-                      tip="Mix of speech and singing. Vocal Ring handles both well."
-                    />
-                    <ScenarioCard
-                      title="Theater / Drama"
-                      mode="Aggressive"
-                      range="Vocal (200-8k)"
-                      tip="Quiet passages make feedback very noticeable. Be conservative."
-                    />
-                  </div>
-                </section>
+              <p className="mt-2 text-xs">
+                Quadratic interpolation refines peak frequency beyond bin resolution (Grandke, 1983):
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p>d = 0.5 * (y[k-1] - y[k+1]) / (y[k-1] - 2*y[k] + y[k+1])</p>
+                <p>True frequency: <strong>f_true = (k + d) * df</strong></p>
               </div>
-            )}
+            </Section>
 
-            {/* ============================================================
-                TAB 3: ALGORITHMS
-                ============================================================ */}
-            {activeTab === 'math' && (
-              <div className="space-y-8">
-                <section>
-                  <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-                    <Calculator className="w-5 h-5 text-primary" />
-                    Detection Algorithms
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-6">
-                    Kill The Ring uses four independent algorithms running in parallel. Each detects a 
-                    different acoustic signature of feedback. Results are combined using content-aware fusion.
-                  </p>
-
-                  <div className="space-y-6">
-                    <AlgorithmCard
-                      name="Mean Square Derivative (MSD)"
-                      source="DAFx-16 Paper, Pepe et al."
-                      whatItDoes="Measures how stable a frequency is over time. Feedback stays constant; music fluctuates."
-                      formula="MSD = (1/N) * sum[(x[n] - 2*x[n-1] + x[n-2])^2]"
-                      formulaPlain="Calculate the second derivative of amplitude across N frames, then average the squares."
-                      howToRead="MSD near 0 = rock-solid tone = feedback. MSD > 1 = fluctuating = music."
-                      scoring="feedbackScore = exp(-MSD / 0.1)"
-                      threshold="MSD < 0.1 triggers feedback classification"
-                      realWorld="A singer&apos;s vibrato has some MSD variation. Pure electronic feedback has zero."
-                    />
-
-                    <AlgorithmCard
-                      name="Phase Coherence"
-                      source="KU Leuven 2025, Nyquist Stability"
-                      whatItDoes="Checks if phase is locked frame-to-frame. Feedback has constant phase; music drifts randomly."
-                      formula="coherence = |mean(exp(j * delta_phi))|"
-                      formulaPlain="Convert frame-to-frame phase differences to unit vectors, average them, measure the magnitude."
-                      howToRead="Coherence near 1 = all vectors point same way = feedback. Near 0 = random = music."
-                      scoring="feedbackScore = coherence (direct)"
-                      threshold="Coherence >= 0.85 indicates phase-locked feedback"
-                      realWorld="Even a perfectly tuned piano has micro-variations. Feedback is mathematically locked to the loop."
-                    />
-
-                    <AlgorithmCard
-                      name="Spectral Flatness"
-                      source="Psychoacoustic Research"
-                      whatItDoes="Measures how peaked vs. flat the spectrum is around a candidate frequency."
-                      formula="flatness = geometricMean(spectrum) / arithmeticMean(spectrum)"
-                      formulaPlain="Ratio of geometric to arithmetic mean. Approaches 1 for noise, approaches 0 for pure tones."
-                      howToRead="Low flatness + high kurtosis = sharp peak = likely feedback."
-                      scoring="score = (1 - flatness)*0.6 + kurtosisScore*0.4"
-                      threshold="Flatness < 0.1 with kurtosis > 5"
-                      realWorld="A bass guitar has harmonics spreading energy. Feedback concentrates all energy at one frequency."
-                    />
-
-                    <AlgorithmCard
-                      name="Comb Filter Pattern"
-                      source="DBX AFS Research"
-                      whatItDoes="Detects multiple evenly-spaced peaks indicating a feedback loop with a specific path length."
-                      formula="d = c / delta_f"
-                      formulaPlain="Path length (meters) = speed of sound (343 m/s) / peak spacing (Hz)."
-                      howToRead="Regular spacing between peaks suggests a physical feedback path."
-                      scoring="confidence = matchingPeaks / totalPeaks"
-                      threshold="3+ peaks with consistent spacing"
-                      realWorld="Peaks at 500, 1000, 1500, 2000 Hz suggest a ~0.7m mic-to-speaker feedback path."
-                    />
-                  </div>
-                </section>
-
-                {/* Fusion Weights */}
-                <section className="pt-6 border-t border-border">
-                  <h3 className="text-base font-semibold mb-4">Content-Aware Fusion Weights</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    The four algorithm scores are combined with different weights depending on detected content type. 
-                    This reduces false positives by emphasizing the most reliable algorithm for each situation.
-                  </p>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm border border-border rounded-lg overflow-hidden">
-                      <thead className="bg-muted">
-                        <tr>
-                          <th className="text-left p-3 font-medium">Content Type</th>
-                          <th className="text-center p-3 font-medium">MSD</th>
-                          <th className="text-center p-3 font-medium">Phase</th>
-                          <th className="text-center p-3 font-medium">Spectral</th>
-                          <th className="text-center p-3 font-medium">Comb</th>
-                        </tr>
-                      </thead>
-                      <tbody className="font-mono text-xs">
-                        <tr className="border-t border-border">
-                          <td className="p-3">Speech</td>
-                          <td className="text-center p-3 text-primary font-bold">0.35</td>
-                          <td className="text-center p-3">0.30</td>
-                          <td className="text-center p-3">0.20</td>
-                          <td className="text-center p-3">0.15</td>
-                        </tr>
-                        <tr className="border-t border-border bg-muted/30">
-                          <td className="p-3">Music</td>
-                          <td className="text-center p-3">0.25</td>
-                          <td className="text-center p-3 text-primary font-bold">0.35</td>
-                          <td className="text-center p-3">0.15</td>
-                          <td className="text-center p-3">0.25</td>
-                        </tr>
-                        <tr className="border-t border-border">
-                          <td className="p-3">Mixed</td>
-                          <td className="text-center p-3">0.30</td>
-                          <td className="text-center p-3">0.30</td>
-                          <td className="text-center p-3">0.20</td>
-                          <td className="text-center p-3">0.20</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3">
-                    Speech emphasizes MSD (sustained notes are rare in speech). Music emphasizes Phase and Comb (harmonics are expected).
-                  </p>
-                </section>
-
-                {/* Room Acoustics */}
-                <section className="pt-6 border-t border-border">
-                  <h3 className="text-base font-semibold mb-4">Room Acoustic Formulas</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <FormulaCard
-                      name="Schroeder Frequency"
-                      formula="f_s = 2000 * sqrt(RT60 / V)"
-                      explanation="Below this frequency, room modes dominate and detection thresholds are relaxed."
-                      example="RT60=1.2s, V=500m³ → f_s = 98 Hz"
-                    />
-                    <FormulaCard
-                      name="Modal Overlap"
-                      formula="M = 1 / Q"
-                      explanation="M < 0.03 (Q > 33) = isolated peak = high risk. M > 0.33 (Q < 3) = broad = low risk."
-                      example="Q=45 → M=0.022 → high feedback risk"
-                    />
-                    <FormulaCard
-                      name="Reverberation Q"
-                      formula="Q = pi * f * RT60"
-                      explanation="Higher Q means longer ringing at that frequency, increasing feedback risk."
-                      example="f=1kHz, RT60=0.8s → Q=2513"
-                    />
-                    <FormulaCard
-                      name="A-Weighting"
-                      formula="A(f) = [IEC 61672-1 curve]"
-                      explanation="Matches human hearing sensitivity. Attenuates lows where we are less sensitive."
-                      example="1kHz: 0dB, 100Hz: -19dB, 50Hz: -30dB"
-                    />
-                  </div>
-                </section>
+            <Section title="MSD Algorithm (DAFx-16)">
+              <p className="mb-2">
+                The <strong>Magnitude Slope Deviation</strong> algorithm exploits the fact that feedback 
+                grows exponentially, which appears <strong>linear in dB scale</strong>:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p>Feedback amplitude: A(t) = A0 * e^(a*t)</p>
+                <p>In dB: L(t) = L0 + (20*a/ln(10)) * t <strong>(linear!)</strong></p>
+                <p>Second derivative: <strong>d2L/dt2 = 0</strong> for feedback</p>
               </div>
-            )}
-
-            {/* ============================================================
-                TAB 4: FAQ
-                ============================================================ */}
-            {activeTab === 'faq' && (
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <MessageCircleQuestion className="w-5 h-5 text-primary" />
-                  Frequently Asked Questions
-                </h2>
-
-                <FAQItem
-                  q="What is the difference between FEEDBACK, RESONANCE, and RING?"
-                  a="FEEDBACK (red) means the system detected a self-sustaining loop that will keep growing — act immediately. RESONANCE (yellow) means a frequency is being amplified by room acoustics but has not become runaway feedback yet — it is a warning. RING (gray) is a brief tonal event that may or may not be problematic."
-                />
-                <FAQItem
-                  q="Why am I getting so many false positives?"
-                  a="Try: 1) Switch to Music-Aware mode during performance. 2) Raise the Threshold slider to 12-16 dB. 3) Narrow the frequency range to focus on your problem area. 4) Check that input gain is not too hot (clipping causes false detection)."
-                />
-                <FAQItem
-                  q="Why is it not detecting feedback I can clearly hear?"
-                  a="Possible causes: 1) Input gain too low — raise it until peaks hit yellow. 2) Feedback is outside your frequency range. 3) Threshold is too high — try Aggressive or Calibration mode. 4) The feedback is very brief and not meeting the sustain requirement."
-                />
-                <FAQItem
-                  q="Should I use the built-in microphone or a measurement mic?"
-                  a="For soundcheck and general use, the built-in mic is fine. For precision calibration, use a flat-response measurement mic via USB interface. Built-in mics have their own frequency response that colors the analysis."
-                />
-                <FAQItem
-                  q="How many EQ cuts should I make?"
-                  a="Typically 3-5 cuts per channel is reasonable. If you need more than 6-8 cuts, you probably have a positioning problem (mic too close to speaker, monitor angle wrong). Excessive EQ degrades sound quality."
-                />
-                <FAQItem
-                  q="What do the algorithm scores (MSD, Phase) mean?"
-                  a="Enable Show Algorithm Scores in Settings to see per-algorithm results. MSD measures amplitude stability. Phase measures phase coherence. Spectral measures tonal purity. Comb detects harmonic patterns. All four are fused into the final detection."
-                />
-                <FAQItem
-                  q="Can I use this for monitor mixing?"
-                  a="Yes. Position your device near the performer position, not FOH. Use Calibration mode during soundcheck to find all problem frequencies for each monitor mix."
-                />
-                <FAQItem
-                  q="What is the EQ Notepad for?"
-                  a="When you click APPLY on a detected issue, it saves that frequency as a reference. You can then manually apply cuts to your console EQ. The notepad persists until you clear it."
-                />
-                <FAQItem
-                  q="Does this work on phones and tablets?"
-                  a="Yes, on modern browsers (Chrome, Safari). The interface adapts to any screen size. Some older devices may have audio processing limitations."
-                />
+              <p className="mt-2 text-xs">
+                The MSD is calculated as the sum of squared second derivatives over N frames:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p><strong>MSD(k,m) = SUM[n] |G''(k,n)|^2</strong></p>
+                <p>Where G''(k,n) = second derivative of dB magnitude at bin k, frame n</p>
+                <p>Feedback: MSD &lt; 0.5 dB^2/frame^2</p>
+                <p>Music: MSD &gt;&gt; 0.5 dB^2/frame^2</p>
               </div>
-            )}
+              <p className="mt-2 text-xs">
+                The "Summing MSD" method is <strong>140x more computationally efficient</strong> than 
+                the original algorithm while maintaining 100% accuracy for speech and classical music.
+              </p>
+            </Section>
 
-            {/* ============================================================
-                TAB 5: TROUBLESHOOTING
-                ============================================================ */}
-            {activeTab === 'troubleshoot' && (
-              <div className="space-y-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-primary" />
-                  Troubleshooting Guide
-                </h2>
-
-                <TroubleshootCard
-                  problem="No audio input — meter stays flat"
-                  solutions={[
-                    'Click the URL bar lock icon and ensure microphone is set to Allow',
-                    'Check your browser settings for the correct input device',
-                    'Make sure the browser tab is not muted',
-                    'Increase input gain slider to +10 to +20 dB range',
-                  ]}
-                />
-
-                <TroubleshootCard
-                  problem="Constant red alerts even with no feedback"
-                  solutions={[
-                    'Lower input gain until peaks are in yellow, not red (clipping)',
-                    'Raise Threshold slider to 12-16 dB',
-                    'Narrow frequency range to exclude HVAC rumble (try Vocal 200-8k)',
-                    'Move device away from computer fans or other noise sources',
-                  ]}
-                />
-
-                <TroubleshootCard
-                  problem="Feedback not detected until it is screaming"
-                  solutions={[
-                    'Switch to Aggressive or Calibration mode',
-                    'Lower Growth slider to 1-2 dB/s',
-                    'Expand frequency range to Full (20-20k)',
-                    'Increase input gain until meter shows healthy signal',
-                  ]}
-                />
-
-                <TroubleshootCard
-                  problem="Works in soundcheck but not during show"
-                  solutions={[
-                    'Music-Aware mode may be suppressing legitimate feedback — try Feedback Hunt',
-                    'Noise floor is higher during show — lower Threshold slightly',
-                    'Adjust input gain for show volume levels',
-                  ]}
-                />
-
-                <TroubleshootCard
-                  problem="App is slow or laggy"
-                  solutions={[
-                    'Close other browser tabs, especially video/audio',
-                    'Reduce FFT size to 4096 in Settings',
-                    'Use a laptop instead of phone for intensive work',
-                  ]}
-                />
-
-                {/* Quick Fixes */}
-                <div className="pt-4 border-t border-border">
-                  <h3 className="text-sm font-semibold mb-3">Quick Fixes</h3>
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {[
-                      { fix: 'Reset everything', how: 'Settings → Reset to Defaults' },
-                      { fix: 'Clear stuck alerts', how: 'Stop and restart analysis' },
-                      { fix: 'Refresh microphone', how: 'Reload page, re-grant permission' },
-                      { fix: 'Clear EQ notepad', how: 'Click trash icon in notepad' },
-                    ].map(item => (
-                      <div key={item.fix} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-                        <span className="text-sm">{item.fix}</span>
-                        <code className="text-xs bg-background px-2 py-1 rounded">{item.how}</code>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <Section title="Phase Coherence (Nyquist Criterion)">
+              <p className="mb-2">
+                True feedback occurs when the <strong>Nyquist stability criterion</strong> is met:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p>Magnitude condition: |G(w)*F(w)| &gt; 1</p>
+                <p>Phase condition: <strong>angle(G(w)*F(w)) = n * 2*pi</strong></p>
               </div>
-            )}
+              <p className="mt-2 text-xs">
+                This means feedback maintains constant phase relationships. Phase coherence measures this:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p><strong>C(k) = |1/N * SUM[n] e^(j*dPhi(k,n))|</strong></p>
+                <p>Where dPhi(k,n) = phase difference between frames at bin k</p>
+                <p>Feedback: C &gt; 0.85 (phase-locked)</p>
+                <p>Music: C &lt; 0.65 (random phase)</p>
+              </div>
+            </Section>
 
-          </div>
-        </ScrollArea>
+            <Section title="Spectral Flatness (Wiener Entropy)">
+              <p className="mb-2">
+                Measures how tone-like vs noise-like a signal is:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p><strong>SF = geometric_mean(X) / arithmetic_mean(X)</strong></p>
+                <p>SF = (PROD[k] X(k))^(1/N) / (1/N * SUM[k] X(k))</p>
+              </div>
+              <p className="mt-2 text-xs">
+                Interpretation:
+              </p>
+              <ul className="text-xs mt-1 space-y-1">
+                <li>SF = 0: Pure tone (single frequency = <strong>feedback</strong>)</li>
+                <li>SF = 1: White noise (flat spectrum)</li>
+                <li>SF &lt; 0.05: Very tonal (likely feedback)</li>
+                <li>SF &gt; 0.15: Broadband (likely music/speech)</li>
+              </ul>
+            </Section>
+
+            <Section title="Kurtosis">
+              <p className="mb-2">
+                Measures the "peakiness" of the amplitude distribution:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p><strong>K = E[(X-u)^4] / (E[(X-u)^2])^2 - 3</strong></p>
+                <p>Gaussian noise: K = 0</p>
+                <p>Pure tone (feedback): K &gt; 10</p>
+              </div>
+            </Section>
+
+            <Section title="Comb Filter Pattern (DBX)">
+              <p className="mb-2">
+                Feedback from a single acoustic path creates peaks at <strong>regularly spaced frequencies</strong>:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p><strong>f_n = n * c / (2 * d)</strong></p>
+                <p>Where: c = speed of sound (343 m/s), d = path length</p>
+                <p>Spacing: <strong>df = c / (2 * d)</strong></p>
+              </div>
+              <p className="mt-2 text-xs">
+                Detection algorithm:
+              </p>
+              <ol className="text-xs mt-1 space-y-1 list-decimal list-inside">
+                <li>Find all detected peak frequencies</li>
+                <li>Calculate spacing between all pairs</li>
+                <li>Find greatest common divisor (GCD) of spacings</li>
+                <li>If 3+ peaks match GCD pattern within 5% tolerance, flag as comb</li>
+                <li>Calculate predicted future frequencies: f_pred = n * df</li>
+              </ol>
+            </Section>
+
+            <Section title="Compression Detection">
+              <p className="mb-2">
+                Dynamically compressed content is detected via <strong>crest factor</strong> and <strong>dynamic range</strong>:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p><strong>Crest Factor = Peak_dB - RMS_dB</strong></p>
+                <p>Normal audio: CF = 10-15 dB</p>
+                <p>Compressed: CF &lt; 6 dB</p>
+                <p><strong>Dynamic Range = Max_dB - Min_dB</strong> (over window)</p>
+                <p>Normal: DR &gt; 20 dB</p>
+                <p>Compressed: DR &lt; 8 dB</p>
+              </div>
+              <p className="mt-2 text-xs">
+                When compression is detected, MSD reliability drops (sustained notes look like feedback), 
+                so phase coherence gets more weight in the fusion algorithm.
+              </p>
+            </Section>
+
+            <Section title="Algorithm Fusion">
+              <p className="mb-2">
+                All algorithms vote together with content-aware weighting:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p><strong>P_feedback = w1*S_msd + w2*S_phase + w3*S_spectral + w4*S_comb + w5*S_legacy</strong></p>
+              </div>
+              <p className="mt-2 text-xs">Default weights by content type:</p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1 mt-2">
+                <p>Speech: [0.45, 0.25, 0.15, 0.05, 0.10]</p>
+                <p>Music: [0.20, 0.40, 0.15, 0.10, 0.15]</p>
+                <p>Compressed: [0.15, 0.45, 0.20, 0.10, 0.10]</p>
+              </div>
+              <p className="mt-2 text-xs">
+                Verdict thresholds:
+              </p>
+              <ul className="text-xs mt-1 space-y-1">
+                <li><strong>FEEDBACK:</strong> P &gt; threshold AND confidence &gt; 0.7</li>
+                <li><strong>POSSIBLE:</strong> P &gt; threshold * 0.7</li>
+                <li><strong>NOT_FEEDBACK:</strong> P &lt; threshold * 0.5 AND confidence &gt; 0.7</li>
+                <li><strong>UNCERTAIN:</strong> Otherwise</li>
+              </ul>
+            </Section>
+
+            <Section title="Schroeder Frequency (Hopkins, 2007)">
+              <p className="mb-2">
+                Below the <strong>Schroeder frequency</strong>, individual room modes dominate:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p><strong>f_S = 2000 * sqrt(T / V)</strong></p>
+                <p>T = RT60 reverberation time (seconds)</p>
+                <p>V = room volume (m^3)</p>
+              </div>
+              <p className="mt-2 text-xs">
+                Example: Conference room T=0.7s, V=250m^3 gives f_S = 106 Hz. Below this, peaks are likely room modes.
+              </p>
+            </Section>
+
+            <Section title="Q Factor Estimation">
+              <p className="mb-2">
+                Q measures resonance sharpness, estimated from -3 dB bandwidth:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs">
+                <p><strong>Q = f_center / df_3dB</strong></p>
+                <p>High Q (&gt;40): Narrow resonance = likely feedback</p>
+                <p>Low Q (&lt;4): Broad peak = room mode or instrument</p>
+              </div>
+            </Section>
+
+            <Section title="A-Weighting (IEC 61672-1)">
+              <p className="mb-2">
+                Optional A-weighting emphasizes frequencies where human hearing is most sensitive:
+              </p>
+              <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
+                <p>R_A(f) = (12194^2 * f^4) / [(f^2 + 20.6^2)(f^2 + 12194^2) * sqrt((f^2 + 107.7^2)(f^2 + 737.9^2))]</p>
+                <p>A(f) = 20 * log10(R_A(f)) + 2.0 dB</p>
+              </div>
+            </Section>
+
+            <Section title="References">
+              <ul className="text-xs space-y-1">
+                <li><strong>DAFx-16:</strong> Magnitude Slope Deviation algorithm for feedback detection. 140x efficiency improvement.</li>
+                <li><strong>DBX:</strong> Comb filter pattern analysis for feedback suppression systems.</li>
+                <li><strong>KU Leuven (2025):</strong> 2-channel AFC algorithm with PEM framework for acoustic feedback control.</li>
+                <li>Hopkins, C. (2007). <em>Sound Insulation</em>. Butterworth-Heinemann. Schroeder frequency, modal analysis.</li>
+                <li>Grandke, T. (1983). Interpolation algorithms for discrete Fourier transforms. <em>IEEE Trans. Instrum. Meas.</em></li>
+                <li>IEC 61672-1:2013. Electroacoustics - Sound level meters - Part 1: Specifications.</li>
+                <li>Nyquist, H. (1932). Regeneration theory. <em>Bell System Technical Journal</em>.</li>
+              </ul>
+            </Section>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   )
 }
 
-// =============================================================================
-// HELPER COMPONENTS
-// =============================================================================
-
-function ControlExplainer({ name, what, options }: { 
-  name: string
-  what: string
-  options: { name: string; when: string }[] 
-}) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="p-4 rounded-lg border border-border bg-card/50">
-      <h4 className="font-semibold text-sm mb-1">{name}</h4>
-      <p className="text-xs text-muted-foreground mb-3">{what}</p>
-      <div className="space-y-1.5">
-        {options.map(opt => (
-          <div key={opt.name} className="flex gap-2 text-xs">
-            <span className="font-mono text-primary whitespace-nowrap">{opt.name}</span>
-            <span className="text-muted-foreground">— {opt.when}</span>
-          </div>
-        ))}
+    <div>
+      <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
+      <div className="text-sm text-muted-foreground leading-relaxed">
+        {children}
       </div>
-    </div>
-  )
-}
-
-function TutorialStep({ number, title, time, steps, tip }: {
-  number: number
-  title: string
-  time: string
-  steps: string[]
-  tip: string
-}) {
-  return (
-    <div className="relative pl-14">
-      <div className="absolute left-0 top-0 w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center text-lg">
-        {number}
-      </div>
-      <div className="flex items-baseline gap-3 mb-2">
-        <h4 className="font-semibold">{title}</h4>
-        <span className="text-xs text-muted-foreground">~{time}</span>
-      </div>
-      <ol className="space-y-1.5 mb-3">
-        {steps.map((step, i) => (
-          <li key={i} className="flex gap-2 text-sm">
-            <span className="text-muted-foreground font-mono text-xs">{i + 1}.</span>
-            <span className="text-muted-foreground">{step}</span>
-          </li>
-        ))}
-      </ol>
-      <div className="text-xs text-primary bg-primary/10 p-2 rounded-lg border border-primary/20">
-        <strong>Pro tip:</strong> {tip}
-      </div>
-    </div>
-  )
-}
-
-function ScenarioCard({ title, mode, range, tip }: { title: string; mode: string; range: string; tip: string }) {
-  return (
-    <div className="p-4 rounded-lg border border-border bg-card/50">
-      <h4 className="font-semibold text-sm mb-2">{title}</h4>
-      <div className="flex gap-2 mb-2">
-        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded text-xs">{mode}</span>
-        <span className="px-2 py-0.5 bg-muted rounded text-xs">{range}</span>
-      </div>
-      <p className="text-xs text-muted-foreground">{tip}</p>
-    </div>
-  )
-}
-
-function AlgorithmCard({ name, source, whatItDoes, formula, formulaPlain, howToRead, scoring, threshold, realWorld }: {
-  name: string
-  source: string
-  whatItDoes: string
-  formula: string
-  formulaPlain: string
-  howToRead: string
-  scoring: string
-  threshold: string
-  realWorld: string
-}) {
-  return (
-    <div className="p-5 rounded-lg border border-border bg-card/50">
-      <div className="flex items-baseline gap-2 mb-2">
-        <h4 className="font-semibold">{name}</h4>
-        <span className="text-xs text-muted-foreground">({source})</span>
-      </div>
-      <p className="text-sm text-muted-foreground mb-4">{whatItDoes}</p>
-      
-      <div className="space-y-3 text-sm">
-        <div>
-          <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Formula</div>
-          <code className="block bg-muted px-3 py-2 rounded font-mono text-xs">{formula}</code>
-          <p className="text-xs text-muted-foreground mt-1">{formulaPlain}</p>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Scoring</div>
-            <code className="block bg-muted px-2 py-1 rounded font-mono text-[10px]">{scoring}</code>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Threshold</div>
-            <p className="text-xs">{threshold}</p>
-          </div>
-        </div>
-        
-        <div>
-          <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">How to Interpret</div>
-          <p className="text-xs">{howToRead}</p>
-        </div>
-        
-        <div className="pt-2 border-t border-border">
-          <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Real-World Example</div>
-          <p className="text-xs text-muted-foreground italic">{realWorld}</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function FormulaCard({ name, formula, explanation, example }: {
-  name: string
-  formula: string
-  explanation: string
-  example: string
-}) {
-  return (
-    <div className="p-4 rounded-lg border border-border bg-muted/30">
-      <h4 className="font-medium text-sm mb-2">{name}</h4>
-      <code className="block bg-background px-3 py-2 rounded font-mono text-xs mb-2">{formula}</code>
-      <p className="text-xs text-muted-foreground mb-2">{explanation}</p>
-      <p className="text-xs font-mono text-primary">{example}</p>
-    </div>
-  )
-}
-
-function FAQItem({ q, a }: { q: string; a: string }) {
-  return (
-    <div className="p-4 rounded-lg border border-border bg-card/50">
-      <h4 className="font-medium text-sm mb-2">{q}</h4>
-      <p className="text-sm text-muted-foreground">{a}</p>
-    </div>
-  )
-}
-
-function TroubleshootCard({ problem, solutions }: { problem: string; solutions: string[] }) {
-  return (
-    <div className="p-4 rounded-lg border border-border bg-card/50">
-      <h4 className="font-semibold text-sm text-red-500 mb-3">{problem}</h4>
-      <ul className="space-y-2">
-        {solutions.map((sol, i) => (
-          <li key={i} className="flex gap-2 text-sm">
-            <span className="text-primary">→</span>
-            <span className="text-muted-foreground">{sol}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
