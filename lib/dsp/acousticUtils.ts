@@ -260,6 +260,65 @@ export function modalDensityFeedbackAdjustment(
 }
 
 // ============================================================================
+// REVERBERATION-AWARE Q ADJUSTMENT  (Hopkins §1.2.6.3)
+// ============================================================================
+
+/**
+ * Compare a measured peak Q against the room's natural reverberation Q.
+ *
+ * A room mode at frequency f with reverberation time T₆₀ has a natural
+ * 3 dB bandwidth of:  Δf = 6.9 / (π · T₆₀)
+ * and a corresponding "room Q":  Q_room = π · f · T₆₀ / 6.9
+ *
+ * Interpretation (Hopkins §1.2.6.3):
+ *   - measuredQ ≤ Q_room : The peak is no sharper than expected for this room's
+ *     decay — it is more likely a room mode than feedback.  Reduce pFeedback.
+ *   - measuredQ ≫ Q_room : The peak is far sharper than the room can sustain —
+ *     something external (i.e. the PA loop) is sustaining it.  Boost pFeedback.
+ *
+ * @param measuredQ   - Q factor of the detected peak
+ * @param frequencyHz - Centre frequency of the peak (Hz)
+ * @param rt60        - Room reverberation time T₆₀ (seconds)
+ * @returns { delta, reason } — delta to add to pFeedback, optional reason string
+ */
+export function reverberationQAdjustment(
+  measuredQ: number,
+  frequencyHz: number,
+  rt60: number
+): { delta: number; reason: string | null } {
+  if (measuredQ <= 0 || frequencyHz <= 0 || rt60 <= 0) {
+    return { delta: 0, reason: null }
+  }
+
+  // Q_room = π · f · T₆₀ / 6.9
+  const qRoom = (Math.PI * frequencyHz * rt60) / 6.9
+
+  const ratio = measuredQ / qRoom
+
+  if (ratio <= 1.0) {
+    // Peak is at or below the room's natural decay sharpness — likely a room mode
+    return {
+      delta: -0.10,
+      reason: `Q=${measuredQ.toFixed(0)} ≤ Q_room=${qRoom.toFixed(0)} — consistent with room decay (RT60=${rt60}s)`,
+    }
+  }
+
+  if (ratio >= 3.0) {
+    // Peak is ≥3× sharper than the room can naturally sustain — strong feedback indicator
+    return {
+      delta: +0.12,
+      reason: `Q=${measuredQ.toFixed(0)} >> Q_room=${qRoom.toFixed(0)} (×${ratio.toFixed(1)}) — unusually sharp, likely feedback loop`,
+    }
+  }
+
+  // Transitional range (1–3×): small positive nudge
+  return {
+    delta: +0.04,
+    reason: null,
+  }
+}
+
+// ============================================================================
 // CUMULATIVE GROWTH TRACKING
 // ============================================================================
 
