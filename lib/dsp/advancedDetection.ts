@@ -681,7 +681,7 @@ export function fuseAlgorithmResults(
   const reasons: string[] = []
   const contributingAlgorithms: string[] = []
 
-  let weights: typeof FUSION_WEIGHTS.DEFAULT
+  let weights: { msd: number; phase: number; spectral: number; comb: number; existing: number }
   if (scores.compression?.isCompressed) {
     weights = FUSION_WEIGHTS.COMPRESSED
     reasons.push(`Compression detected (ratio ~${scores.compression.estimatedRatio.toFixed(1)}:1)`)
