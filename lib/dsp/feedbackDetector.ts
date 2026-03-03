@@ -1000,7 +1000,7 @@ export class FeedbackDetector {
     }
 
     const frameCount = this.msdFrameCount[binIndex]
-    if (frameCount < MSD_SETTINGS.MIN_FRAMES) {
+    if (frameCount < MSD_SETTINGS.DEFAULT_MIN_FRAMES) {
       return { msd: -1, growthRate: 0, isHowl: false, fastConfirm: false }
     }
 
