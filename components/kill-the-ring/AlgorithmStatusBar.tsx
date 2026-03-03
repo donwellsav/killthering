@@ -12,6 +12,7 @@ import type { AlgorithmMode, ContentType } from '@/types/advisory'
 
 interface AlgorithmStatusBarProps {
   algorithmMode?: AlgorithmMode
+  onAlgorithmModeChange?: (mode: AlgorithmMode) => void
   contentType?: ContentType
   msdFrameCount?: number
   isCompressed?: boolean
@@ -37,6 +38,7 @@ const CONTENT_TYPE_LABELS: Record<ContentType, { label: string; color: string }>
 
 export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
   algorithmMode = 'combined',
+  onAlgorithmModeChange,
   contentType = 'unknown',
   msdFrameCount = 0,
   isCompressed = false,
@@ -61,12 +63,21 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
   return (
     <TooltipProvider delayDuration={300}>
       <div className="flex items-center gap-2 px-2 py-1 text-[9px] font-mono">
-        {/* Algorithm Mode */}
+        {/* Algorithm Mode Selector */}
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="text-primary font-semibold">
-              {ALGORITHM_MODE_LABELS[algorithmMode]}
-            </span>
+            <select
+              value={algorithmMode}
+              onChange={(e) => onAlgorithmModeChange?.(e.target.value as AlgorithmMode)}
+              disabled={!onAlgorithmModeChange}
+              className="bg-transparent text-primary font-semibold border border-primary/40 rounded px-1 py-0 text-[9px] font-mono cursor-pointer hover:border-primary transition-colors focus:outline-none focus:ring-1 focus:ring-primary/50 disabled:cursor-default disabled:opacity-60"
+            >
+              {(Object.keys(ALGORITHM_MODE_LABELS) as AlgorithmMode[]).map((mode) => (
+                <option key={mode} value={mode} className="bg-background text-foreground">
+                  {ALGORITHM_MODE_LABELS[mode]}
+                </option>
+              ))}
+            </select>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs max-w-[200px]">
             <p className="font-semibold">Algorithm Mode: {algorithmMode}</p>

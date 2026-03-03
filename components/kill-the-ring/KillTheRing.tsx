@@ -495,6 +495,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
           <div className="flex-shrink-0 border-b border-border p-2">
             <AlgorithmStatusBar
               algorithmMode={spectrum?.algorithmMode ?? settings.algorithmMode}
+              onAlgorithmModeChange={(mode) => updateSettings({ algorithmMode: mode })}
               contentType={spectrum?.contentType}
               msdFrameCount={spectrum?.msdFrameCount}
               isCompressed={spectrum?.isCompressed}
