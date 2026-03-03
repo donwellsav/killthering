@@ -26,6 +26,8 @@
 // TYPES
 // ============================================================================
 
+import type { AlgorithmMode, ContentType } from '@/types/advisory'
+
 export interface MSDResult {
   msd: number
   feedbackScore: number
