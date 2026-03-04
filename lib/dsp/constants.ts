@@ -212,7 +212,7 @@ export const SPECTRAL_TRENDS = {
 // Track history settings
 export const TRACK_SETTINGS = {
   HISTORY_SIZE: 128, // Ring buffer size for track history
-  ASSOCIATION_TOLERANCE_CENTS: 50, // Max cents difference to associate peak to track
+  ASSOCIATION_TOLERANCE_CENTS: 100, // Max cents difference to associate peak to track (1 semitone)
   MAX_TRACKS: 64, // Maximum simultaneous tracks
   TRACK_TIMEOUT_MS: 1000, // Remove track after this inactive time
 } as const
@@ -534,7 +534,7 @@ export const DEFAULT_SETTINGS = {
   growthRateThreshold: 1.0, // FAST — detect growing peaks immediately
   holdTimeMs: 3000, // Long hold for EQ reference during adjustments
   noiseFloorDecay: 0.98, // Fast adaptation for dynamic conference environments
-  peakMergeCents: 50,
+  peakMergeCents: 100, // 1 semitone — prevents near-duplicate advisories from frequency jitter
   maxDisplayedIssues: 8, // Show more issues — don't hide potential problems
   eqPreset: 'surgical' as const, // Precise narrow cuts preserve speech clarity
   musicAware: false, // Disabled — no music in corporate/conference

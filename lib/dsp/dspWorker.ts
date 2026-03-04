@@ -91,6 +91,11 @@ const trackManager = new TrackManager()
 const advisories = new Map<string, Advisory>()
 const trackToAdvisoryId = new Map<string, string>()
 
+// Band cooldown: maps GEQ band index → timestamp when the band was last cleared.
+// Suppresses re-triggering the same band for BAND_COOLDOWN_MS after an advisory clears.
+const BAND_COOLDOWN_MS = 1500
+const bandClearedAt = new Map<number, number>()
+
 // ─── Advanced algorithm buffers (previously dormant, now active) ────────────
 
 /** Full-spectrum MSD history — provides per-bin MSD scores to the fusion engine.
@@ -136,12 +141,24 @@ function isHarmonicOfExisting(freqHz: number): boolean {
   const toleranceCents = settings.harmonicToleranceCents ?? 50
   const MAX_HARMONIC = 8
   for (const advisory of advisories.values()) {
-    const fundamental = advisory.trueFrequencyHz
-    if (fundamental >= freqHz) continue
-    for (let n = 2; n <= MAX_HARMONIC; n++) {
-      const harmonic = fundamental * n
-      const cents = Math.abs(1200 * Math.log2(freqHz / harmonic))
-      if (cents <= toleranceCents) return true
+    const existingHz = advisory.trueFrequencyHz
+
+    // A: Overtone check — is new peak an overtone of an existing advisory?
+    if (existingHz < freqHz) {
+      for (let n = 2; n <= MAX_HARMONIC; n++) {
+        const harmonic = existingHz * n
+        const cents = Math.abs(1200 * Math.log2(freqHz / harmonic))
+        if (cents <= toleranceCents) return true
+      }
+    }
+
+    // B: Sub-harmonic check — is new peak a fundamental whose overtone already has an advisory?
+    if (existingHz > freqHz) {
+      for (let n = 2; n <= MAX_HARMONIC; n++) {
+        const harmonic = freqHz * n
+        const cents = Math.abs(1200 * Math.log2(existingHz / harmonic))
+        if (cents <= toleranceCents) return true
+      }
     }
   }
   return false
@@ -481,6 +498,7 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       trackManager.clear()
       advisories.clear()
       trackToAdvisoryId.clear()
+      bandClearedAt.clear()
       msdBuffer?.reset()
       phaseBuffer?.reset()
       ampBuffer.reset()
@@ -616,6 +634,10 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       if (!shouldReportIssue(classification, settings)) {
         const existingId = trackToAdvisoryId.get(track.id)
         if (existingId) {
+          const clearedAdvisory = advisories.get(existingId)
+          if (clearedAdvisory?.advisory?.geq?.bandIndex != null) {
+            bandClearedAt.set(clearedAdvisory.advisory.geq.bandIndex, peak.timestamp)
+          }
           advisories.delete(existingId)
           trackToAdvisoryId.delete(track.id)
           self.postMessage({ type: 'advisoryCleared', advisoryId: existingId } satisfies WorkerOutboundMessage)
@@ -642,10 +664,16 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       let mergedClusterCount = 1
 
       if (!existingId) {
+        // Check 0: band cooldown — suppress if this band was recently cleared
+        const geqBandIndex = eqAdvisory.geq.bandIndex
+        const lastCleared = bandClearedAt.get(geqBandIndex)
+        if (lastCleared !== undefined && (peak.timestamp - lastCleared) < BAND_COOLDOWN_MS) {
+          break // Band still in cooldown period, don't re-trigger
+        }
+
         // Check 1: cents-based proximity dedup (original logic)
         const freqDup = findDuplicateAdvisory(track.trueFrequencyHz, track.id)
         // Check 2: GEQ band-level dedup — prevents two cards for the same fader
-        const geqBandIndex = eqAdvisory.geq.bandIndex
         const bandDup = !freqDup ? findAdvisoryForSameBand(geqBandIndex, track.id) : null
         const dup = freqDup ?? bandDup
 
@@ -710,6 +738,9 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       for (const [trackId, advisoryId] of trackToAdvisoryId.entries()) {
         const advisory = advisories.get(advisoryId)
         if (advisory && Math.abs(advisory.trueFrequencyHz - frequencyHz) < 10) {
+          if (advisory.advisory?.geq?.bandIndex != null) {
+            bandClearedAt.set(advisory.advisory.geq.bandIndex, timestamp)
+          }
           advisories.delete(advisoryId)
           trackToAdvisoryId.delete(trackId)
           self.postMessage({ type: 'advisoryCleared', advisoryId } satisfies WorkerOutboundMessage)
