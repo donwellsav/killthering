@@ -10,6 +10,9 @@ interface InputMeterSliderProps {
   max?: number
   fullWidth?: boolean
   compact?: boolean
+  autoGainEnabled?: boolean
+  autoGainDb?: number
+  onAutoGainToggle?: (enabled: boolean) => void
 }
 
 export function InputMeterSlider({
@@ -20,6 +23,9 @@ export function InputMeterSlider({
   max = 40,
   fullWidth = false,
   compact = false,
+  autoGainEnabled = false,
+  autoGainDb,
+  onAutoGainToggle,
 }: InputMeterSliderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const sliderRef = useRef<HTMLDivElement>(null)
@@ -28,6 +34,9 @@ export function InputMeterSlider({
   const dimensionsRef = useRef({ width: 0, height: 0 })
 
   const normalizedLevel = Math.max(0, Math.min(1, (level + 60) / 60))
+
+  // Display value: when auto-gain is active, show the auto-computed gain
+  const displayValue = autoGainEnabled && autoGainDb != null ? autoGainDb : value
 
   // ResizeObserver to track container size + DPR scaling
   useEffect(() => {
@@ -88,7 +97,7 @@ export function InputMeterSlider({
     ctx.lineTo(zeroPos, h)
     ctx.stroke()
     ctx.setLineDash([])
-  }, [normalizedLevel, value, min, max])
+  }, [normalizedLevel, displayValue, min, max])
 
   const updateValueFromX = (clientX: number) => {
     const slider = sliderRef.current
@@ -96,6 +105,10 @@ export function InputMeterSlider({
     const rect = slider.getBoundingClientRect()
     const x = Math.max(0, Math.min(rect.width, clientX - rect.left))
     const ratio = x / rect.width
+    // When user drags in auto mode, switch to manual
+    if (autoGainEnabled && onAutoGainToggle) {
+      onAutoGainToggle(false)
+    }
     onChange(Math.round(min + ratio * (max - min)))
   }
 
@@ -141,14 +154,36 @@ export function InputMeterSlider({
 
   const commitEdit = (raw: string) => {
     const parsed = parseInt(raw, 10)
-    if (!isNaN(parsed)) onChange(Math.max(min, Math.min(max, parsed)))
+    if (!isNaN(parsed)) {
+      // Switch to manual if editing in auto mode
+      if (autoGainEnabled && onAutoGainToggle) {
+        onAutoGainToggle(false)
+      }
+      onChange(Math.max(min, Math.min(max, parsed)))
+    }
     setEditing(false)
   }
 
-  const valueLabel = `${value > 0 ? '+' : ''}${value}dB`
+  const valueLabel = `${displayValue > 0 ? '+' : ''}${displayValue}dB`
 
   return (
     <div className={`flex items-center gap-2 ${fullWidth ? 'w-full' : ''}`}>
+
+      {/* Auto/Manual toggle */}
+      {onAutoGainToggle && (
+        <button
+          onClick={() => onAutoGainToggle(!autoGainEnabled)}
+          className={`flex-shrink-0 px-1.5 py-0.5 rounded text-[0.5625rem] font-bold uppercase tracking-wider transition-colors ${
+            autoGainEnabled
+              ? 'bg-primary/20 text-primary border border-primary/40'
+              : 'bg-muted/40 text-muted-foreground border border-border hover:text-foreground'
+          }`}
+          title={autoGainEnabled ? 'Auto gain active — click for manual' : 'Manual gain — click for auto'}
+          aria-label={autoGainEnabled ? 'Switch to manual gain' : 'Switch to auto gain'}
+        >
+          {autoGainEnabled ? 'Auto' : 'Man'}
+        </button>
+      )}
 
       {/* Slider track + 0dB label */}
       <div className="relative flex-1 flex flex-col">
@@ -161,12 +196,18 @@ export function InputMeterSlider({
           role="slider"
           aria-valuemin={min}
           aria-valuemax={max}
-          aria-valuenow={value}
+          aria-valuenow={displayValue}
           aria-label="Input gain"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') onChange(Math.min(max, value + 1))
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') onChange(Math.max(min, value - 1))
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
+              if (autoGainEnabled && onAutoGainToggle) onAutoGainToggle(false)
+              onChange(Math.min(max, value + 1))
+            }
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
+              if (autoGainEnabled && onAutoGainToggle) onAutoGainToggle(false)
+              onChange(Math.max(min, value - 1))
+            }
           }}
         >
           <canvas
@@ -175,8 +216,10 @@ export function InputMeterSlider({
           />
           {/* Gain thumb — white circle matching shadcn Slider thumb */}
           <div
-            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-7 rounded-full border-2 border-background bg-white shadow-md ring-offset-background transition-[box-shadow] hover:ring-4 hover:ring-ring/50 focus-visible:ring-4 focus-visible:ring-ring/50 pointer-events-none"
-            style={{ left: `${((value - min) / (max - min)) * 100}%` }}
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-7 rounded-full border-2 shadow-md ring-offset-background transition-[box-shadow] hover:ring-4 hover:ring-ring/50 focus-visible:ring-4 focus-visible:ring-ring/50 pointer-events-none ${
+              autoGainEnabled ? 'border-primary bg-primary/90' : 'border-background bg-white'
+            }`}
+            style={{ left: `${((displayValue - min) / (max - min)) * 100}%` }}
             aria-hidden="true"
           />
         </div>
@@ -193,7 +236,7 @@ export function InputMeterSlider({
         <input
           autoFocus
           type="text"
-          defaultValue={String(value)}
+          defaultValue={String(displayValue)}
           className={`font-mono bg-input border border-primary rounded px-1 text-center text-foreground focus-visible:outline-none flex-shrink-0 ${compact ? 'text-[0.5rem] w-9 h-4' : 'text-xs w-12 h-5'}`}
           onBlur={(e) => commitEdit(e.target.value)}
           onKeyDown={(e) => {
@@ -205,14 +248,17 @@ export function InputMeterSlider({
         />
       ) : (
         <button
-          className={`font-mono text-right text-foreground hover:text-primary transition-colors cursor-text flex-shrink-0 tabular-nums ${compact ? 'text-[0.5rem] w-9' : 'text-xs w-12'}`}
+          className={`font-mono text-right transition-colors cursor-text flex-shrink-0 tabular-nums ${compact ? 'text-[0.5rem] w-9' : 'text-xs w-12'} ${
+            autoGainEnabled ? 'text-primary hover:text-primary/80' : 'text-foreground hover:text-primary'
+          }`}
           onClick={() => setEditing(true)}
           onWheel={(e) => {
             e.preventDefault()
+            if (autoGainEnabled && onAutoGainToggle) onAutoGainToggle(false)
             onChange(e.deltaY < 0 ? Math.min(max, value + 1) : Math.max(min, value - 1))
           }}
-          title="Click to type, scroll to step ±1dB"
-          aria-label={`Input gain ${valueLabel}, click to edit`}
+          title={autoGainEnabled ? 'Auto gain — click to edit (switches to manual)' : 'Click to type, scroll to step ±1dB'}
+          aria-label={`Input gain ${valueLabel}${autoGainEnabled ? ' (auto)' : ''}, click to edit`}
         >
           {valueLabel}
         </button>

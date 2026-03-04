@@ -158,6 +158,20 @@ function findDuplicateAdvisory(freqHz: number, excludeTrackId?: string): Advisor
 }
 
 /**
+ * Find an existing advisory that targets the same GEQ band.
+ * Two peaks at 940 Hz and 1080 Hz both map to the 1000 Hz band —
+ * without this check they produce duplicate advisory cards pointing
+ * at the same fader. This dedup ensures one advisory per GEQ band.
+ */
+function findAdvisoryForSameBand(bandIndex: number, excludeTrackId?: string): Advisory | null {
+  for (const advisory of advisories.values()) {
+    if (excludeTrackId && advisory.trackId === excludeTrackId) continue
+    if (advisory.advisory?.geq?.bandIndex === bandIndex) return advisory
+  }
+  return null
+}
+
+/**
  * Compute noise sideband score for whistle discrimination.
  *
  * Whistles produce broadband breath noise in the sidebands around the main
@@ -623,14 +637,30 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         fftSize
       )
 
-      // Dedup within merge tolerance
+      // Dedup: frequency proximity (original) + GEQ band-level (new)
       const existingId = trackToAdvisoryId.get(track.id)
+      let mergedClusterCount = 1
+
       if (!existingId) {
-        const dup = findDuplicateAdvisory(track.trueFrequencyHz, track.id)
+        // Check 1: cents-based proximity dedup (original logic)
+        const freqDup = findDuplicateAdvisory(track.trueFrequencyHz, track.id)
+        // Check 2: GEQ band-level dedup — prevents two cards for the same fader
+        const geqBandIndex = eqAdvisory.geq.bandIndex
+        const bandDup = !freqDup ? findAdvisoryForSameBand(geqBandIndex, track.id) : null
+        const dup = freqDup ?? bandDup
+
         if (dup) {
           const existingUrgency = getSeverityUrgency(dup.severity)
           const newUrgency = getSeverityUrgency(classification.severity)
-          if (newUrgency <= existingUrgency && track.trueAmplitudeDb <= dup.trueAmplitudeDb) break
+          if (newUrgency <= existingUrgency && track.trueAmplitudeDb <= dup.trueAmplitudeDb) {
+            // New peak is less urgent — absorb into existing, bump its cluster count
+            const updatedAdvisory = { ...dup, clusterCount: (dup.clusterCount ?? 1) + 1 }
+            advisories.set(dup.id, updatedAdvisory)
+            self.postMessage({ type: 'advisory', advisory: updatedAdvisory } satisfies WorkerOutboundMessage)
+            break
+          }
+          // New peak supersedes — carry over cluster count from the one we're replacing
+          mergedClusterCount = (dup.clusterCount ?? 1) + 1
           advisories.delete(dup.id)
           trackToAdvisoryId.delete(dup.trackId)
           self.postMessage({ type: 'advisoryCleared', advisoryId: dup.id } satisfies WorkerOutboundMessage)
@@ -660,6 +690,8 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         modalOverlapFactor: classification.modalOverlapFactor,
         cumulativeGrowthDb: classification.cumulativeGrowthDb,
         frequencyBand: classification.frequencyBand,
+        // Cluster info — how many peaks merged into this advisory
+        clusterCount: mergedClusterCount > 1 ? mergedClusterCount : undefined,
       }
 
       advisories.set(advisoryId, advisory)

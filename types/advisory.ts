@@ -46,6 +46,7 @@ export interface AnalysisConfig {
   noiseFloorReleaseMs: number
   // Input gain (software boost/cut applied to spectrum)
   inputGainDb: number
+  autoGainEnabled: boolean
 }
 
 export interface DetectedPeak {
@@ -220,6 +221,10 @@ export interface SpectrumData {
   fftSize: number
   timestamp: number
   peak: number // Peak level in dB for metering
+  // Auto-gain control status
+  autoGainEnabled?: boolean // Whether auto-gain is active
+  autoGainDb?: number // Current auto-computed gain in dB
+  rawPeakDb?: number // Pre-gain peak level in dBFS
   // Algorithm status fields (populated by DSP worker)
   algorithmMode?: AlgorithmMode // Which detection algorithm is active
   contentType?: ContentType // Detected content type (speech, music, compressed, unknown)
@@ -315,6 +320,7 @@ export interface DetectorSettings {
   autoMusicAware: boolean // Auto-switch to music-aware mode based on signal level
   autoMusicAwareHysteresisDb: number // dB above noise floor to trigger music-aware mode
   inputGainDb: number // Software gain applied to analysis (-40 to +40 dB)
+  autoGainEnabled: boolean // Auto-adjust inputGainDb based on signal level
   graphFontSize: number // Font size for canvas graph labels (8-26px, default 15px)
   harmonicToleranceCents: number // Cents window for harmonic/sub-harmonic matching (25–100, default 50)
   showTooltips: boolean // Show/hide all help tooltips throughout the UI
@@ -379,4 +385,5 @@ export const DEFAULT_CONFIG: AnalysisConfig = {
   noiseFloorAttackMs: 200, // Faster attack for dynamic environments
   noiseFloorReleaseMs: 1000, // Faster release
   inputGainDb: 15, // Default gain for speech systems (adjustable -40 to +40 dB) — matches DEFAULT_SETTINGS
+  autoGainEnabled: true, // Auto-gain on by default
 }

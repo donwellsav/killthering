@@ -279,6 +279,8 @@ export const KillTheRing = memo(function KillTheRingComponent() {
   }, [updateSettings])
 
   const inputLevel = spectrum?.peak ?? -60
+  const autoGainDb = spectrum?.autoGainDb
+  const isAutoGain = spectrum?.autoGainEnabled ?? settings.autoGainEnabled
 
 
 
@@ -355,6 +357,9 @@ export const KillTheRing = memo(function KillTheRingComponent() {
               onChange={(v) => handleSettingsChange({ inputGainDb: v })}
               level={inputLevel}
               fullWidth
+              autoGainEnabled={isAutoGain}
+              autoGainDb={autoGainDb}
+              onAutoGainToggle={(enabled) => handleSettingsChange({ autoGainEnabled: enabled })}
             />
           </div>
         </div>
@@ -498,6 +503,9 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                 onChange={(v) => handleSettingsChange({ inputGainDb: v })}
                 level={inputLevel}
                 fullWidth
+                autoGainEnabled={isAutoGain}
+                autoGainDb={autoGainDb}
+                onAutoGainToggle={(enabled) => handleSettingsChange({ autoGainEnabled: enabled })}
               />
             </section>
             <div className="border-t border-border" />
@@ -561,6 +569,9 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                 onChange={(v) => handleSettingsChange({ inputGainDb: v })}
                 level={inputLevel}
                 compact
+                autoGainEnabled={isAutoGain}
+                autoGainDb={autoGainDb}
+                onAutoGainToggle={(enabled) => handleSettingsChange({ autoGainEnabled: enabled })}
               />
             </div>
             <div className="flex-1 overflow-y-auto p-3">

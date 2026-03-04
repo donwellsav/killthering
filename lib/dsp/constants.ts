@@ -541,6 +541,7 @@ export const DEFAULT_SETTINGS = {
   autoMusicAware: false, // Auto music-aware off for speech systems
   autoMusicAwareHysteresisDb: 15, // 15 dB above noise floor = band is playing
   inputGainDb: 15, // Default input gain (adjustable -40 to +40 dB)
+  autoGainEnabled: true, // Auto-gain on by default — finds optimal level for any venue
   graphFontSize: 15, // Default label size for canvas graphs (8–26 px)
   harmonicToleranceCents: 50, // ±50 cents for harmonic matching
   showTooltips: true, // Show help tooltips (useful for AV techs)

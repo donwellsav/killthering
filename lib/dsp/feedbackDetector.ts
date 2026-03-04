@@ -26,6 +26,10 @@ export interface FeedbackDetectorState {
   effectiveThresholdDb: number
   sampleRate: number
   fftSize: number
+  // Auto-gain control
+  autoGainEnabled: boolean
+  autoGainDb: number // Current auto-computed gain in dB
+  rawPeakDb: number // Pre-gain peak level in dBFS
   // Advanced algorithm state (populated by DSP pipeline)
   algorithmMode?: AlgorithmMode
   contentType?: ContentType
@@ -107,6 +111,16 @@ export class FeedbackDetector {
   private ringThresholdDb: number = -10
   private growthRateThreshold: number = 1.5
 
+  // Auto-gain control — adjusts inputGainDb to keep signal in optimal detection range
+  private _autoGainEnabled: boolean = true
+  private _autoGainDb: number = 15 // Current auto-computed gain (starts at default)
+  private _rawPeakDb: number = -100 // Pre-gain peak level (updated each frame)
+  private _autoGainTargetDb: number = -12 // Target post-gain peak level (sweet spot)
+  private _autoGainMinDb: number = -10 // Min auto gain
+  private _autoGainMaxDb: number = 30 // Max auto gain
+  private _autoGainAttackCoeff: number = 0 // EMA attack (computed from sample rate)
+  private _autoGainReleaseCoeff: number = 0 // EMA release (computed from sample rate)
+
   // Advanced algorithm state — set externally by DSP pipeline, returned via getState()
   private _algorithmMode: AlgorithmMode | undefined = undefined
   private _contentType: ContentType | undefined = undefined
@@ -162,6 +176,14 @@ export class FeedbackDetector {
 
     // Set FFT size and allocate buffers
     this.setFftSize(this.config.fftSize)
+
+    // Initialize auto-gain EMA coefficients based on analysis rate (~50 fps)
+    // Attack 300ms (gain rises slowly), Release 1000ms (gain drops slowly)
+    const fps = 1000 / this.config.analysisIntervalMs
+    this._autoGainAttackCoeff = 1 - Math.exp(-1 / (0.3 * fps))  // 300ms attack
+    this._autoGainReleaseCoeff = 1 - Math.exp(-1 / (1.0 * fps)) // 1000ms release
+    this._autoGainEnabled = this.config.autoGainEnabled ?? true
+    this._autoGainDb = this.config.inputGainDb ?? 15
 
     // Connect source (PASSIVE - no output routing)
     if (this.source) {
@@ -284,6 +306,18 @@ export class FeedbackDetector {
     }
     if (settings.inputGainDb !== undefined) {
       mappedConfig.inputGainDb = settings.inputGainDb
+      // When user manually sets gain, seed auto-gain from that value
+      if (!this._autoGainEnabled) {
+        this._autoGainDb = settings.inputGainDb
+      }
+    }
+    if (settings.autoGainEnabled !== undefined) {
+      this._autoGainEnabled = settings.autoGainEnabled
+      mappedConfig.autoGainEnabled = settings.autoGainEnabled
+      // When switching to auto, seed from current manual setting
+      if (settings.autoGainEnabled) {
+        this._autoGainDb = this.config.inputGainDb ?? 15
+      }
     }
     if (settings.harmonicToleranceCents !== undefined) {
       this.harmonicToleranceCents = settings.harmonicToleranceCents
@@ -369,6 +403,9 @@ export class FeedbackDetector {
       effectiveThresholdDb: this.computeEffectiveThresholdDb(),
       sampleRate: this.audioContext?.sampleRate ?? 48000,
       fftSize: this.config.fftSize,
+      autoGainEnabled: this._autoGainEnabled,
+      autoGainDb: Math.round(this._autoGainDb),
+      rawPeakDb: this._rawPeakDb,
       algorithmMode: this._algorithmMode,
       contentType: this._contentType,
       msdFrameCount: this._msdFrameCount,
@@ -630,7 +667,39 @@ export class FeedbackDetector {
 
     const useAWeighting = this.config.aWeightingEnabled && !!this.aWeightingTable
     const aTable = this.aWeightingTable
-    const inputGain = this.config.inputGainDb ?? 0
+
+    // ── Auto-gain: measure raw peak BEFORE applying gain ──────────────────
+    if (this._autoGainEnabled) {
+      let rawPeak = -100
+      const agStart = this.startBin > 0 ? this.startBin : 1
+      const agEnd = this.endBin > 0 ? this.endBin : n - 1
+      for (let i = agStart; i <= agEnd; i++) {
+        const v = freqDb[i]
+        if (Number.isFinite(v) && v > rawPeak) rawPeak = v
+      }
+      this._rawPeakDb = rawPeak
+
+      // Desired gain: shift rawPeak to target (-12 dBFS)
+      // e.g. raw peak at -40 → desired gain = -12 - (-40) = +28 dB
+      // e.g. raw peak at -5  → desired gain = -12 - (-5) = -7 dB
+      const desiredGain = clamp(
+        this._autoGainTargetDb - rawPeak,
+        this._autoGainMinDb,
+        this._autoGainMaxDb
+      )
+
+      // EMA smoothing: attack (gain increasing = signal getting quieter) is slower,
+      // release (gain decreasing = signal getting louder) is faster to avoid clipping
+      const coeff = desiredGain > this._autoGainDb
+        ? this._autoGainReleaseCoeff  // gain needs to go up (quiet signal) — slow
+        : this._autoGainAttackCoeff   // gain needs to go down (loud signal) — fast
+      this._autoGainDb += coeff * (desiredGain - this._autoGainDb)
+    }
+
+    // Use auto-gain when enabled, otherwise manual setting
+    const inputGain = this._autoGainEnabled
+      ? Math.round(this._autoGainDb) // Round to integer dB to avoid micro-jitter
+      : (this.config.inputGainDb ?? 0)
 
     // Build power + prefix sums
     prefix[0] = 0
@@ -638,10 +707,10 @@ export class FeedbackDetector {
       let db = freqDb[i]
 
       if (!Number.isFinite(db)) db = -100
-      
+
       // Apply software input gain
       db += inputGain
-      
+
       db = clamp(db, -100, 0)
 
       // Apply A-weighting if enabled
