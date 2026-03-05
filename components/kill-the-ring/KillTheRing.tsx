@@ -99,6 +99,10 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     setDismissedIds((prev) => new Set(prev).add(id))
   }, [])
 
+  const handleClearAllIssues = useCallback(() => {
+    setDismissedIds(new Set(advisories.map(a => a.id)))
+  }, [advisories])
+
   // Auto-expire dismissed IDs once the advisory is no longer in the live list
   useEffect(() => {
     if (dismissedIds.size === 0) return
@@ -410,6 +414,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                   dismissedIds={dismissedIds}
                   onApply={handleApply}
                   onDismiss={handleDismiss}
+                  onClearAll={handleClearAllIssues}
                 />
               </div>
             </div>
@@ -547,6 +552,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                       dismissedIds={dismissedIds}
                       onApply={handleApply}
                       onDismiss={handleDismiss}
+                      onClearAll={handleClearAllIssues}
                     />
                   ) : (
                     <EQNotepad

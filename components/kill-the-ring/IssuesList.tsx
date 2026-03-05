@@ -20,9 +20,10 @@ interface IssuesListProps {
   dismissedIds?: Set<string>
   onApply?: (advisory: Advisory) => void
   onDismiss?: (id: string) => void
+  onClearAll?: () => void
 }
 
-export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedIds, onApply, onDismiss }: IssuesListProps) {
+export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedIds, onApply, onDismiss, onClearAll }: IssuesListProps) {
   // Filter dismissed, sort by frequency (low -> high), then slice to max
   const sorted = useMemo(() =>
     [...advisories]
@@ -43,16 +44,26 @@ export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10,
           <div className="text-xs mt-1">Monitoring for feedback...</div>
         </div>
       ) : (
-        sorted.map((advisory, index) => (
-          <IssueCard
-            key={advisory.id}
-            advisory={advisory}
-            rank={index + 1}
-            isApplied={appliedIds?.has(advisory.id) ?? false}
-            onApply={onApply}
-            onDismiss={onDismiss}
-          />
-        ))
+        <>
+          {sorted.map((advisory, index) => (
+            <IssueCard
+              key={advisory.id}
+              advisory={advisory}
+              rank={index + 1}
+              isApplied={appliedIds?.has(advisory.id) ?? false}
+              onApply={onApply}
+              onDismiss={onDismiss}
+            />
+          ))}
+          {onClearAll && sorted.length > 1 && (
+            <button
+              onClick={onClearAll}
+              className="text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors py-1.5 uppercase tracking-wide"
+            >
+              Clear All
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -103,7 +114,7 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
     <div
       className={`relative flex flex-col rounded-md border bg-card transition-all overflow-hidden ${
         isResolved
-          ? 'border-border/50 opacity-50'
+          ? 'border-border/50'
           : isApplied
             ? 'border-primary/30 opacity-60'
             : isRunaway
