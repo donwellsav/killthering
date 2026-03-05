@@ -31,6 +31,12 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
   const advisoriesRef = useRef(advisories)
   advisoriesRef.current = advisories
 
+  // Cached per-frame objects — avoid recreating every frame
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
+  const dprRef = useRef(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
+  const gradientRef = useRef<CanvasGradient | null>(null)
+  const gradientHeightRef = useRef(0)
+
   // Track whether analysis has ever started; once true the placeholder is gone for good
   const [hasEverStarted, setHasEverStarted] = useState(false)
   useEffect(() => {
@@ -49,9 +55,15 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
         const { width, height } = entry.contentRect
         dimensionsRef.current = { width, height }
 
+        const dpr = window.devicePixelRatio || 1
+        dprRef.current = dpr
+
+        // Invalidate cached objects on resize (canvas element may change)
+        ctxRef.current = null
+        gradientRef.current = null
+
         const canvas = canvasRef.current
         if (canvas) {
-          const dpr = window.devicePixelRatio || 1
           canvas.width = Math.floor(width * dpr)
           canvas.height = Math.floor(height * dpr)
           canvas.style.width = `${width}px`
@@ -70,10 +82,11 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
+    if (!ctxRef.current) ctxRef.current = canvas.getContext('2d')
+    const ctx = ctxRef.current
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = dprRef.current
     const { width, height } = dimensionsRef.current
     if (width === 0 || height === 0) return
 
@@ -150,11 +163,16 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       const hzPerBin = spectrum.sampleRate / spectrum.fftSize
       const n = freqDb.length
 
-      // Gradient fill
-      const gradient = ctx.createLinearGradient(0, 0, 0, plotHeight)
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)')
-      gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.3)')
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)')
+      // Cached gradient fill — only recreated when plotHeight changes
+      let gradient = gradientRef.current
+      if (!gradient || gradientHeightRef.current !== plotHeight) {
+        gradient = ctx.createLinearGradient(0, 0, 0, plotHeight)
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)')
+        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.3)')
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)')
+        gradientRef.current = gradient
+        gradientHeightRef.current = plotHeight
+      }
 
       ctx.beginPath()
       ctx.moveTo(0, plotHeight)
