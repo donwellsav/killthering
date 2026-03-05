@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, memo } from 'react'
 import { formatFrequency, formatPitch } from '@/lib/utils/pitchUtils'
 import { getSeverityColor } from '@/lib/dsp/eqAdvisor'
 import { getSeverityText } from '@/lib/dsp/classifier'
@@ -22,7 +22,7 @@ interface IssuesListProps {
   onDismiss?: (id: string) => void
 }
 
-export function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedIds, onApply, onDismiss }: IssuesListProps) {
+export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedIds, onApply, onDismiss }: IssuesListProps) {
   // Filter dismissed, sort by frequency (low -> high), then slice to max
   const sorted = useMemo(() =>
     [...advisories]
@@ -53,7 +53,7 @@ export function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedId
       )}
     </div>
   )
-}
+})
 
 interface IssueCardProps {
   advisory: Advisory

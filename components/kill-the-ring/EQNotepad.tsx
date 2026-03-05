@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, memo } from 'react'
 import { ClipboardCopy, Trash2, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatFrequency } from '@/lib/utils/pitchUtils'
@@ -39,7 +39,7 @@ interface EQNotepadProps {
   onClear: () => void
 }
 
-export function EQNotepad({ pins, onRemove, onClear }: EQNotepadProps) {
+export const EQNotepad = memo(function EQNotepad({ pins, onRemove, onClear }: EQNotepadProps) {
   const [copied, setCopied] = useState(false)
 
   const copyText = useCallback(() => {
@@ -104,7 +104,7 @@ export function EQNotepad({ pins, onRemove, onClear }: EQNotepadProps) {
         ))}
     </div>
   )
-}
+})
 
 function PinRow({ pin, onRemove }: { pin: PinnedCut; onRemove: (id: string) => void }) {
   return (

@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { RotateCcw } from 'lucide-react'
@@ -10,7 +11,7 @@ interface ResetConfirmDialogProps {
   showLabel?: boolean
 }
 
-export function ResetConfirmDialog({ onConfirm, trigger, showLabel = false }: ResetConfirmDialogProps) {
+export const ResetConfirmDialog = memo(function ResetConfirmDialog({ onConfirm, trigger, showLabel = false }: ResetConfirmDialogProps) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -40,4 +41,4 @@ export function ResetConfirmDialog({ onConfirm, trigger, showLabel = false }: Re
       </AlertDialogContent>
     </AlertDialog>
   )
-}
+})

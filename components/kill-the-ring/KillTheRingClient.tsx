@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import dynamic from 'next/dynamic'
 import { ErrorBoundary } from '@/components/kill-the-ring/ErrorBoundary'
 
@@ -8,10 +9,10 @@ const KillTheRing = dynamic(
   { ssr: false }
 )
 
-export function KillTheRingClient() {
+export const KillTheRingClient = memo(function KillTheRingClient() {
   return (
     <ErrorBoundary>
       <KillTheRing />
     </ErrorBoundary>
   )
-}
+})

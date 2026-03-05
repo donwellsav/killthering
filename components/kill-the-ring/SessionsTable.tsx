@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition, useState, useEffect } from 'react'
+import { useTransition, useState, useEffect, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Trash2, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -79,7 +79,7 @@ interface SessionsTableProps {
   sessions: Session[]
 }
 
-export function SessionsTable({ sessions }: SessionsTableProps) {
+export const SessionsTable = memo(function SessionsTable({ sessions }: SessionsTableProps) {
   if (sessions.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 border border-dashed border-border rounded-lg text-center gap-3">
@@ -187,4 +187,4 @@ export function SessionsTable({ sessions }: SessionsTableProps) {
       </div>
     </div>
   )
-}
+})

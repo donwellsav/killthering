@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useCallback, useState } from 'react'
+import { useRef, useEffect, useCallback, useState, memo } from 'react'
 import Image from 'next/image'
 import { useAnimationFrame } from '@/hooks/useAnimationFrame'
 import { freqToLogPosition, clamp } from '@/lib/utils/mathHelpers'
@@ -28,7 +28,7 @@ interface SpectrumCanvasProps {
 
 const FREQ_LABELS = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 
-export function SpectrumCanvas({ spectrum, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp }: SpectrumCanvasProps) {
+export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp }: SpectrumCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensionsRef = useRef({ width: 0, height: 0 })
@@ -341,4 +341,4 @@ export function SpectrumCanvas({ spectrum, advisories, isRunning, graphFontSize 
       )}
     </div>
   )
-}
+})

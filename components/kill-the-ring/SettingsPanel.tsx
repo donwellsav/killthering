@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -153,7 +153,7 @@ function RoomModesDisplay({ lengthM, widthM, heightM }: { lengthM: number; width
 
 // ── Main Settings Panel ────────────────────────────────────────────────────────
 
-export function SettingsPanel({
+export const SettingsPanel = memo(function SettingsPanel({
   settings,
   onSettingsChange,
   onModeChange,
@@ -1261,4 +1261,4 @@ export function SettingsPanel({
       </DialogContent>
     </Dialog>
   )
-}
+})

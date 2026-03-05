@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -13,7 +13,7 @@ import {
 import { History, Download, Trash2, AlertTriangle, TrendingUp, BarChart3 } from 'lucide-react'
 import { getFeedbackHistory, type FrequencyHotspot, type SessionSummary } from '@/lib/dsp/feedbackHistory'
 
-export function FeedbackHistoryPanel() {
+export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
   const [summary, setSummary] = useState<SessionSummary | null>(null)
   const [hotspots, setHotspots] = useState<FrequencyHotspot[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -242,4 +242,4 @@ export function FeedbackHistoryPanel() {
       </SheetContent>
     </Sheet>
   )
-}
+})

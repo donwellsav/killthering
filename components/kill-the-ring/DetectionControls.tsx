@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, memo } from 'react'
 import { HelpCircle, ChevronDown } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -13,7 +13,7 @@ interface DetectionControlsProps {
   onSettingsChange: (settings: Partial<DetectorSettings>) => void
 }
 
-export function DetectionControls({ settings, onModeChange, onSettingsChange }: DetectionControlsProps) {
+export const DetectionControls = memo(function DetectionControls({ settings, onModeChange, onSettingsChange }: DetectionControlsProps) {
   const [freqOpen, setFreqOpen] = useState(false)
   const [focusedFreqIndex, setFocusedFreqIndex] = useState(-1)
   const freqRef = useRef<HTMLDivElement>(null)
@@ -179,7 +179,7 @@ export function DetectionControls({ settings, onModeChange, onSettingsChange }: 
       </div>
     </TooltipProvider>
   )
-}
+})
 
 interface SliderRowProps {
   label: string

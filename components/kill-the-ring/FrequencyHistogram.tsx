@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { useRef, useEffect, memo } from 'react'
 import { freqToLogPosition } from '@/lib/utils/mathHelpers'
 import { CANVAS_SETTINGS } from '@/lib/dsp/constants'
 import type { FrequencyBin } from '@/lib/db/sessions'
@@ -24,7 +24,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 const FREQ_MIN = CANVAS_SETTINGS.RTA_FREQ_MIN
 const FREQ_MAX = CANVAS_SETTINGS.RTA_FREQ_MAX
 
-export function FrequencyHistogram({ bins, height = 200 }: FrequencyHistogramProps) {
+export const FrequencyHistogram = memo(function FrequencyHistogram({ bins, height = 200 }: FrequencyHistogramProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -142,4 +142,4 @@ export function FrequencyHistogram({ bins, height = 200 }: FrequencyHistogramPro
       <canvas ref={canvasRef} className="w-full" style={{ height }} />
     </div>
   )
-}
+})

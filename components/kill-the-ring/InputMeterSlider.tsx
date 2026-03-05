@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, memo } from 'react'
 
 interface InputMeterSliderProps {
   value: number
@@ -15,7 +15,7 @@ interface InputMeterSliderProps {
   onAutoGainToggle?: (enabled: boolean) => void
 }
 
-export function InputMeterSlider({
+export const InputMeterSlider = memo(function InputMeterSlider({
   value,
   onChange,
   level,
@@ -267,4 +267,4 @@ export function InputMeterSlider({
       )}
     </div>
   )
-}
+})

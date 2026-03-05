@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getEventLogger, type LogEntry, type FeedbackIssueLog } from '@/lib/logging/eventLogger'
 import { Download, Trash2, FileJson, FileText, Sheet, BarChart3 } from 'lucide-react'
 
-export function LogsViewer() {
+export const LogsViewer = memo(function LogsViewer() {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [stats, setStats] = useState<ReturnType<ReturnType<typeof getEventLogger>['getStats']>>({
     totalEvents: 0,
@@ -300,7 +300,7 @@ export function LogsViewer() {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
 function IssueLogDetails({ log }: { log: FeedbackIssueLog }) {
   const data = log.data

@@ -3,7 +3,7 @@
 // Help menu for Kill The Ring application
 // 7-tab layout: Guide, Modes, Algorithms, The Math, Reference, About, Changes
 // Updated with all 7 detection algorithms (MSD, Phase, Spectral, Comb, IHR, PTMR, Compression)
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -24,7 +24,7 @@ const TYPE_STYLES: Record<ChangeType, { label: string; className: string }> = {
   ui: { label: 'UI', className: 'bg-pink-500/15 text-pink-400' },
 }
 
-export function HelpMenu() {
+export const HelpMenu = memo(function HelpMenu() {
   const [open, setOpen] = useState(false)
 
   return (
@@ -873,7 +873,7 @@ export function HelpMenu() {
       </DialogContent>
     </Dialog>
   )
-}
+})
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
