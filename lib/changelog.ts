@@ -14,6 +14,19 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.66',
+    date: '2026-03-05',
+    changes: [
+      { type: 'feat', description: 'Retunes 9 DSP parameters across `OPERATION_MODES.speech`, `DEFAULT_CONFIG`, and `DEFAULT_SETTINGS` to better serve both soundcheck and live conference scenarios' },
+      { type: 'feat', description: 'Widens frequency range to 10kHz (was 8kHz) to catch condenser sibilance feedback' },
+      { type: 'feat', description: 'Raises confidence threshold to 0.40, prominence to 10dB, and sustain to 350ms to reduce false positives while still catching real feedback early' },
+      { type: 'feat', description: '[ ] Verify build passes (`pnpm build` ✅)' },
+      { type: 'feat', description: '[ ] Open app in speech mode — confirm settings panel shows updated defaults' },
+      { type: 'feat', description: '[ ] Test with speech input — confirm fewer false positives than before' },
+      { type: 'feat', description: '[ ] Switch modes (worship → speech → liveMusic) — confirm speech values apply correctly' },
+    ],
+  },
+  {
     version: '1.0.65',
     date: '2026-03-05',
     changes: [
