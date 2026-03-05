@@ -218,12 +218,12 @@ export const SettingsPanel = memo(function SettingsPanel({
             Settings
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Detection engine, algorithms, display, advanced tuning, and export.
+            Detection engine, algorithms, display, and advanced tuning.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="detection" className="mt-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="detection" className="gap-1 text-xs">
               <BarChart3 className="w-3.5 h-3.5" />
               Detection
