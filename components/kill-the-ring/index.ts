@@ -12,6 +12,4 @@ export { FeedbackHistoryPanel } from "./FeedbackHistoryPanel";
 export { AlgorithmStatusBar } from "./AlgorithmStatusBar";
 export { EQNotepad } from "./EQNotepad";
 export { ErrorBoundary } from "./ErrorBoundary";
-export { FrequencyHistogram } from "./FrequencyHistogram";
 export { LogsViewer } from "./LogsViewer";
-export { SessionsTable } from "./SessionsTable";
