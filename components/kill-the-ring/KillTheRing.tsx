@@ -235,7 +235,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     setLayoutKey(k => k + 1)
   }, [])
 
-  const handleModeChange = (mode: OperationMode) => {
+  const handleModeChange = useCallback((mode: OperationMode) => {
     const preset = OPERATION_MODES[mode]
     if (!preset) return
     updateSettings({
@@ -260,7 +260,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       ignoreWhistle: preset.ignoreWhistle,
     })
     logger.logSettingsChanged({ mode, reason: 'mode_changed' })
-  }
+  }, [updateSettings, logger])
 
   const handleSettingsChange = useCallback((newSettings: Partial<typeof settings>) => {
     updateSettings(newSettings)
