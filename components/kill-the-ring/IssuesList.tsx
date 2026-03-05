@@ -76,10 +76,9 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
   const geq = advisory.advisory?.geq
   const peq = advisory.advisory?.peq
 
-  // Primary display: GEQ band frequency (what the engineer pulls on the fader)
-  // Secondary: exact analyzed frequency + pitch
+  // Primary display: captured/analyzed frequency
+  // Secondary: GEQ band shown in EQ row below
   const bandHz = geq?.bandHz
-  const bandStr = bandHz != null ? formatFrequency(bandHz) : exactFreqStr
 
   const velocity = advisory.velocityDbPerSec ?? 0
   const isRunaway = velocity >= RUNAWAY_VELOCITY_THRESHOLD || advisory.isRunaway
@@ -121,11 +120,11 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-baseline gap-1.5 min-w-0">
             <span className="font-mono text-base font-bold text-foreground leading-none tracking-tight">
-              {bandStr}
+              {exactFreqStr}
             </span>
-            {bandHz != null && advisory.trueFrequencyHz != null && (
+            {bandHz != null && bandHz !== advisory.trueFrequencyHz && (
               <span className="text-[0.5625rem] font-mono text-muted-foreground/70 leading-none">
-                {exactFreqStr}Hz
+                GEQ {formatFrequency(bandHz)}
               </span>
             )}
             {pitchStr && (
@@ -198,7 +197,7 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => onDismiss(advisory.id)}
-                      aria-label={`Dismiss ${bandStr} issue`}
+                      aria-label={`Dismiss ${exactFreqStr} issue`}
                       className="w-4 h-4 flex items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/60 transition-colors"
                     >
                       <X className="w-2.5 h-2.5" />
@@ -267,7 +266,7 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
                     <button
                       onClick={() => onApply(advisory)}
                       disabled={isApplied}
-                      aria-label={isApplied ? 'Cut sent to EQ Notepad' : `Send cut to EQ Notepad (${bandStr})`}
+                      aria-label={isApplied ? 'Cut sent to EQ Notepad' : `Send cut to EQ Notepad (${exactFreqStr})`}
                       className={`flex items-center gap-1 text-[0.625rem] px-1.5 py-0.5 rounded transition-colors ${
                         isApplied
                           ? 'text-primary cursor-default'
