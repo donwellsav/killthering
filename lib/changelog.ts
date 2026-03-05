@@ -14,6 +14,18 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.7',
+    date: '2026-03-04',
+    highlights: 'UI overhaul & auto-versioning',
+    changes: [
+      { type: 'ui', description: 'HelpMenu consolidated from 7 tabs to 5 with accordion-based algorithms' },
+      { type: 'ui', description: 'SettingsPanel reorganized into 5 tabs with collapsible sections and Room Acoustics tab' },
+      { type: 'feat', description: 'Auto-versioning GitHub Action bumps version on PR merge' },
+      { type: 'ui', description: 'Issue cards now show captured frequency as primary display' },
+      { type: 'feat', description: 'Added comprehensive beginner developer guide' },
+    ],
+  },
+  {
     version: '1.0.6',
     date: '2026-03-04',
     highlights: 'Codebase hardening & cleanup',
