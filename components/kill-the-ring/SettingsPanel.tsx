@@ -240,12 +240,12 @@ export const SettingsPanel = memo(function SettingsPanel({
             Settings
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Detection engine, algorithms, display, and advanced tuning.
+            Detection, algorithms, display, room acoustics, and advanced tuning.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="detection" className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="detection" className="gap-1 text-xs">
               <BarChart3 className="w-3.5 h-3.5" />
               Detection
@@ -257,6 +257,10 @@ export const SettingsPanel = memo(function SettingsPanel({
             <TabsTrigger value="display" className="gap-1 text-xs">
               <Monitor className="w-3.5 h-3.5" />
               Display
+            </TabsTrigger>
+            <TabsTrigger value="room" className="gap-1 text-xs">
+              <Ruler className="w-3.5 h-3.5" />
+              Room
             </TabsTrigger>
             <TabsTrigger value="advanced" className="gap-1 text-xs">
               <Wrench className="w-3.5 h-3.5" />
@@ -765,7 +769,7 @@ export const SettingsPanel = memo(function SettingsPanel({
           </TabsContent>
 
           {/* ═══════════════════════════════════════════════════════════════════
-              TAB 4: ADVANCED — Noise Floor, Peak Detection, Room Acoustics
+              TAB 4: ADVANCED — Noise Floor, Peak Detection
               ═══════════════════════════════════════════════════════════════════ */}
           <TabsContent value="advanced" className="mt-4 space-y-4">
 
@@ -917,6 +921,13 @@ export const SettingsPanel = memo(function SettingsPanel({
                 </div>
               </div>
             </Section>
+
+          </TabsContent>
+
+          {/* ═══════════════════════════════════════════════════════════════════
+              TAB 5: ROOM ACOUSTICS — Room presets, dimensions, RT60, modes
+              ═══════════════════════════════════════════════════════════════════ */}
+          <TabsContent value="room" className="mt-4 space-y-4">
 
             {/* ── Room Acoustics ── */}
             <Section
