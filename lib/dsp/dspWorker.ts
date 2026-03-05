@@ -132,8 +132,6 @@ const classificationLabelHistory = new Map<string, string[]>()
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-// getSeverityUrgency imported from ./classifier
-
 function isHarmonicOfExisting(freqHz: number): boolean {
   // Use the same cents-based tolerance as FeedbackDetector to stay consistent.
   const toleranceCents = settings.harmonicToleranceCents ?? 50

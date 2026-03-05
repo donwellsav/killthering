@@ -485,20 +485,8 @@ export function getSeverityText(severity: SeverityLevel): string {
   }
 }
 
-/**
- * Get urgency level (1-5) for severity
- */
-export function getSeverityUrgency(severity: SeverityLevel): number {
-  switch (severity) {
-    case 'RUNAWAY': return 5
-    case 'GROWING': return 4
-    case 'RESONANCE': return 3
-    case 'POSSIBLE_RING': return 2
-    case 'WHISTLE': return 1
-    case 'INSTRUMENT': return 1
-    default: return 0
-  }
-}
+// getSeverityUrgency extracted to ./severityUtils — re-exported below for backward compat
+export { getSeverityUrgency } from './severityUtils'
 
 // ============================================================================
 // ENHANCED CLASSIFICATION WITH ADVANCED ALGORITHMS
