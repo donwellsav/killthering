@@ -1,7 +1,7 @@
 // KillTheRing2 Feedback Detector - Core DSP engine for peak detection
 // Adapted from FeedbackDetector.js with TypeScript and enhancements
 
-import { A_WEIGHTING, LN10_OVER_10, HARMONIC_SETTINGS, MSD_SETTINGS, PERSISTENCE_SCORING, SIGNAL_GATE, HYSTERESIS } from './constants'
+import { A_WEIGHTING, LN10_OVER_10, HARMONIC_SETTINGS, MSD_SETTINGS, PERSISTENCE_SCORING, SIGNAL_GATE, HYSTERESIS, PHPR_SETTINGS } from './constants'
 import { 
   medianInPlace, 
   buildPrefixSum, 
@@ -980,6 +980,9 @@ export class FeedbackDetector {
           peak.qEstimate = qEstimate
           peak.bandwidthHz = bandwidthHz
 
+          // PHPR (Peak-to-Harmonic Power Ratio) — feedback vs music discrimination
+          peak.phpr = this.calculatePHPR(i)
+
           // MSD analysis for howl detection
           const msdResult = this.calculateMsd(i)
           peak.msd = msdResult.msd
@@ -1106,6 +1109,50 @@ export class FeedbackDetector {
     const qEstimate = bandwidthHz > 0 ? centerHz / bandwidthHz : 100
 
     return { qEstimate: clamp(qEstimate, 1, 500), bandwidthHz: Math.max(bandwidthHz, hzPerBin) }
+  }
+
+  /**
+   * Calculate PHPR (Peak-to-Harmonic Power Ratio) for a detected peak.
+   * Feedback is sinusoidal (no harmonics), music has rich harmonics.
+   *
+   * PHPR = peakPower - mean(harmonicPowers) in dB
+   * High PHPR (>15 dB) = likely feedback (pure tone)
+   * Low PHPR (<8 dB) = likely music/speech (harmonics present)
+   *
+   * @param freqBin - FFT bin index of the peak
+   * @returns PHPR in dB, or undefined if harmonics are out of FFT range
+   */
+  private calculatePHPR(freqBin: number): number | undefined {
+    const spectrum = this.freqDb
+    if (!spectrum) return undefined
+
+    const n = spectrum.length
+    const peakDb = spectrum[freqBin]
+    let harmonicSum = 0
+    let harmonicCount = 0
+
+    for (let h = 2; h <= PHPR_SETTINGS.NUM_HARMONICS + 1; h++) {
+      const harmonicBin = Math.round(freqBin * h)
+      if (harmonicBin >= n) break // Harmonic out of FFT range
+
+      // Find max within ±BIN_TOLERANCE (accounts for FFT leakage)
+      let maxHarmonicDb = -Infinity
+      const lo = Math.max(0, harmonicBin - PHPR_SETTINGS.BIN_TOLERANCE)
+      const hi = Math.min(n - 1, harmonicBin + PHPR_SETTINGS.BIN_TOLERANCE)
+      for (let b = lo; b <= hi; b++) {
+        if (spectrum[b] > maxHarmonicDb) {
+          maxHarmonicDb = spectrum[b]
+        }
+      }
+
+      harmonicSum += maxHarmonicDb
+      harmonicCount++
+    }
+
+    if (harmonicCount === 0) return undefined
+
+    const meanHarmonicDb = harmonicSum / harmonicCount
+    return peakDb - meanHarmonicDb
   }
 
   private updateNoiseFloorDb(dt: number): void {
