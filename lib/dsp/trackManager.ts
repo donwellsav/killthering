@@ -215,6 +215,7 @@ export class TrackManager {
       features: this.initializeFeatures(),
       qEstimate,
       bandwidthHz,
+      phpr: peak.phpr,
       velocityDbPerSec: 0,
       harmonicOfHz: peak.harmonicOfHz,
       isSubHarmonicRoot: peak.isSubHarmonicRoot ?? false,
@@ -262,6 +263,7 @@ export class TrackManager {
     track.lastUpdateTime = peak.timestamp
     track.qEstimate = qEstimate
     track.bandwidthHz = bandwidthHz
+    track.phpr = peak.phpr ?? track.phpr
     track.harmonicOfHz = peak.harmonicOfHz
     // Once a sub-harmonic root is identified, keep that flag sticky on the track
     if (peak.isSubHarmonicRoot) track.isSubHarmonicRoot = true

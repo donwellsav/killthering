@@ -1,7 +1,7 @@
 // KillTheRing2 EQ Advisor - GEQ/PEQ recommendations with pitch translation
 // Enhanced with MINDS (MSD-Inspired Notch Depth Setting) from DAFx-16 paper
 
-import { ISO_31_BANDS, EQ_PRESETS, SPECTRAL_TRENDS, VIZ_COLORS } from './constants'
+import { ISO_31_BANDS, EQ_PRESETS, ERB_SETTINGS, SPECTRAL_TRENDS, VIZ_COLORS } from './constants'
 import { calculateMINDS } from './advancedDetection'
 import { hzToPitch, formatPitch } from '@/lib/utils/pitchUtils'
 import { clamp } from '@/lib/utils/mathHelpers'
@@ -28,6 +28,40 @@ function getTrackFrequency(track: TrackInput): number {
 
 function getTrackQ(track: TrackInput): number {
   return track.qEstimate
+}
+
+/**
+ * Calculate ERB (Equivalent Rectangular Bandwidth) at a given frequency.
+ * Glasberg & Moore (1990): ERB(f) = 24.7 * (4.37 * f/1000 + 1)
+ *
+ * Notches narrower than one ERB are psychoacoustically transparent.
+ * This means we can cut deeper at high frequencies (where ERB is wider
+ * relative to the notch) and should cut shallower at low frequencies
+ * (where our notch eats into audible bandwidth).
+ */
+export function calculateERB(frequencyHz: number): number {
+  return 24.7 * (4.37 * frequencyHz / 1000 + 1)
+}
+
+/**
+ * Frequency-dependent depth scaling based on ERB psychoacoustics.
+ * Returns a multiplier for cut depth:
+ * - Below 500 Hz: 0.7 (30% shallower — protect warmth)
+ * - 500-2000 Hz: 1.0 (speech range, full depth)
+ * - Above 2000 Hz: up to 1.2 (20% deeper — notch is more transparent)
+ *
+ * Smooth interpolation at boundaries via linear ramp.
+ */
+export function erbDepthScale(frequencyHz: number): number {
+  if (frequencyHz <= ERB_SETTINGS.LOW_FREQ_HZ) {
+    return ERB_SETTINGS.LOW_FREQ_SCALE
+  }
+  if (frequencyHz >= ERB_SETTINGS.HIGH_FREQ_HZ) {
+    return ERB_SETTINGS.HIGH_FREQ_SCALE
+  }
+  // Linear interpolation between low and high boundaries
+  const t = (frequencyHz - ERB_SETTINGS.LOW_FREQ_HZ) / (ERB_SETTINGS.HIGH_FREQ_HZ - ERB_SETTINGS.LOW_FREQ_HZ)
+  return ERB_SETTINGS.LOW_FREQ_SCALE + t * (1.0 - ERB_SETTINGS.LOW_FREQ_SCALE)
 }
 
 /**
@@ -136,10 +170,10 @@ export function calculateQ(severity: SeverityLevel, preset: Preset, trackQ: numb
   let baseQ: number
   switch (severity) {
     case 'RUNAWAY':
-      baseQ = presetConfig.runawayQ // 16 or 8
+      baseQ = presetConfig.runawayQ // 60 or 30
       break
     case 'GROWING':
-      baseQ = presetConfig.defaultQ // 8 or 4
+      baseQ = presetConfig.defaultQ // 30 or 16
       break
     default:
       baseQ = presetConfig.defaultQ * 0.75
@@ -147,10 +181,10 @@ export function calculateQ(severity: SeverityLevel, preset: Preset, trackQ: numb
 
   // Consider the actual measured Q of the feedback
   // Use a blend of preset Q and measured Q
-  const measuredQ = clamp(trackQ, 2, 32)
+  const measuredQ = clamp(trackQ, 2, 120)
   const blendedQ = (baseQ + measuredQ) / 2
 
-  return clamp(blendedQ, 2, 32)
+  return clamp(blendedQ, 2, 120)
 }
 
 /**
@@ -162,7 +196,8 @@ export function generateGEQRecommendation(
   preset: Preset
 ): GEQRecommendation {
   const { bandHz, bandIndex } = findNearestGEQBand(getTrackFrequency(track))
-  const suggestedDb = calculateCutDepth(severity, preset)
+  const baseCut = calculateCutDepth(severity, preset)
+  const suggestedDb = Math.round(baseCut * erbDepthScale(getTrackFrequency(track)))
 
   return {
     bandHz,
@@ -180,12 +215,15 @@ export function generatePEQRecommendation(
   preset: Preset
 ): PEQRecommendation {
   const freqHz = getTrackFrequency(track)
-  const suggestedDb = calculateCutDepth(severity, preset)
+  const baseCut = calculateCutDepth(severity, preset)
+  const suggestedDb = Math.round(baseCut * erbDepthScale(freqHz))
   const q = calculateQ(severity, preset, getTrackQ(track))
+  // Pass through measured bandwidth from detector (if available)
+  const measuredBandwidth = 'bandwidthHz' in track ? track.bandwidthHz : undefined
 
   // Determine filter type
   let type: PEQRecommendation['type'] = 'bell'
-  
+
   if (severity === 'RUNAWAY') {
     // Use notch for runaway (very narrow, deep cut)
     type = 'notch'
@@ -202,6 +240,7 @@ export function generatePEQRecommendation(
     hz: freqHz,
     q,
     gainDb: suggestedDb,
+    bandwidthHz: measuredBandwidth,
   }
 }
 

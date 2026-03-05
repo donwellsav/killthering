@@ -756,6 +756,7 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         prominenceDb: track.prominenceDb,
         qEstimate: track.qEstimate,
         bandwidthHz: track.bandwidthHz,
+        phpr: track.phpr,
         velocityDbPerSec: track.velocityDbPerSec,
         stabilityCentsStd: track.features.stabilityCentsStd,
         harmonicityScore: track.features.harmonicityScore,

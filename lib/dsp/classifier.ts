@@ -2,7 +2,7 @@
 // Enhanced with acoustic research from "Sound Insulation" (Carl Hopkins, 2007)
 // Now integrates MSD, Phase Coherence, and Spectral Flatness from advancedDetection.ts
 
-import { CLASSIFIER_WEIGHTS, SEVERITY_THRESHOLDS, SCHROEDER_CONSTANTS } from './constants'
+import { CLASSIFIER_WEIGHTS, SEVERITY_THRESHOLDS, SCHROEDER_CONSTANTS, PHPR_SETTINGS } from './constants'
 import type { 
   Track, 
   ClassificationResult, 
@@ -48,6 +48,7 @@ function normalizeTrackInput(input: TrackInput) {
       minQ: input.features.minQ,
       persistenceMs: input.features.persistenceMs,
       prominenceDb: input.prominenceDb,
+      phpr: input.phpr,
     }
   }
   // TrackedPeak
@@ -65,6 +66,7 @@ function normalizeTrackInput(input: TrackInput) {
     minQ: input.qEstimate,
     persistenceMs: input.lastUpdateTime - input.onsetTime,
     prominenceDb: input.prominenceDb,
+    phpr: undefined, // TrackedPeak doesn't carry PHPR
   }
 }
 
@@ -122,6 +124,18 @@ export function classifyTrack(track: TrackInput, settings?: DetectorSettings, ac
   if (features.harmonicityScore > CLASSIFIER_WEIGHTS.HARMONICITY_THRESHOLD) {
     pInstrument += CLASSIFIER_WEIGHTS.HARMONICITY_INSTRUMENT * features.harmonicityScore
     reasons.push(`Harmonic structure detected: ${(features.harmonicityScore * 100).toFixed(0)}%`)
+  }
+
+  // 2b. PHPR (Peak-to-Harmonic Power Ratio) — Van Waterschoot & Moonen 2011
+  // Feedback is sinusoidal (no harmonics), music has rich harmonics
+  if (features.phpr !== undefined) {
+    if (features.phpr >= PHPR_SETTINGS.FEEDBACK_THRESHOLD_DB) {
+      pFeedback += PHPR_SETTINGS.CONFIDENCE_BOOST
+      reasons.push(`Pure tone (PHPR ${features.phpr.toFixed(0)} dB) — likely feedback`)
+    } else if (features.phpr <= PHPR_SETTINGS.MUSIC_THRESHOLD_DB) {
+      pInstrument += PHPR_SETTINGS.CONFIDENCE_PENALTY
+      reasons.push(`Harmonics present (PHPR ${features.phpr.toFixed(0)} dB) — likely music/speech`)
+    }
   }
 
   // 3. Modulation (vibrato = whistle)

@@ -16,14 +16,14 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '1.0.67',
     date: '2026-03-05',
+    highlights: 'Pro convention EQ recommendations',
     changes: [
-      { type: 'feat', description: 'Dials back 3 overly-conservative speech preset values to catch quieter feedback' },
-      { type: 'feat', description: 'Adds **MSD-lowered threshold gate**: when a peak is just below threshold but MSD confirms a howl pattern (consistent linear growth), the peak is detected early — before it becomes obvious' },
-      { type: 'feat', description: 'Uses the existing MSD magnitude history (already tracked within 6 dB of threshold) so no performance cost' },
-      { type: 'feat', description: '[ ] Verify build passes (`pnpm build` ✅)' },
-      { type: 'feat', description: '[ ] Test with quiet feedback source — confirm detection before feedback becomes obvious' },
-      { type: 'feat', description: '[ ] Compare detection timing vs previous version (should detect ~1-3 seconds earlier)' },
-      { type: 'feat', description: '[ ] Verify no significant increase in false positives during normal speech' },
+      { type: 'feat', description: 'Raised PEQ Q values to pro convention (surgical Q60, heavy Q30) matching dbx AFS standards' },
+      { type: 'feat', description: 'Added ERB-scaled cut depth — shallower cuts below 500 Hz to protect warmth, deeper above 2 kHz' },
+      { type: 'feat', description: 'Added PHPR (Peak-to-Harmonic Power Ratio) detection for feedback vs. music discrimination' },
+      { type: 'fix', description: 'Added bandwidth data to PEQ recommendations for future detail views' },
+      { type: 'fix', description: 'Improved early/quiet feedback detection with MSD-lowered threshold gate' },
+      { type: 'fix', description: 'Dialed back overly-conservative speech preset values (prominenceDb, confidenceThreshold, growthRateThreshold)' },
     ],
   },
   {

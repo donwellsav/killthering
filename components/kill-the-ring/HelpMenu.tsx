@@ -754,12 +754,12 @@ export const HelpMenu = memo(function HelpMenu() {
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div>
                   <p className="font-medium text-foreground mb-1">Surgical</p>
-                  <p>Default Q: 8 | Runaway Q: 16</p>
+                  <p>Default Q: 30 | Runaway Q: 60</p>
                   <p>Max cut: -18 dB | Moderate: -9 dB | Light: -4 dB</p>
                 </div>
                 <div>
                   <p className="font-medium text-foreground mb-1">Heavy</p>
-                  <p>Default Q: 4 | Runaway Q: 8</p>
+                  <p>Default Q: 16 | Runaway Q: 30</p>
                   <p>Max cut: -12 dB | Moderate: -6 dB | Light: -3 dB</p>
                 </div>
               </div>

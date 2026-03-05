@@ -74,6 +74,8 @@ export interface DetectedPeak {
   // Q and bandwidth from -3dB analysis
   qEstimate?: number // Estimated Q factor
   bandwidthHz?: number // -3dB bandwidth in Hz
+  /** PHPR (Peak-to-Harmonic Power Ratio) in dB — high = pure tone (feedback), low = harmonics (music) */
+  phpr?: number
 }
 
 export interface TrackFeatures {
@@ -109,6 +111,8 @@ export interface Track {
   features: TrackFeatures
   qEstimate: number
   bandwidthHz: number
+  /** PHPR (Peak-to-Harmonic Power Ratio) in dB */
+  phpr?: number
   velocityDbPerSec: number
   harmonicOfHz: number | null
   isSubHarmonicRoot: boolean // True when this track is the fundamental of a partial series
@@ -166,6 +170,8 @@ export interface PEQRecommendation {
   hz: number
   q: number
   gainDb: number
+  /** -3dB bandwidth in Hz (from measured peak analysis) */
+  bandwidthHz?: number
 }
 
 export interface ShelfRecommendation {
@@ -195,6 +201,8 @@ export interface Advisory {
   prominenceDb: number
   qEstimate: number
   bandwidthHz: number
+  /** PHPR (Peak-to-Harmonic Power Ratio) in dB */
+  phpr?: number
   velocityDbPerSec: number
   stabilityCentsStd: number
   harmonicityScore: number
