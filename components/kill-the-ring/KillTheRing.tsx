@@ -64,7 +64,9 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     noiseFloorDb,
     sampleRate,
     fftSize,
-    spectrum,
+    spectrumStatus,
+    spectrumRef,
+    tracksRef,
     advisories,
     earlyWarning,
     settings,
@@ -121,11 +123,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     setPinnedCuts([])
   }, [])
 
-  // Auto music-aware: watch spectrum.peak vs noise floor
+  // Auto music-aware: watch spectrumStatus.peak vs noise floor
   const autoMusicDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
     if (!settings.autoMusicAware || !isRunning) return
-    const peak = spectrum?.peak ?? -100
+    const peak = spectrumStatus?.peak ?? -100
     const floor = noiseFloorDb ?? -80
     const hysteresis = settings.autoMusicAwareHysteresisDb ?? 15
     const shouldBeMusic = peak > floor + hysteresis
@@ -140,7 +142,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     return () => {
       if (autoMusicDebounceRef.current) clearTimeout(autoMusicDebounceRef.current)
     }
-  }, [spectrum?.peak, noiseFloorDb, settings.autoMusicAware, settings.musicAware, settings.autoMusicAwareHysteresisDb, isRunning, updateSettings])
+  }, [spectrumStatus?.peak, noiseFloorDb, settings.autoMusicAware, settings.musicAware, settings.autoMusicAwareHysteresisDb, isRunning, updateSettings])
 
   useAdvisoryLogging(advisories)
 
@@ -206,10 +208,10 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     updateSettings(newSettings)
   }, [updateSettings])
 
-  const inputLevel = spectrum?.peak ?? -60
-  const autoGainDb = spectrum?.autoGainDb
-  const isAutoGain = spectrum?.autoGainEnabled ?? settings.autoGainEnabled
-  const isAutoGainLocked = spectrum?.autoGainLocked ?? false
+  const inputLevel = spectrumStatus?.peak ?? -60
+  const autoGainDb = spectrumStatus?.autoGainDb
+  const isAutoGain = spectrumStatus?.autoGainEnabled ?? settings.autoGainEnabled
+  const isAutoGainLocked = spectrumStatus?.autoGainLocked ?? false
 
 
 
@@ -415,7 +417,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                 <div className="h-full bg-card/60 rounded-lg border border-border overflow-hidden flex flex-col">
                   <div className="relative flex-1 min-h-0">
                     <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'rta' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                      <SpectrumCanvas spectrum={spectrum} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
+                      <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
                     </div>
                     <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'geq' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                       <GEQBarView advisories={advisories} graphFontSize={settings.graphFontSize} />
@@ -493,11 +495,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                 {/* Algorithm status */}
                 <div className="flex-shrink-0 border-b border-border p-2">
                   <AlgorithmStatusBar
-                    algorithmMode={spectrum?.algorithmMode ?? settings.algorithmMode}
-                    contentType={spectrum?.contentType}
-                    msdFrameCount={spectrum?.msdFrameCount}
-                    isCompressed={spectrum?.isCompressed}
-                    compressionRatio={spectrum?.compressionRatio}
+                    algorithmMode={spectrumStatus?.algorithmMode ?? settings.algorithmMode}
+                    contentType={spectrumStatus?.contentType}
+                    msdFrameCount={spectrumStatus?.msdFrameCount}
+                    isCompressed={spectrumStatus?.isCompressed}
+                    compressionRatio={spectrumStatus?.compressionRatio}
                     isRunning={isRunning}
                     showDetailed={settings.showAlgorithmScores}
                   />
@@ -564,14 +566,14 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                       <div className="flex-shrink-0 flex items-center justify-between px-2 py-1 border-b border-border bg-muted/20">
                         <GraphChipRow value={activeGraph} onChange={setActiveGraph} />
                         <span className="text-[0.625rem] text-muted-foreground font-mono whitespace-nowrap">
-                          {isRunning && spectrum?.noiseFloorDb != null
-                            ? `${spectrum.noiseFloorDb.toFixed(0)}dB`
+                          {isRunning && noiseFloorDb != null
+                            ? `${noiseFloorDb.toFixed(0)}dB`
                             : 'Ready'}
                         </span>
                       </div>
                       <div className="relative flex-1 min-h-0">
                         <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'rta' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                          <SpectrumCanvas spectrum={spectrum} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
+                          <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
                         </div>
                         <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'geq' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                           <GEQBarView advisories={advisories} graphFontSize={settings.graphFontSize} />
@@ -599,7 +601,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                             <GraphChipRow value={bottomLeftGraph} onChange={setBottomLeftGraph} />
                           </div>
                           <div className="flex-1 min-h-0 pointer-events-none">
-                            {bottomLeftGraph === 'rta' && <SpectrumCanvas spectrum={spectrum} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
+                            {bottomLeftGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
                             {bottomLeftGraph === 'geq' && <GEQBarView advisories={advisories} graphFontSize={Math.max(10, settings.graphFontSize - 4)} />}
                             {bottomLeftGraph === 'controls' && (
                               <div className="h-full p-3 overflow-y-auto pointer-events-auto">
@@ -621,7 +623,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                             <GraphChipRow value={bottomRightGraph} onChange={setBottomRightGraph} />
                           </div>
                           <div className="flex-1 min-h-0 pointer-events-none">
-                            {bottomRightGraph === 'rta' && <SpectrumCanvas spectrum={spectrum} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
+                            {bottomRightGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
                             {bottomRightGraph === 'geq' && <GEQBarView advisories={advisories} graphFontSize={Math.max(10, settings.graphFontSize - 4)} />}
                             {bottomRightGraph === 'controls' && (
                               <div className="h-full p-3 overflow-y-auto pointer-events-auto">
