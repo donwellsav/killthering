@@ -89,6 +89,7 @@ let fftSize = 8192
 
 const trackManager = new TrackManager()
 const advisories = new Map<string, Advisory>()
+const advisoriesByBand = new Map<number, string>() // GEQ band index → advisory ID
 const trackToAdvisoryId = new Map<string, string>()
 
 // Band cooldown: maps GEQ band index → timestamp when the band was last explicitly cleared.
@@ -103,12 +104,14 @@ const ADVISORY_RATE_LIMIT_MS = 1000
 // Room modes decay exponentially (following RT60); feedback drops instantly (Hopkins §1.2.6.3)
 const recentDecays = new Map<number, { lastAmplitudeDb: number; clearTime: number; frequencyHz: number }>()
 const DECAY_ANALYSIS_WINDOW_MS = 500
+let peakProcessCount = 0
 
 // ─── Advanced algorithm buffers (previously dormant, now active) ────────────
 
 /** Full-spectrum MSD history — provides per-bin MSD scores to the fusion engine.
  *  Complement to the per-bin ring-buffer MSD in feedbackDetector.ts. */
 let msdBuffer: MSDHistoryBuffer | null = null
+let msdDownsampleBuf: Float32Array | null = null
 
 /** Phase history buffer for coherence analysis (KU Leuven 2025).
  *  Stores raw phase angles per bin per frame from our own FFT of the time-domain
@@ -128,7 +131,13 @@ let lastFrameTimestamp: number = -1
 // before changing a track's label. Safety-critical RUNAWAY/GROWING bypass this.
 
 const CLASSIFICATION_SMOOTHING_FRAMES = 3
-const classificationLabelHistory = new Map<string, string[]>()
+interface LabelRingBuffer {
+  labels: string[]
+  idx: number
+  count: number
+}
+const LABEL_HISTORY_CAPACITY = CLASSIFICATION_SMOOTHING_FRAMES * 3
+const classificationLabelHistory = new Map<string, LabelRingBuffer>()
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -177,11 +186,12 @@ function findDuplicateAdvisory(freqHz: number, excludeTrackId?: string): Advisor
  * at the same fader. This dedup ensures one advisory per GEQ band.
  */
 function findAdvisoryForSameBand(bandIndex: number, excludeTrackId?: string): Advisory | null {
-  for (const advisory of advisories.values()) {
-    if (excludeTrackId && advisory.trackId === excludeTrackId) continue
-    if (advisory.advisory?.geq?.bandIndex === bandIndex) return advisory
-  }
-  return null
+  const advisoryId = advisoriesByBand.get(bandIndex)
+  if (!advisoryId) return null
+  const advisory = advisories.get(advisoryId)
+  if (!advisory) return null
+  if (excludeTrackId && advisory.trackId === excludeTrackId) return null
+  return advisory
 }
 
 /**
@@ -283,32 +293,30 @@ function smoothClassificationLabel(
     return newLabel
   }
 
-  const history = classificationLabelHistory.get(trackId) ?? []
-  history.push(newLabel)
-
-  // Keep bounded (3x smoothing window)
-  if (history.length > CLASSIFICATION_SMOOTHING_FRAMES * 3) {
-    history.splice(0, history.length - CLASSIFICATION_SMOOTHING_FRAMES * 3)
-  }
-  classificationLabelHistory.set(trackId, history)
-
-  if (history.length < CLASSIFICATION_SMOOTHING_FRAMES) {
-    return newLabel // First few frames, accept whatever comes
+  let ring = classificationLabelHistory.get(trackId)
+  if (!ring) {
+    ring = { labels: new Array<string>(LABEL_HISTORY_CAPACITY), idx: 0, count: 0 }
+    classificationLabelHistory.set(trackId, ring)
   }
 
-  // Check if last N frames are all the same label
-  const recent = history.slice(-CLASSIFICATION_SMOOTHING_FRAMES)
-  if (recent.every(l => l === newLabel)) {
-    return newLabel // Consistent for N frames → accept change
+  ring.labels[ring.idx] = newLabel
+  ring.idx = (ring.idx + 1) % LABEL_HISTORY_CAPACITY
+  ring.count = Math.min(ring.count + 1, LABEL_HISTORY_CAPACITY)
+
+  if (ring.count < CLASSIFICATION_SMOOTHING_FRAMES) {
+    return newLabel
   }
 
-  // Not consistent — use the most common label in the recent window
+  // Count occurrences of each label in the filled portion
   const counts = new Map<string, number>()
-  for (const l of recent) {
-    counts.set(l, (counts.get(l) ?? 0) + 1)
+  for (let i = 0; i < ring.count; i++) {
+    const label = ring.labels[i]
+    counts.set(label, (counts.get(label) ?? 0) + 1)
   }
-  let maxCount = 0
+
+  // Return most frequent label (majority vote)
   let maxLabel = newLabel
+  let maxCount = 0
   for (const [label, count] of counts) {
     if (count > maxCount) {
       maxCount = count
@@ -465,18 +473,21 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
 
       // Initialize advanced algorithm buffers
       const numBins = Math.floor(fftSize / 2)
-      msdBuffer = new MSDHistoryBuffer(numBins)
+      msdBuffer = new MSDHistoryBuffer(numBins >> 1)
       phaseBuffer = new PhaseHistoryBuffer(numBins, 12) // 12 frames ≈ 240ms at 50fps
       ampBuffer.reset()
+      msdDownsampleBuf = null
       ensureFftBuffers(fftSize) // Pre-allocate FFT buffers
       lastFrameTimestamp = -1
 
       trackManager.clear()
       advisories.clear()
+      advisoriesByBand.clear()
       trackToAdvisoryId.clear()
       bandClearedAt.clear()
       lastAdvisoryCreatedAt = 0
       recentDecays.clear()
+      peakProcessCount = 0
       self.postMessage({ type: 'ready' } satisfies WorkerOutboundMessage)
       break
     }
@@ -496,11 +507,14 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
     case 'reset': {
       trackManager.clear()
       advisories.clear()
+      advisoriesByBand.clear()
       trackToAdvisoryId.clear()
       bandClearedAt.clear()
       lastAdvisoryCreatedAt = 0
       recentDecays.clear()
+      peakProcessCount = 0
       msdBuffer?.reset()
+      msdDownsampleBuf = null
       phaseBuffer?.reset()
       ampBuffer.reset()
       classificationLabelHistory.clear()
@@ -519,9 +533,16 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       // ── Feed frame-level buffers (once per frame, not per peak) ──────────
       const isNewFrame = peak.timestamp !== lastFrameTimestamp
       if (isNewFrame) {
-        // MSD: add full spectrum frame to history buffer
+        // MSD: max-pool spectrum to half resolution before storing (halves memory)
         if (msdBuffer) {
-          msdBuffer.addFrame(spectrum)
+          const halfLen = spectrum.length >> 1
+          if (!msdDownsampleBuf || msdDownsampleBuf.length !== halfLen) {
+            msdDownsampleBuf = new Float32Array(halfLen)
+          }
+          for (let i = 0; i < halfLen; i++) {
+            msdDownsampleBuf[i] = Math.max(spectrum[i << 1], spectrum[(i << 1) + 1])
+          }
+          msdBuffer.addFrame(msdDownsampleBuf)
         }
 
         // Compression: compute frame-level peak and RMS from spectrum
@@ -539,19 +560,28 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         const rmsDb = validBins > 0 ? 10 * Math.log10(sumLinearPower / validBins) : -100
         ampBuffer.addSample(specMax, rmsDb)
 
-        // Phase coherence: extract phase angles from time-domain waveform via FFT
-        // and feed to PhaseHistoryBuffer (KU Leuven 2025 algorithm)
+        // Phase coherence: conditionally extract phase angles via FFT
+        // Skip expensive O(N log N) computation unless a track shows feedback signatures
         if (msg.timeDomain && phaseBuffer) {
-          const phases = computePhaseAngles(msg.timeDomain)
-          if (phases) {
-            phaseBuffer.addFrame(phases)
+          const activeTracks = trackManager.getRawTracks()
+          const needsPhase = activeTracks.length > 0 && activeTracks.some(t =>
+            t.velocityDbPerSec > 3 || t.qEstimate > 30
+          )
+          if (needsPhase) {
+            const phases = computePhaseAngles(msg.timeDomain)
+            if (phases) {
+              phaseBuffer.addFrame(phases)
+            }
           }
         }
 
-        // ── Decay rate analysis — check recently cleared bins ──────────────
-        // Room modes decay exponentially (following RT60); feedback drops instantly.
-        // If a recently cleared bin is decaying at the RT60 rate, extend band cooldown.
-        {
+        peakProcessCount++
+
+        // Decay rate analysis — only run every 50 peaks to reduce overhead
+        if (peakProcessCount % 50 === 0) {
+          // ── Decay rate analysis — check recently cleared bins ──────────────
+          // Room modes decay exponentially (following RT60); feedback drops instantly.
+          // If a recently cleared bin is decaying at the RT60 rate, extend band cooldown.
           const rt60 = settings?.roomRT60 ?? 1.2
           const roomVol = settings?.roomVolume ?? 250
           const now = peak.timestamp
@@ -608,10 +638,10 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       const crestFactor = peak.trueAmplitudeDb - (peak.noiseFloorDb ?? -80)
       const contentType = detectContentType(spectrum, crestFactor, spectralResult.flatness)
 
-      // MSD from full-spectrum history buffer (DAFx-16 paper)
+      // MSD from half-resolution history buffer (DAFx-16 paper, max-pooled 2:1)
       // Content-type-aware frame count: speech=5, music=10, compressed=30, unknown=7
       const msdMinFrames = getMsdMinFrames(contentType)
-      const msdResult = msdBuffer?.calculateMSD(binIndex, msdMinFrames) ?? null
+      const msdResult = msdBuffer?.calculateMSD(binIndex >> 1, msdMinFrames) ?? null
 
       // Compression detection from amplitude history
       const compressionResult = ampBuffer.detectCompression()
@@ -656,8 +686,7 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       )
 
       // Enhanced classification with algorithm scores + active frequencies for mode clustering
-      const activeFrequencies = trackManager.getRawTracks().map(t => t.trueFrequencyHz)
-      const classification = classifyTrackWithAlgorithms(track, algorithmScores, fusionResult, settings, activeFrequencies)
+      const classification = classifyTrackWithAlgorithms(track, algorithmScores, fusionResult, settings, peakFrequencies)
 
       // Apply classification temporal smoothing (prevents advisory flickering)
       // Safety-critical RUNAWAY/GROWING bypass smoothing automatically
@@ -679,6 +708,10 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         if (existingId) {
           // No band cooldown here — classification gate drops are transient.
           // Only explicit clearPeak events (hold-time expiry) trigger cooldown.
+          const deletedAdvisory = advisories.get(existingId)
+          if (deletedAdvisory?.advisory?.geq?.bandIndex !== undefined) {
+            advisoriesByBand.delete(deletedAdvisory.advisory.geq.bandIndex)
+          }
           advisories.delete(existingId)
           trackToAdvisoryId.delete(track.id)
           self.postMessage({ type: 'advisoryCleared', advisoryId: existingId } satisfies WorkerOutboundMessage)
@@ -736,6 +769,9 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
           }
           // New peak supersedes — carry over cluster count from the one we're replacing
           mergedClusterCount = (dup.clusterCount ?? 1) + 1
+          if (dup.advisory?.geq?.bandIndex !== undefined) {
+            advisoriesByBand.delete(dup.advisory.geq.bandIndex)
+          }
           advisories.delete(dup.id)
           trackToAdvisoryId.delete(dup.trackId)
           self.postMessage({ type: 'advisoryCleared', advisoryId: dup.id } satisfies WorkerOutboundMessage)
@@ -771,6 +807,9 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       }
 
       advisories.set(advisoryId, advisory)
+      if (eqAdvisory?.geq?.bandIndex !== undefined) {
+        advisoriesByBand.set(eqAdvisory.geq.bandIndex, advisoryId)
+      }
       if (!existingId) {
         trackToAdvisoryId.set(track.id, advisoryId)
         lastAdvisoryCreatedAt = peak.timestamp
@@ -795,6 +834,7 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
         if (advisory && Math.abs(advisory.trueFrequencyHz - frequencyHz) < 10) {
           if (advisory.advisory?.geq?.bandIndex != null) {
             bandClearedAt.set(advisory.advisory.geq.bandIndex, timestamp)
+            advisoriesByBand.delete(advisory.advisory.geq.bandIndex)
           }
           advisories.delete(advisoryId)
           trackToAdvisoryId.delete(trackId)

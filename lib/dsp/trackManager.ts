@@ -22,6 +22,7 @@ export class TrackManager {
   private historySize: number
   private associationToleranceCents: number
   private trackTimeoutMs: number
+  private _activeTracksCache: Track[] = []
 
   constructor(options: Partial<{
     maxTracks: number
@@ -86,6 +87,7 @@ export class TrackManager {
       const lastAmplitude = track.trueAmplitudeDb
       track.isActive = false
       track.lastUpdateTime = timestamp
+      this._rebuildActiveCache()
       return lastAmplitude
     }
     return null
@@ -95,16 +97,14 @@ export class TrackManager {
    * Get all active tracks as TrackedPeak objects for UI consumption
    */
   getActiveTracks(): TrackedPeak[] {
-    return Array.from(this.tracks.values())
-      .filter(t => t.isActive)
-      .map(track => this.trackToTrackedPeak(track))
+    return this._activeTracksCache.map(track => this.trackToTrackedPeak(track))
   }
 
   /**
    * Get raw Track objects (for internal use)
    */
   getRawTracks(): Track[] {
-    return Array.from(this.tracks.values()).filter(t => t.isActive)
+    return this._activeTracksCache
   }
 
   /**
@@ -172,13 +172,15 @@ export class TrackManager {
     if (this.tracks.size > this.maxTracks) {
       const sorted = Array.from(this.tracks.values())
         .sort((a, b) => a.lastUpdateTime - b.lastUpdateTime)
-      
+
       const toRemove = sorted.slice(0, this.tracks.size - this.maxTracks)
       for (const track of toRemove) {
         this.tracks.delete(track.id)
         this.binToTrackId.delete(track.binIndex)
       }
     }
+
+    this._rebuildActiveCache()
   }
 
   /**
@@ -187,9 +189,14 @@ export class TrackManager {
   clear(): void {
     this.tracks.clear()
     this.binToTrackId.clear()
+    this._activeTracksCache = []
   }
 
   // ==================== Private Methods ====================
+
+  private _rebuildActiveCache(): void {
+    this._activeTracksCache = Array.from(this.tracks.values()).filter(t => t.isActive)
+  }
 
   private createTrack(peak: DetectedPeak & { qEstimate?: number; bandwidthHz?: number; msd?: number; msdGrowthRate?: number; msdIsHowl?: boolean; msdFastConfirm?: boolean; persistenceFrames?: number; persistenceBoost?: number; isPersistent?: boolean; isHighlyPersistent?: boolean }): Track {
     const id = generateId()
@@ -235,6 +242,7 @@ export class TrackManager {
     this.tracks.set(id, track)
     this.binToTrackId.set(peak.binIndex, id)
 
+    this._rebuildActiveCache()
     return track
   }
 
@@ -290,6 +298,7 @@ export class TrackManager {
     // Extract features
     track.features = this.extractFeatures(track)
 
+    this._rebuildActiveCache()
     return track
   }
 

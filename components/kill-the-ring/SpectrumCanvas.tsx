@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useCallback, useState, memo } from 'react'
+import React, { useRef, useEffect, useCallback, useState, memo } from 'react'
 import Image from 'next/image'
 import { useAnimationFrame } from '@/hooks/useAnimationFrame'
 import { freqToLogPosition, clamp } from '@/lib/utils/mathHelpers'
@@ -11,27 +11,31 @@ import type { SpectrumData, Advisory } from '@/types/advisory'
 import type { EarlyWarning } from '@/hooks/useAudioAnalyzer'
 
 interface SpectrumCanvasProps {
-  spectrum: SpectrumData | null
-  advisories: Advisory[]
+  spectrumRef: React.RefObject<SpectrumData | null>
+  advisories: Advisory[]  // Keep as prop — changes infrequently, drives markers
   isRunning: boolean
   graphFontSize?: number
   onStart?: () => void
-  /** Early warning predictions for upcoming feedback frequencies */
   earlyWarning?: EarlyWarning | null
-  /** Override RTA display dB minimum (default from CANVAS_SETTINGS) */
   rtaDbMin?: number
-  /** Override RTA display dB maximum (default from CANVAS_SETTINGS) */
   rtaDbMax?: number
-  /** Override spectrum line width in pixels (default 1.5) */
   spectrumLineWidth?: number
 }
 
 const FREQ_LABELS = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 
-export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp }: SpectrumCanvasProps) {
+export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp }: SpectrumCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensionsRef = useRef({ width: 0, height: 0 })
+  const advisoriesRef = useRef(advisories)
+  advisoriesRef.current = advisories
+
+  // Cached per-frame objects — avoid recreating every frame
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
+  const dprRef = useRef(typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1)
+  const gradientRef = useRef<CanvasGradient | null>(null)
+  const gradientHeightRef = useRef(0)
 
   // Track whether analysis has ever started; once true the placeholder is gone for good
   const [hasEverStarted, setHasEverStarted] = useState(false)
@@ -51,9 +55,15 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
         const { width, height } = entry.contentRect
         dimensionsRef.current = { width, height }
 
+        const dpr = window.devicePixelRatio || 1
+        dprRef.current = dpr
+
+        // Invalidate cached objects on resize (canvas element may change)
+        ctxRef.current = null
+        gradientRef.current = null
+
         const canvas = canvasRef.current
         if (canvas) {
-          const dpr = window.devicePixelRatio || 1
           canvas.width = Math.floor(width * dpr)
           canvas.height = Math.floor(height * dpr)
           canvas.style.width = `${width}px`
@@ -67,13 +77,16 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
   }, [])
 
   const render = useCallback(() => {
+    const spectrum = spectrumRef.current
+
     const canvas = canvasRef.current
     if (!canvas) return
 
-    const ctx = canvas.getContext('2d')
+    if (!ctxRef.current) ctxRef.current = canvas.getContext('2d')
+    const ctx = ctxRef.current
     if (!ctx) return
 
-    const dpr = window.devicePixelRatio || 1
+    const dpr = dprRef.current
     const { width, height } = dimensionsRef.current
     if (width === 0 || height === 0) return
 
@@ -150,42 +163,24 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
       const hzPerBin = spectrum.sampleRate / spectrum.fftSize
       const n = freqDb.length
 
-      // Gradient fill
-      const gradient = ctx.createLinearGradient(0, 0, 0, plotHeight)
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)')
-      gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.3)')
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)')
-
-      ctx.beginPath()
-      ctx.moveTo(0, plotHeight)
-
-      for (let i = 1; i < n; i++) {
-        const freq = i * hzPerBin
-        if (freq < RTA_FREQ_MIN || freq > RTA_FREQ_MAX) continue
-
-        const x = freqToLogPosition(freq, RTA_FREQ_MIN, RTA_FREQ_MAX) * plotWidth
-        const db = clamp(freqDb[i], RTA_DB_MIN, RTA_DB_MAX)
-        const y = ((RTA_DB_MAX - db) / (RTA_DB_MAX - RTA_DB_MIN)) * plotHeight
-
-        if (i === 1) {
-          ctx.moveTo(x, plotHeight)
-          ctx.lineTo(x, y)
-        } else {
-          ctx.lineTo(x, y)
-        }
+      // Cached gradient fill — only recreated when plotHeight changes
+      let gradient = gradientRef.current
+      if (!gradient || gradientHeightRef.current !== plotHeight) {
+        gradient = ctx.createLinearGradient(0, 0, 0, plotHeight)
+        gradient.addColorStop(0, 'rgba(16, 185, 129, 0.8)')
+        gradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.3)')
+        gradient.addColorStop(1, 'rgba(16, 185, 129, 0.05)')
+        gradientRef.current = gradient
+        gradientHeightRef.current = plotHeight
       }
 
-      ctx.lineTo(plotWidth, plotHeight)
-      ctx.closePath()
-      ctx.fillStyle = gradient
-      ctx.fill()
-
-      // Spectrum line
-      ctx.strokeStyle = VIZ_COLORS.SPECTRUM
-      ctx.lineWidth = spectrumLineWidthProp ?? 1.5
-      ctx.beginPath()
-
+      // Single pass: build stroke path, then derive fill from it
+      const strokePath = new Path2D()
+      const fillPath = new Path2D()
+      let firstX = 0
+      let lastX = 0
       let started = false
+
       for (let i = 1; i < n; i++) {
         const freq = i * hzPerBin
         if (freq < RTA_FREQ_MIN || freq > RTA_FREQ_MAX) continue
@@ -195,13 +190,29 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
         const y = ((RTA_DB_MAX - db) / (RTA_DB_MAX - RTA_DB_MIN)) * plotHeight
 
         if (!started) {
-          ctx.moveTo(x, y)
+          firstX = x
+          strokePath.moveTo(x, y)
+          fillPath.moveTo(x, plotHeight)
+          fillPath.lineTo(x, y)
           started = true
         } else {
-          ctx.lineTo(x, y)
+          strokePath.lineTo(x, y)
+          fillPath.lineTo(x, y)
         }
+        lastX = x
       }
-      ctx.stroke()
+
+      // Complete fill path back to baseline
+      fillPath.lineTo(lastX, plotHeight)
+      fillPath.closePath()
+
+      // Draw fill then stroke
+      ctx.fillStyle = gradient
+      ctx.fill(fillPath)
+
+      ctx.strokeStyle = VIZ_COLORS.SPECTRUM
+      ctx.lineWidth = spectrumLineWidthProp ?? 1.5
+      ctx.stroke(strokePath)
     }
 
     // Draw early warning predictions (predicted feedback frequencies)
@@ -237,7 +248,7 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
     }
 
     // Draw peak markers for advisories
-    for (const advisory of advisories) {
+    for (const advisory of advisoriesRef.current) {
       const freq = advisory.trueFrequencyHz
       const db = advisory.trueAmplitudeDb
       const x = freqToLogPosition(freq, RTA_FREQ_MIN, RTA_FREQ_MAX) * plotWidth
@@ -301,9 +312,9 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrum, advisorie
     ctx.textAlign = 'center'
     ctx.fillText('Hz', width / 2, height - 2)
 
-  }, [spectrum, advisories, graphFontSize, earlyWarning, rtaDbMinProp, rtaDbMaxProp, spectrumLineWidthProp])
+  }, [graphFontSize, earlyWarning, rtaDbMinProp, rtaDbMaxProp, spectrumLineWidthProp])
 
-  useAnimationFrame(render, isRunning || spectrum !== null)
+  useAnimationFrame(render, isRunning || hasEverStarted)
 
   return (
     <div ref={containerRef} className="relative w-full h-full">
