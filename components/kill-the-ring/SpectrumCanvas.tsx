@@ -249,6 +249,7 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
 
     // Draw peak markers for advisories
     for (const advisory of advisoriesRef.current) {
+      if (advisory.resolved) continue
       const freq = advisory.trueFrequencyHz
       const db = advisory.trueAmplitudeDb
       const x = freqToLogPosition(freq, RTA_FREQ_MIN, RTA_FREQ_MAX) * plotWidth

@@ -137,6 +137,8 @@ export function useAudioAnalyzer(
         ...prev,
         advisories: next
           .sort((a, b) => {
+            // Active cards always above resolved
+            if (a.resolved !== b.resolved) return a.resolved ? 1 : -1
             const urgencyA = getSeverityUrgency(a.severity)
             const urgencyB = getSeverityUrgency(b.severity)
             if (urgencyA !== urgencyB) return urgencyB - urgencyA
@@ -151,10 +153,14 @@ export function useAudioAnalyzer(
   const stableCallbacks = useRef<DSPWorkerCallbacks>({
     onAdvisory: (advisory) => onAdvisoryRef.current(advisory),
     onAdvisoryCleared: (advisoryId) => {
-      setState(prev => ({
-        ...prev,
-        advisories: prev.advisories.filter(a => a.id !== advisoryId),
-      }))
+      setState(prev => {
+        const idx = prev.advisories.findIndex(a => a.id === advisoryId)
+        if (idx < 0) return prev
+        if (prev.advisories[idx].resolved) return prev
+        const next = [...prev.advisories]
+        next[idx] = { ...next[idx], resolved: true, resolvedAt: Date.now() }
+        return { ...prev, advisories: next }
+      })
     },
     onTracksUpdate: (tracks) => { tracksRef.current = tracks },
     onReady: () => { /* Worker ready */ },

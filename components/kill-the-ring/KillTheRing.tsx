@@ -5,7 +5,7 @@
 // Guaranteed correct: GRAPH_CHIPS usage, CSS-only layout, no SSR window access
 // Built: 2026-02-28
 
-import { useEffect, useState, useCallback, useRef, memo } from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo, memo } from 'react'
 import { useAudioAnalyzer } from '@/hooks/useAudioAnalyzer'
 import { useAdvisoryLogging } from '@/hooks/useAdvisoryLogging'
 import { IssuesList } from './IssuesList'
@@ -75,6 +75,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     updateSettings,
     resetSettings,
   } = useAudioAnalyzer()
+
+  const activeAdvisoryCount = useMemo(
+    () => advisories.filter(a => !a.resolved).length,
+    [advisories]
+  )
 
   const [activeGraph, setActiveGraph] = useState<GraphView>('rta')
   const [bottomLeftGraph, setBottomLeftGraph] = useState<GraphView>('geq')
@@ -396,7 +401,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
               <div className="flex-1 overflow-y-auto p-3">
                 <h2 className="text-[0.625rem] text-muted-foreground uppercase tracking-wide mb-2 flex items-center justify-between">
                   <span>Active Issues</span>
-                  <span className="text-primary font-mono">{advisories.length}</span>
+                  <span className="text-primary font-mono">{activeAdvisoryCount}</span>
                 </h2>
                 <IssuesList
                   advisories={advisories}
@@ -515,8 +520,8 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                     }`}
                   >
                     Issues
-                    {advisories.length > 0 && (
-                      <span className="ml-1 font-mono text-primary">{advisories.length}</span>
+                    {activeAdvisoryCount > 0 && (
+                      <span className="ml-1 font-mono text-primary">{activeAdvisoryCount}</span>
                     )}
                   </button>
                   <button
@@ -647,7 +652,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       <nav className="landscape:hidden flex-shrink-0 border-t border-border bg-card/80 backdrop-blur-sm" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-stretch">
           {([
-            { id: 'issues' as const, label: 'Issues', Icon: AlertTriangle, badge: advisories.length },
+            { id: 'issues' as const, label: 'Issues', Icon: AlertTriangle, badge: activeAdvisoryCount },
             { id: 'graph' as const, label: 'Graph', Icon: BarChart3, badge: 0 },
             { id: 'settings' as const, label: 'Settings', Icon: Settings2, badge: 0 },
           ]).map((tab) => (

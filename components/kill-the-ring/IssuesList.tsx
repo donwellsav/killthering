@@ -27,7 +27,10 @@ export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10,
   const sorted = useMemo(() =>
     [...advisories]
       .filter((a) => !dismissedIds?.has(a.id))
-      .sort((a, b) => (a.trueFrequencyHz ?? 0) - (b.trueFrequencyHz ?? 0))
+      .sort((a, b) => {
+        if (a.resolved !== b.resolved) return a.resolved ? 1 : -1
+        return (a.trueFrequencyHz ?? 0) - (b.trueFrequencyHz ?? 0)
+      })
       .slice(0, maxIssues),
     [advisories, dismissedIds, maxIssues]
   )
@@ -83,6 +86,7 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
   const velocity = advisory.velocityDbPerSec ?? 0
   const isRunaway = velocity >= RUNAWAY_VELOCITY_THRESHOLD || advisory.isRunaway
   const isWarning = velocity >= WARNING_VELOCITY_THRESHOLD && !isRunaway
+  const isResolved = advisory.resolved === true
 
   const timeToClipMs = advisory.predictedTimeToClipMs ?? (
     velocity > 0 && advisory.trueAmplitudeDb < 0
@@ -98,19 +102,21 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
   return (
     <div
       className={`relative flex flex-col rounded-md border bg-card transition-all overflow-hidden ${
-        isApplied
-          ? 'border-primary/30 opacity-60'
-          : isRunaway
-            ? 'border-red-500/70 shadow-[0_0_8px_rgba(239,68,68,0.35)] animate-pulse'
-            : isWarning
-              ? 'border-amber-500/60 shadow-[0_0_4px_rgba(245,158,11,0.25)]'
-              : 'border-border'
+        isResolved
+          ? 'border-border/50 opacity-50'
+          : isApplied
+            ? 'border-primary/30 opacity-60'
+            : isRunaway
+              ? 'border-red-500/70 shadow-[0_0_8px_rgba(239,68,68,0.35)] animate-pulse'
+              : isWarning
+                ? 'border-amber-500/60 shadow-[0_0_4px_rgba(245,158,11,0.25)]'
+                : 'border-border'
       }`}
     >
       {/* Left severity bar */}
       <div
         className="absolute left-0 top-0 bottom-0 w-0.5"
-        style={{ backgroundColor: isApplied ? 'transparent' : severityColor }}
+        style={{ backgroundColor: isResolved ? 'hsl(var(--muted))' : isApplied ? 'transparent' : severityColor }}
       />
 
       {/* Card body */}
@@ -190,6 +196,12 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
               {getSeverityText(advisory.severity)}
             </span>
 
+            {isResolved && (
+              <span className="text-[0.5625rem] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none bg-muted text-muted-foreground border border-border">
+                Resolved
+              </span>
+            )}
+
             {/* Dismiss X */}
             {onDismiss && (
               <TooltipProvider delayDuration={300}>
@@ -213,7 +225,7 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss }: IssueCardP
         </div>
 
         {/* Row 2: runaway / warning alert */}
-        {(isRunaway || isWarning) && !isApplied && (
+        {(isRunaway || isWarning) && !isApplied && !isResolved && (
           <div className={`flex items-center gap-1 text-[0.5625rem] font-bold uppercase tracking-wide ${
             isRunaway ? 'text-red-400' : 'text-amber-400'
           }`}>
