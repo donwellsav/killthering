@@ -21,9 +21,8 @@ import { FeedbackHistoryPanel } from './FeedbackHistoryPanel'
 import { AlgorithmStatusBar } from './AlgorithmStatusBar'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { FullscreenOverlay } from './FullscreenOverlay'
 import { useFullscreen } from '@/hooks/useFullscreen'
-import { RotateCcw, LayoutGrid, AlertTriangle, BarChart3, Settings2, ClipboardList, Maximize2 } from 'lucide-react'
+import { RotateCcw, LayoutGrid, AlertTriangle, BarChart3, Settings2, ClipboardList, Maximize2, Minimize2 } from 'lucide-react'
 import type { Advisory, OperationMode } from '@/types/advisory'
 import { OPERATION_MODES } from '@/lib/dsp/constants'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable'
@@ -92,7 +91,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
 
   // Fullscreen
   const rootRef = useRef<HTMLDivElement>(null)
-  const { isFullscreen, isOverlayVisible, toggle: toggleFullscreen, exit: exitFullscreen } = useFullscreen(rootRef)
+  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(rootRef)
 
   // Applied cuts state (EQ Notepad)
   const [pinnedCuts, setPinnedCuts] = useState<PinnedCut[]>([])
@@ -296,7 +295,6 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       {/* ── Header ─────────────────────────────────────────────── */}
       {/* Mobile: two-row stacked layout with full-height circle button */}
       {/* Desktop (sm:): single-row layout, logo left, actions right    */}
-      {!isFullscreen && (
       <header className="relative flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-border bg-card/80 backdrop-blur-sm sm:px-4 sm:py-2 sm:gap-4">
 
         {/* ── MOBILE Row 1: Logo wordmark (right-aligned, above icons) ── */}
@@ -407,11 +405,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                   className="hidden landscape:flex h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                   aria-label="Toggle fullscreen"
                 >
-                  <Maximize2 className="w-3 h-3" />
+                  {isFullscreen ? <Minimize2 className="w-3 h-3" /> : <Maximize2 className="w-3 h-3" />}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="text-xs">
-                Fullscreen
+                {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -457,25 +455,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
           </Tooltip>
         </TooltipProvider>
       </header>
-      )}
-
-      {/* ── Fullscreen overlay ─────────────────────────────────── */}
-      {isFullscreen && (
-        <FullscreenOverlay
-          isRunning={isRunning}
-          activeAdvisoryCount={activeAdvisoryCount}
-          isOverlayVisible={isOverlayVisible}
-          onStartStop={isRunning ? stop : start}
-          onExitFullscreen={exitFullscreen}
-        />
-      )}
 
       {/* ── Error banner ───────────────────────────────────────── */}
       {error && (
-        <div className={isFullscreen ? 'fixed top-0 left-0 right-0 z-40' : ''}>
-          <div className="px-4 py-1.5 bg-destructive/10 border-b border-destructive/20">
-            <span className="text-xs text-destructive">{error}</span>
-          </div>
+        <div className="px-4 py-1.5 bg-destructive/10 border-b border-destructive/20">
+          <span className="text-xs text-destructive">{error}</span>
         </div>
       )}
 
@@ -818,7 +802,6 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       </div>
 
       {/* ── Mobile bottom tab bar (portrait only) ──────────────── */}
-      {!isFullscreen && (
       <nav className="landscape:hidden flex-shrink-0 border-t border-border bg-card/80 backdrop-blur-sm" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-stretch">
           {([
@@ -851,7 +834,6 @@ export const KillTheRing = memo(function KillTheRingComponent() {
           ))}
         </div>
       </nav>
-      )}
     </div>
   )
 })
