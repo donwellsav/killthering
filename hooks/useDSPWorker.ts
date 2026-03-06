@@ -39,6 +39,8 @@ export interface DSPWorkerCallbacks {
 export interface DSPWorkerHandle {
   /** True once the worker has posted its 'ready' message */
   isReady: boolean
+  /** True if the worker crashed and needs re-initialization */
+  isCrashed: boolean
   /** Send initial config to the worker */
   init: (settings: DetectorSettings, sampleRate: number, fftSize: number) => void
   /** Push updated settings to the worker */
@@ -65,6 +67,8 @@ export interface DSPWorkerHandle {
 export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
   const workerRef = useRef<Worker | null>(null)
   const isReadyRef = useRef(false)
+  const busyRef = useRef(false)     // Backpressure: true while worker processes a peak batch
+  const crashedRef = useRef(false)  // Set on unrecoverable worker error
   const callbacksRef = useRef(callbacks)
 
   // Keep callbacks up to date without re-creating worker
@@ -97,6 +101,7 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
           callbacksRef.current.onAdvisoryCleared?.(msg.advisoryId)
           break
         case 'tracksUpdate':
+          busyRef.current = false  // Clear backpressure — worker finished processing
           callbacksRef.current.onTracksUpdate?.(msg.tracks)
           break
         case 'error':
@@ -106,10 +111,12 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
     }
 
     worker.onerror = (err) => {
-      callbacksRef.current.onError?.(err.message ?? 'DSP worker error')
+      crashedRef.current = true
+      isReadyRef.current = false
+      busyRef.current = false
+      callbacksRef.current.onError?.(err.message ?? 'DSP worker crashed')
       worker.terminate()
       workerRef.current = null
-      isReadyRef.current = false
     }
 
     workerRef.current = worker
@@ -122,12 +129,17 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
   }, []) // Create once
 
   const postMessage = useCallback((msg: WorkerInboundMessage) => {
+    if (crashedRef.current) return  // Worker is dead — drop messages
+    // Allow init/reset through before worker is ready; gate everything else
+    if (!isReadyRef.current && msg.type !== 'init' && msg.type !== 'reset') return
     workerRef.current?.postMessage(msg)
   }, [])
 
   const init = useCallback(
     (settings: DetectorSettings, sampleRate: number, fftSize: number) => {
       isReadyRef.current = false
+      busyRef.current = false
+      crashedRef.current = false
       postMessage({ type: 'init', settings, sampleRate, fftSize })
     },
     [postMessage]
@@ -142,6 +154,9 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
 
   const processPeak = useCallback(
     (peak: DetectedPeak, spectrum: Float32Array, sampleRate: number, fftSize: number, timeDomain?: Float32Array) => {
+      // Backpressure: skip if worker hasn't finished the previous batch
+      if (busyRef.current || crashedRef.current || !isReadyRef.current) return
+
       // Transfer zero-copy clones to the worker — avoids heap allocations per peak
       const specClone = spectrum.slice(0)
       const transferList: ArrayBuffer[] = [specClone.buffer as ArrayBuffer]
@@ -152,6 +167,7 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
         transferList.push(tdClone.buffer as ArrayBuffer)
       }
 
+      busyRef.current = true
       workerRef.current?.postMessage(
         { type: 'processPeak', peak, spectrum: specClone, sampleRate, fftSize, timeDomain: tdClone } as WorkerInboundMessage,
         transferList
@@ -168,6 +184,7 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
   )
 
   const reset = useCallback(() => {
+    busyRef.current = false
     postMessage({ type: 'reset' })
   }, [postMessage])
 
@@ -175,10 +192,12 @@ export function useDSPWorker(callbacks: DSPWorkerCallbacks): DSPWorkerHandle {
     workerRef.current?.terminate()
     workerRef.current = null
     isReadyRef.current = false
+    busyRef.current = false
   }, [])
 
   return {
     get isReady() { return isReadyRef.current },
+    get isCrashed() { return crashedRef.current },
     init,
     updateSettings,
     processPeak,

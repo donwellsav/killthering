@@ -629,6 +629,17 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
           for (const bin of expiredBins) {
             recentDecays.delete(bin)
           }
+
+          // ── Prune stale entries from unbounded maps ─────────────────────
+          // bandClearedAt: remove entries past cooldown window (no longer suppressing)
+          for (const [band, ts] of bandClearedAt) {
+            if (now - ts > BAND_COOLDOWN_MS * 2) bandClearedAt.delete(band)
+          }
+          // classificationLabelHistory: remove entries for dead tracks
+          const activeTrackIds = new Set(trackManager.getActiveTracks().map(t => t.id))
+          for (const trackId of classificationLabelHistory.keys()) {
+            if (!activeTrackIds.has(trackId)) classificationLabelHistory.delete(trackId)
+          }
         }
 
         lastFrameTimestamp = peak.timestamp

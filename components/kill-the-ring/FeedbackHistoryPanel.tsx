@@ -43,7 +43,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
     a.href = url
     a.download = `feedback-history-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }, [])
 
   const handleExportJSON = useCallback(() => {
@@ -55,7 +55,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
     a.href = url
     a.download = `feedback-history-${new Date().toISOString().slice(0, 10)}.json`
     a.click()
-    URL.revokeObjectURL(url)
+    setTimeout(() => URL.revokeObjectURL(url), 60_000)
   }, [])
 
   // TODO: Replace native confirm() with AlertDialog for UI consistency (see ResetConfirmDialog pattern)

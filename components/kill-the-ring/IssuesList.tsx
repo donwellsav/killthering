@@ -95,7 +95,7 @@ interface IssueCardProps {
   touchFriendly?: boolean
 }
 
-function IssueCard({ advisory, rank, isApplied, onApply, onDismiss, touchFriendly }: IssueCardProps) {
+const IssueCard = memo(function IssueCard({ advisory, rank, isApplied, onApply, onDismiss, touchFriendly }: IssueCardProps) {
   // Precompute occurrence count once per render instead of calling in JSX render path
   const occurrenceCount = useMemo(
     () => getFeedbackHistory().getOccurrenceCount(advisory.trueFrequencyHz),
@@ -333,4 +333,4 @@ function IssueCard({ advisory, rank, isApplied, onApply, onDismiss, touchFriendl
       </div>
     </div>
   )
-}
+})

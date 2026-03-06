@@ -333,9 +333,19 @@ export class FeedbackHistory {
     hotspot.suggestedCutDb = Math.min(maxProminence * 1.5 + (hotspot.occurrences - 1) * 0.5, 12)
   }
 
+  private _saveTimer: ReturnType<typeof setTimeout> | null = null
+
   private saveToStorage(): void {
     if (typeof window === 'undefined') return
-    
+    // Debounce writes — batch to once per second instead of every detection
+    if (this._saveTimer) return
+    this._saveTimer = setTimeout(() => {
+      this._saveTimer = null
+      this._flushToStorage()
+    }, 1000)
+  }
+
+  private _flushToStorage(): void {
     try {
       const data = {
         sessionId: this.sessionId,
@@ -345,30 +355,53 @@ export class FeedbackHistory {
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch (e) {
-      // Storage full or unavailable - silently fail
+      // QuotaExceeded — prune oldest 50% of events and retry
+      if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+        const half = Math.floor(this.events.length / 2)
+        if (half > 0) {
+          this.events = this.events.slice(half)
+          try {
+            const data = {
+              sessionId: this.sessionId,
+              startTime: this.startTime,
+              events: this.events,
+              hotspots: Array.from(this.hotspots.entries()),
+            }
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+            return
+          } catch { /* give up silently */ }
+        }
+      }
       console.warn('[FeedbackHistory] Failed to save to localStorage:', e)
     }
   }
 
   private loadFromStorage(): void {
     if (typeof window === 'undefined') return
-    
+
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
         const data = JSON.parse(stored)
-        this.sessionId = data.sessionId ?? this.sessionId
-        this.startTime = data.startTime ?? this.startTime
-        this.events = data.events ?? []
-        
-        // Reconstruct hotspots Map
-        if (Array.isArray(data.hotspots)) {
+        // Validate structure before trusting parsed data
+        if (typeof data !== 'object' || data === null) return
+        if (typeof data.sessionId === 'string') this.sessionId = data.sessionId
+        if (typeof data.startTime === 'number') this.startTime = data.startTime
+        // Validate events array — check first element has expected shape
+        if (Array.isArray(data.events)) {
+          if (data.events.length === 0 || (typeof data.events[0].frequencyHz === 'number' && typeof data.events[0].timestamp === 'number')) {
+            this.events = data.events
+          }
+        }
+        // Reconstruct hotspots Map — validate it's array of [key, value] pairs
+        if (Array.isArray(data.hotspots) && (data.hotspots.length === 0 || (Array.isArray(data.hotspots[0]) && data.hotspots[0].length === 2))) {
           this.hotspots = new Map(data.hotspots)
         }
       }
     } catch (e) {
-      // Invalid data - start fresh
-      console.warn('[FeedbackHistory] Failed to load from localStorage:', e)
+      // Invalid/corrupt data — start fresh, remove bad entry
+      console.warn('[FeedbackHistory] Corrupt localStorage data, starting fresh:', e)
+      try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
     }
   }
 }

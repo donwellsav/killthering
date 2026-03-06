@@ -242,43 +242,53 @@ export class MSDHistoryBuffer {
    *   music    (msd ~ 1–20) → score ~ 0 (exp(-10) ≈ 0)
    */
   calculateMSD(binIndex: number, minFrames: number = MSD_CONSTANTS.MIN_FRAMES_SPEECH): MSDResult {
-    const history = this.getBinHistory(binIndex)
-
-    if (history.length < minFrames) {
+    const count = this.frameCount
+    if (count < minFrames) {
       return {
         msd: Infinity,
         feedbackScore: 0,
         secondDerivative: 0,
         isFeedbackLikely: false,
-        framesAnalyzed: history.length,
+        framesAnalyzed: count,
         meanMagnitudeDb: -Infinity,
       }
     }
 
-    // Energy gate: compute mean magnitude over the history window.
-    const meanMagnitudeDb = history.reduce((a, b) => a + b, 0) / history.length
+    // Inline ring buffer access — avoids getBinHistory() array allocation
+    const start = (this.frameIndex - count + this.maxFrames) % this.maxFrames
+    const hist = this.history
+    const max = this.maxFrames
+
+    // Energy gate: compute mean magnitude over the history window
+    let sum = 0
+    for (let i = 0; i < count; i++) {
+      sum += hist[(start + i) % max][binIndex]
+    }
+    const meanMagnitudeDb = sum / count
     if (meanMagnitudeDb < MSD_CONSTANTS.SILENCE_FLOOR_DB) {
-      // Silent bin — return zero score, do not flag as feedback.
       return {
         msd: Infinity,
         feedbackScore: 0,
         secondDerivative: 0,
         isFeedbackLikely: false,
-        framesAnalyzed: history.length,
+        framesAnalyzed: count,
         meanMagnitudeDb,
       }
     }
 
+    // Compute MSD in a single pass over the ring buffer (no intermediate arrays)
     let sumSquaredSecondDeriv = 0
     let lastSecondDeriv = 0
-
-    for (let n = 2; n < history.length; n++) {
-      const secondDeriv = history[n] - 2 * history[n - 1] + history[n - 2]
+    for (let n = 2; n < count; n++) {
+      const v0 = hist[(start + n - 2) % max][binIndex]
+      const v1 = hist[(start + n - 1) % max][binIndex]
+      const v2 = hist[(start + n) % max][binIndex]
+      const secondDeriv = v2 - 2 * v1 + v0
       sumSquaredSecondDeriv += secondDeriv * secondDeriv
       lastSecondDeriv = secondDeriv
     }
 
-    const numTerms = history.length - 2
+    const numTerms = count - 2
     const msd = numTerms > 0 ? sumSquaredSecondDeriv / numTerms : Infinity
 
     const feedbackScore = Math.exp(-msd / MSD_CONSTANTS.THRESHOLD)
@@ -289,7 +299,7 @@ export class MSDHistoryBuffer {
       feedbackScore,
       secondDerivative: lastSecondDeriv,
       isFeedbackLikely,
-      framesAnalyzed: history.length,
+      framesAnalyzed: count,
       meanMagnitudeDb,
     }
   }
@@ -366,9 +376,8 @@ export class PhaseHistoryBuffer {
    * Music: Δφ_n varies randomly → phasors cancel → |mean| ≈ 0.
    */
   calculateCoherence(binIndex: number): PhaseCoherenceResult {
-    const history = this.getBinHistory(binIndex)
-
-    if (history.length < PHASE_CONSTANTS.MIN_SAMPLES) {
+    const count = this.frameCount
+    if (count < PHASE_CONSTANTS.MIN_SAMPLES) {
       return {
         coherence: 0,
         feedbackScore: 0,
@@ -378,28 +387,42 @@ export class PhaseHistoryBuffer {
       }
     }
 
-    // Frame-to-frame phase differences (unwrapped to [-π, π])
-    const phaseDeltas: number[] = []
-    for (let i = 1; i < history.length; i++) {
-      let delta = history[i] - history[i - 1]
-      while (delta > Math.PI)  delta -= 2 * Math.PI
-      while (delta < -Math.PI) delta += 2 * Math.PI
-      phaseDeltas.push(delta)
-    }
+    // Inline ring buffer access — compute phase deltas without intermediate arrays
+    const start = (this.frameIndex - count + this.maxFrames) % this.maxFrames
+    const hist = this.history
+    const max = this.maxFrames
+    const numDeltas = count - 1
 
-    const meanPhaseDelta = phaseDeltas.reduce((a, b) => a + b, 0) / phaseDeltas.length
-    const variance = phaseDeltas.reduce((sum, d) => sum + Math.pow(d - meanPhaseDelta, 2), 0) / phaseDeltas.length
-    const phaseDeltaStd = Math.sqrt(variance)
-
-    // Mean phasor magnitude
+    // Single pass: compute phase deltas, mean, phasor sum
+    let deltaSum = 0
     let realSum = 0
     let imagSum = 0
-    for (const delta of phaseDeltas) {
+    // Also need deltas for variance — compute in two passes (mean first, then variance)
+    // But store deltas using a lightweight approach: reuse ring buffer indices
+    let prevPhase = hist[start % max][binIndex]
+
+    // Pass 1: accumulate delta sum and phasor components
+    // We'll also accumulate sum-of-squares for Welford-style variance
+    let deltaSqSum = 0
+    for (let i = 1; i < count; i++) {
+      const phase = hist[(start + i) % max][binIndex]
+      let delta = phase - prevPhase
+      // Unwrap to [-π, π]
+      if (delta > Math.PI) delta -= 2 * Math.PI
+      else if (delta < -Math.PI) delta += 2 * Math.PI
+      deltaSum += delta
+      deltaSqSum += delta * delta
       realSum += Math.cos(delta)
       imagSum += Math.sin(delta)
+      prevPhase = phase
     }
-    realSum /= phaseDeltas.length
-    imagSum /= phaseDeltas.length
+
+    const meanPhaseDelta = deltaSum / numDeltas
+    const variance = (deltaSqSum / numDeltas) - meanPhaseDelta * meanPhaseDelta
+    const phaseDeltaStd = Math.sqrt(Math.max(0, variance))
+
+    realSum /= numDeltas
+    imagSum /= numDeltas
     const coherence = Math.sqrt(realSum * realSum + imagSum * imagSum)
 
     return {
@@ -500,7 +523,13 @@ export function detectCombPattern(
   }
 
   const sorted = [...peakFrequencies].sort((a, b) => a - b)
-  const differences: { diff: number; count: number }[] = []
+  // Use Map keyed by quantized frequency for O(1) lookup instead of O(m) .find()
+  const tol = COMB_CONSTANTS.SPACING_TOLERANCE
+  const diffMap = new Map<number, { diff: number; count: number }>()
+
+  // Quantize fundamental to integer Hz — 5% tolerance at 20 Hz is ±1 Hz, so integer keys
+  // are sufficient when we check the key and its neighbors
+  const quantize = (f: number) => Math.round(f)
 
   for (let i = 0; i < sorted.length; i++) {
     for (let j = i + 1; j < sorted.length; j++) {
@@ -510,19 +539,25 @@ export function detectCombPattern(
         const fundamental = diff / k
         if (fundamental < 20 || fundamental > sampleRate / 4) continue
 
-        const existing = differences.find(
-          d => Math.abs(d.diff - fundamental) / fundamental < COMB_CONSTANTS.SPACING_TOLERANCE
-        )
-        if (existing) {
-          existing.count++
-        } else {
-          differences.push({ diff: fundamental, count: 1 })
+        const key = quantize(fundamental)
+        // Check this key and neighbors (covers ±1 Hz quantization error)
+        let matched = false
+        for (let offset = -1; offset <= 1; offset++) {
+          const entry = diffMap.get(key + offset)
+          if (entry && Math.abs(entry.diff - fundamental) / fundamental < tol) {
+            entry.count++
+            matched = true
+            break
+          }
+        }
+        if (!matched) {
+          diffMap.set(key, { diff: fundamental, count: 1 })
         }
       }
     }
   }
 
-  if (differences.length === 0) {
+  if (diffMap.size === 0) {
     return {
       hasPattern: false,
       fundamentalSpacing: null,
@@ -533,8 +568,11 @@ export function detectCombPattern(
     }
   }
 
-  differences.sort((a, b) => b.count - a.count)
-  const bestSpacing = differences[0]
+  // Find best spacing (highest count)
+  let bestSpacing = { diff: 0, count: 0 }
+  for (const entry of diffMap.values()) {
+    if (entry.count > bestSpacing.count) bestSpacing = entry
+  }
   const tolerance   = bestSpacing.diff * COMB_CONSTANTS.SPACING_TOLERANCE
 
   let matchingPeaks = 0

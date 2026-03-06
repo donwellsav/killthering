@@ -20,6 +20,7 @@ export interface FeedbackDetectorCallbacks {
   onPeakDetected?: (peak: DetectedPeak) => void
   onPeakCleared?: (peak: { binIndex: number; frequencyHz: number; timestamp: number }) => void
   onCombPatternDetected?: (pattern: CombPatternResult) => void
+  onError?: (message: string) => void
 }
 
 export interface FeedbackDetectorState {
@@ -51,6 +52,7 @@ export class FeedbackDetector {
   private audioContext: AudioContext | null = null
   private stream: MediaStream | null = null
   private source: MediaStreamAudioSourceNode | null = null
+  private _deviceChangeHandler: (() => void) | null = null
   private analyser: AnalyserNode | null = null
 
   // Preallocated buffers
@@ -137,6 +139,7 @@ export class FeedbackDetector {
 
   // Hysteresis — recently cleared bins need extra dB to re-trigger (prevents flicker duplicates)
   private _recentlyClearedBins: Map<number, number> = new Map() // bin -> cleared timestamp
+  private _analyzeCallCount: number = 0  // Frame counter for periodic housekeeping
 
   // Advanced algorithm state — set externally by DSP pipeline, returned via getState()
   private _algorithmMode: AlgorithmMode | undefined = undefined
@@ -173,13 +176,40 @@ export class FeedbackDetector {
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error('getUserMedia not supported')
       }
-      this.stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: false,
-          noiseSuppression: false,
-          autoGainControl: false,
+      try {
+        this.stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+          }
+        })
+      } catch (e) {
+        // Surface specific error messages for common getUserMedia failures
+        if (e instanceof DOMException) {
+          switch (e.name) {
+            case 'NotAllowedError':
+              throw new Error('Microphone permission denied. Please allow microphone access and try again.')
+            case 'NotFoundError':
+              throw new Error('No microphone found. Please connect a microphone and try again.')
+            case 'NotReadableError':
+              throw new Error('Microphone is in use by another application. Please close it and try again.')
+            case 'OverconstrainedError':
+              throw new Error('Microphone does not support the requested audio settings.')
+          }
         }
-      })
+        throw e
+      }
+      // Monitor mic disconnection — track end signals device removal
+      const audioTrack = this.stream.getAudioTracks()[0]
+      if (audioTrack) {
+        audioTrack.onended = () => {
+          if (this.isRunning) {
+            this.callbacks.onError?.('Microphone disconnected')
+            this.stop()
+          }
+        }
+      }
     }
 
     // Create analyser
@@ -219,6 +249,19 @@ export class FeedbackDetector {
       await this.audioContext.resume()
     }
 
+    // Listen for device changes (mic unplugged/plugged)
+    if (navigator.mediaDevices && !this._deviceChangeHandler) {
+      this._deviceChangeHandler = () => {
+        // Check if current stream's track is still alive
+        const track = this.stream?.getAudioTracks()[0]
+        if (track && track.readyState === 'ended' && this.isRunning) {
+          this.callbacks.onError?.('Audio device changed — microphone disconnected')
+          this.stop()
+        }
+      }
+      navigator.mediaDevices.addEventListener('devicechange', this._deviceChangeHandler)
+    }
+
     // Start analysis loop
     this.isRunning = true
     this.lastRafTs = 0
@@ -248,6 +291,12 @@ export class FeedbackDetector {
         track.stop()
       }
       this.stream = null
+    }
+
+    // Clean up device change listener
+    if (this._deviceChangeHandler) {
+      navigator.mediaDevices?.removeEventListener('devicechange', this._deviceChangeHandler)
+      this._deviceChangeHandler = null
     }
   }
 
@@ -685,6 +734,14 @@ export class FeedbackDetector {
     const ctx = this.audioContext
     if (!analyser || !this.freqDb || !this.power || !this.prefix || !this.holdMs || !this.deadMs || !this.active) return
     if (!ctx || ctx.state !== 'running') return
+
+    // Periodic housekeeping: prune stale cleared-bin entries every ~300 frames (~5s)
+    if (++this._analyzeCallCount % 300 === 0) {
+      const staleThreshold = now - this.config.clearMs * 2
+      for (const [bin, ts] of this._recentlyClearedBins) {
+        if (ts < staleThreshold) this._recentlyClearedBins.delete(bin)
+      }
+    }
 
     // Read spectrum + time-domain waveform (phase coherence requires raw samples)
     analyser.getFloatFrequencyData(this.freqDb)
