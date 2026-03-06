@@ -26,17 +26,26 @@ interface IssuesListProps {
 }
 
 export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10, appliedIds, dismissedIds, onApply, onDismiss, onClearAll, onClearResolved, touchFriendly }: IssuesListProps) {
-  // Filter dismissed, sort by frequency (low -> high), then slice to max
-  const sorted = useMemo(() =>
-    [...advisories]
+  // Filter dismissed, sort repeat offenders to top by hit count, then slice to max
+  const sorted = useMemo(() => {
+    const history = getFeedbackHistory()
+    return [...advisories]
       .filter((a) => !dismissedIds?.has(a.id))
       .sort((a, b) => {
+        // 1. Active before resolved
         if (a.resolved !== b.resolved) return a.resolved ? 1 : -1
+        // 2. Repeat offenders (3+) float to top, sorted by count desc
+        const aCount = history.getOccurrenceCount(a.trueFrequencyHz)
+        const bCount = history.getOccurrenceCount(b.trueFrequencyHz)
+        const aRepeat = aCount >= 3
+        const bRepeat = bCount >= 3
+        if (aRepeat !== bRepeat) return aRepeat ? -1 : 1
+        if (aRepeat && bRepeat) return bCount - aCount
+        // 3. Non-repeaters: frequency ascending
         return (a.trueFrequencyHz ?? 0) - (b.trueFrequencyHz ?? 0)
       })
-      .slice(0, maxIssues),
-    [advisories, dismissedIds, maxIssues]
-  )
+      .slice(0, maxIssues)
+  }, [advisories, dismissedIds, maxIssues])
 
   const hasResolved = sorted.some(a => a.resolved)
 
