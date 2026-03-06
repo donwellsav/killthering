@@ -17,10 +17,9 @@ interface GEQBarViewProps {
   advisories: Advisory[]
   graphFontSize?: number
   clearedIds?: Set<string>
-  onClear?: () => void
 }
 
-export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize = 11, clearedIds, onClear }: GEQBarViewProps) {
+export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize = 11, clearedIds }: GEQBarViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensionsRef = useRef({ width: 0, height: 0 })
@@ -219,14 +218,6 @@ export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize =
   return (
     <div ref={containerRef} className="relative w-full h-full">
       <canvas ref={canvasRef} className="w-full h-full" role="img" aria-label="Graphic equalizer band view with recommended cuts" />
-      {onClear && bandRecommendations.size > 0 && (
-        <button
-          onClick={onClear}
-          className="absolute top-1 right-2 text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide z-20"
-        >
-          Clear
-        </button>
-      )}
     </div>
   )
 })
