@@ -124,9 +124,22 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     [advisories, geqClearedIds]
   )
 
+  // RTA-specific cleared IDs — independent from issue cards and GEQ
+  const [rtaClearedIds, setRtaClearedIds] = useState<Set<string>>(new Set())
+
+  const handleClearRTA = useCallback(() => {
+    setRtaClearedIds(new Set(advisories.map(a => a.id)))
+  }, [advisories])
+
+  // True when at least one advisory hasn't been cleared from the RTA
+  const hasActiveRTAMarkers = useMemo(() =>
+    advisories.some(a => !rtaClearedIds.has(a.id)),
+    [advisories, rtaClearedIds]
+  )
+
   // Auto-expire dismissed/cleared IDs once the advisory is no longer in the live list
   useEffect(() => {
-    if (dismissedIds.size === 0 && geqClearedIds.size === 0) return
+    if (dismissedIds.size === 0 && geqClearedIds.size === 0 && rtaClearedIds.size === 0) return
     const liveIds = new Set(advisories.map((a) => a.id))
     setDismissedIds((prev) => {
       const next = new Set<string>()
@@ -138,7 +151,12 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       prev.forEach((id) => { if (liveIds.has(id)) next.add(id) })
       return next.size === prev.size ? prev : next
     })
-  }, [advisories, dismissedIds.size, geqClearedIds.size])
+    setRtaClearedIds((prev) => {
+      const next = new Set<string>()
+      prev.forEach((id) => { if (liveIds.has(id)) next.add(id) })
+      return next.size === prev.size ? prev : next
+    })
+  }, [advisories, dismissedIds.size, geqClearedIds.size, rtaClearedIds.size])
 
   const handleApply = useCallback((advisory: Advisory) => {
     if (appliedIdsRef.current.has(advisory.id)) return
@@ -454,7 +472,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                 <div className="h-full bg-card/60 rounded-lg border border-border overflow-hidden flex flex-col">
                   <div className="relative flex-1 min-h-0">
                     <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'rta' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                      <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
+                      <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} clearedIds={rtaClearedIds} />
                     </div>
                     <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'geq' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                       <GEQBarView advisories={advisories} graphFontSize={settings.graphFontSize} clearedIds={geqClearedIds} />
@@ -482,6 +500,14 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                     {chip.label}
                   </button>
                 ))}
+                {activeGraph === 'rta' && hasActiveRTAMarkers && (
+                  <button
+                    onClick={handleClearRTA}
+                    className="py-2.5 min-h-[44px] px-3 rounded-full text-[0.625rem] font-medium border transition-colors bg-card/60 text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
+                  >
+                    Clear
+                  </button>
+                )}
                 {activeGraph === 'geq' && hasActiveGEQBars && (
                   <button
                     onClick={handleClearGEQ}
@@ -612,6 +638,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                       <div className="flex-shrink-0 flex items-center justify-between px-2 py-1 border-b border-border bg-muted/20">
                         <div className="flex items-center gap-1">
                           <GraphChipRow value={activeGraph} onChange={setActiveGraph} />
+                          {activeGraph === 'rta' && hasActiveRTAMarkers && (
+                            <button onClick={handleClearRTA} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                              Clear
+                            </button>
+                          )}
                           {activeGraph === 'geq' && hasActiveGEQBars && (
                             <button onClick={handleClearGEQ} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
                               Clear
@@ -626,7 +657,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                       </div>
                       <div className="relative flex-1 min-h-0">
                         <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'rta' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-                          <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />
+                          <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} clearedIds={rtaClearedIds} />
                         </div>
                         <div className={`absolute inset-0 transition-opacity duration-200 ${activeGraph === 'geq' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
                           <GEQBarView advisories={advisories} graphFontSize={settings.graphFontSize} clearedIds={geqClearedIds} />
@@ -653,6 +684,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                           <div className="flex-shrink-0 flex items-center px-2 py-0.5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-1">
                               <GraphChipRow value={bottomLeftGraph} onChange={setBottomLeftGraph} />
+                              {bottomLeftGraph === 'rta' && hasActiveRTAMarkers && (
+                                <button onClick={handleClearRTA} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                  Clear
+                                </button>
+                              )}
                               {bottomLeftGraph === 'geq' && hasActiveGEQBars && (
                                 <button onClick={handleClearGEQ} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
                                   Clear
@@ -661,7 +697,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                             </div>
                           </div>
                           <div className="flex-1 min-h-0 pointer-events-none">
-                            {bottomLeftGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
+                            {bottomLeftGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} clearedIds={rtaClearedIds} />}
                             {bottomLeftGraph === 'geq' && <GEQBarView advisories={advisories} graphFontSize={Math.max(10, settings.graphFontSize - 4)} clearedIds={geqClearedIds} />}
                             {bottomLeftGraph === 'controls' && (
                               <div className="h-full p-3 overflow-y-auto pointer-events-auto">
@@ -682,6 +718,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                           <div className="flex-shrink-0 flex items-center px-2 py-0.5 border-b border-border bg-muted/20">
                             <div className="flex items-center gap-1">
                               <GraphChipRow value={bottomRightGraph} onChange={setBottomRightGraph} />
+                              {bottomRightGraph === 'rta' && hasActiveRTAMarkers && (
+                                <button onClick={handleClearRTA} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                                  Clear
+                                </button>
+                              )}
                               {bottomRightGraph === 'geq' && hasActiveGEQBars && (
                                 <button onClick={handleClearGEQ} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
                                   Clear
@@ -690,7 +731,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
                             </div>
                           </div>
                           <div className="flex-1 min-h-0 pointer-events-none">
-                            {bottomRightGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} />}
+                            {bottomRightGraph === 'rta' && <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} graphFontSize={Math.max(10, settings.graphFontSize - 4)} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} clearedIds={rtaClearedIds} />}
                             {bottomRightGraph === 'geq' && <GEQBarView advisories={advisories} graphFontSize={Math.max(10, settings.graphFontSize - 4)} clearedIds={geqClearedIds} />}
                             {bottomRightGraph === 'controls' && (
                               <div className="h-full p-3 overflow-y-auto pointer-events-auto">

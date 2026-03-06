@@ -20,16 +20,19 @@ interface SpectrumCanvasProps {
   rtaDbMin?: number
   rtaDbMax?: number
   spectrumLineWidth?: number
+  clearedIds?: Set<string>
 }
 
 const FREQ_LABELS = [20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000]
 
-export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp }: SpectrumCanvasProps) {
+export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, advisories, isRunning, graphFontSize = 11, onStart, earlyWarning, rtaDbMin: rtaDbMinProp, rtaDbMax: rtaDbMaxProp, spectrumLineWidth: spectrumLineWidthProp, clearedIds }: SpectrumCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const dimensionsRef = useRef({ width: 0, height: 0 })
   const advisoriesRef = useRef(advisories)
   advisoriesRef.current = advisories
+  const clearedIdsRef = useRef(clearedIds)
+  clearedIdsRef.current = clearedIds
 
   // Cached per-frame objects — avoid recreating every frame
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
@@ -247,9 +250,11 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       ctx.globalAlpha = 1
     }
 
-    // Draw peak markers for advisories
-    for (const advisory of advisoriesRef.current) {
-      if (advisory.resolved) continue
+    // Draw peak markers for advisories (persist until cleared, cap at 7)
+    const visibleAdvisories = advisoriesRef.current
+      .filter(a => !clearedIdsRef.current?.has(a.id))
+      .slice(-7)
+    for (const advisory of visibleAdvisories) {
       const freq = advisory.trueFrequencyHz
       const db = advisory.trueAmplitudeDb
       const x = freqToLogPosition(freq, RTA_FREQ_MIN, RTA_FREQ_MAX) * plotWidth
