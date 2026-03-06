@@ -96,7 +96,7 @@ export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize =
     }
     const scaledFontSize = Math.max(8, Math.min(14, Math.round(width * 0.01)))
     const fontSize = Math.round((graphFontSize + scaledFontSize) / 2)
-    const issueFontSize = Math.max(fontSize + 2, 12)
+    const issueFontSize = Math.max(fontSize + 4, 14)
     const plotWidth = width - padding.left - padding.right
     const plotHeight = height - padding.top - padding.bottom
 
@@ -159,14 +159,14 @@ export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize =
         ctx.fillStyle = recommendation.color
         ctx.font = `bold ${issueFontSize}px system-ui, sans-serif`
         ctx.textAlign = 'center'
-        ctx.fillText(`${cutDb}`, x + barWidth / 2, y + barHeight + issueFontSize + 1)
+        ctx.fillText(`${cutDb}`, x + barWidth / 2, y + barHeight + issueFontSize + 4)
 
         // Frequency label for active issue
         ctx.fillStyle = recommendation.color
         ctx.font = `bold ${issueFontSize}px system-ui, sans-serif`
         ctx.textAlign = 'center'
         const freqLabel = recommendation.freq >= 1000 ? `${(recommendation.freq / 1000).toFixed(1)}k` : `${Math.round(recommendation.freq)}`
-        ctx.fillText(freqLabel, x + barWidth / 2, y - 5)
+        ctx.fillText(freqLabel, x + barWidth / 2, y - 8)
 
         // Cluster count badge (if > 1 peak merged)
         if (recommendation.clusterCount > 1) {
@@ -174,7 +174,7 @@ export const GEQBarView = memo(function GEQBarView({ advisories, graphFontSize =
           ctx.font = `bold ${issueFontSize - 2}px system-ui, sans-serif`
           ctx.fillStyle = '#38bdf8' // sky-400
           ctx.textAlign = 'left'
-          ctx.fillText(badgeText, x + barWidth + 2, y + 10)
+          ctx.fillText(badgeText, x + barWidth + 4, y + 10)
         }
       } else {
         // Inactive - draw empty bar slot
