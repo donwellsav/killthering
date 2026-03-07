@@ -36,8 +36,8 @@ export const HelpMenu = memo(function HelpMenu() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button suppressHydrationWarning variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" aria-label="Help">
-          <HelpCircle className="w-4 h-4" />
+        <Button suppressHydrationWarning variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground h-11 w-11 p-0 sm:h-auto sm:w-auto sm:px-3" aria-label="Help">
+          <HelpCircle className="w-5 h-5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline text-xs">Help</span>
         </Button>
       </DialogTrigger>

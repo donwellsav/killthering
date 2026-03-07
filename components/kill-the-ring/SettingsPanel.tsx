@@ -228,8 +228,8 @@ export const SettingsPanel = memo(function SettingsPanel({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" aria-label="Settings">
-          <Settings className="w-4 h-4" />
+        <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground h-11 w-11 p-0 sm:h-auto sm:w-auto sm:px-3" aria-label="Settings">
+          <Settings className="w-5 h-5 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline text-xs">Settings</span>
         </Button>
       </DialogTrigger>
