@@ -149,7 +149,6 @@ interface LabelRingBuffer {
 }
 const LABEL_HISTORY_CAPACITY = CLASSIFICATION_SMOOTHING_FRAMES * 3
 const classificationLabelHistory = new Map<string, LabelRingBuffer>()
-const _labelCounts = new Map<string, number>() // Pre-allocated, reused via .clear()
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -318,16 +317,16 @@ function smoothClassificationLabel(
   // ring.idx points to the NEXT write slot, so walk backwards from (idx - 1).
   const cap = LABEL_HISTORY_CAPACITY
   const windowSize = CLASSIFICATION_SMOOTHING_FRAMES
-  _labelCounts.clear()
+  const counts = new Map<string, number>()
   for (let k = 0; k < windowSize; k++) {
     const label = ring.labels[(ring.idx - 1 - k + cap) % cap]
-    _labelCounts.set(label, (_labelCounts.get(label) ?? 0) + 1)
+    counts.set(label, (counts.get(label) ?? 0) + 1)
   }
 
   // Return most frequent label (majority vote)
   let maxLabel = newLabel
   let maxCount = 0
-  for (const [label, count] of _labelCounts) {
+  for (const [label, count] of counts) {
     if (count > maxCount) {
       maxCount = count
       maxLabel = label
@@ -475,7 +474,6 @@ function computePhaseAngles(timeDomain: Float32Array): Float32Array | null {
 self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
   const msg = event.data
 
-  try {
   switch (msg.type) {
     case 'init': {
       settings = { ...DEFAULT_SETTINGS, ...msg.settings }
@@ -860,11 +858,6 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       // Record for decay rate analysis (room mode vs feedback distinction)
       if (lastAmplitude !== null) {
         recentDecays.set(binIndex, { lastAmplitudeDb: lastAmplitude, clearTime: timestamp, frequencyHz })
-        // Cap map size to prevent unbounded growth during transient-heavy scenes
-        if (recentDecays.size > 100) {
-          const iter = recentDecays.keys()
-          recentDecays.delete(iter.next().value!)
-        }
       }
       trackManager.pruneInactiveTracks(timestamp)
 
@@ -886,11 +879,6 @@ self.onmessage = (event: MessageEvent<WorkerInboundMessage>) => {
       self.postMessage({ type: 'tracksUpdate', tracks: trackManager.getActiveTracks() } satisfies WorkerOutboundMessage)
       break
     }
-  }
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err)
-    console.error('[DSP Worker] Uncaught error:', message)
-    self.postMessage({ type: 'error', message } satisfies WorkerOutboundMessage)
   }
 }
 
