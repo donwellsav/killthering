@@ -13,13 +13,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
@@ -242,23 +242,23 @@ export const SettingsPanel = memo(function SettingsPanel({
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
+    <Sheet>
+      <SheetTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground h-14 w-14 p-0 sm:h-auto sm:w-auto sm:px-3" aria-label="Settings">
           <Settings className="w-7 h-7 sm:w-4 sm:h-4" />
           <span className="hidden sm:inline text-xs">Settings</span>
         </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
+      </SheetTrigger>
+      <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Settings
-          </DialogTitle>
-          <DialogDescription className="text-xs">
+          </SheetTitle>
+          <SheetDescription className="text-xs">
             Detection, algorithms, display, room acoustics, and advanced tuning.
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
         <Tabs defaultValue="detection" className="mt-4">
           <TabsList className="grid w-full grid-cols-5">
@@ -1201,7 +1201,7 @@ export const SettingsPanel = memo(function SettingsPanel({
             {hasSavedDefaults ? 'Saved defaults available' : 'Save current settings to reuse later'}
           </p>
         </div>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 })

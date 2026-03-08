@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.85',
+    date: '2026-03-08',
+    changes: [
+      { type: 'ui', description: 'Settings panel converted from blocking modal to slide-in sheet for consistency' },
+    ],
+  },
+  {
     version: '1.0.84',
     date: '2026-03-08',
     changes: [
