@@ -7,8 +7,16 @@ import { HelpMenu } from './HelpMenu'
 import { SettingsPanel } from './SettingsPanel'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { LayoutGrid, Maximize2, Minimize2, Pause, Play } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { LayoutGrid, Maximize2, Mic, Minimize2, Pause, Play } from 'lucide-react'
 import type { OperationMode, DetectorSettings } from '@/types/advisory'
+import type { AudioDevice } from '@/hooks/useAudioDevices'
 
 interface HeaderBarProps {
   isRunning: boolean
@@ -28,6 +36,9 @@ interface HeaderBarProps {
   toggleFullscreen: () => void
   isFrozen: boolean
   toggleFreeze: () => void
+  devices: AudioDevice[]
+  selectedDeviceId: string
+  onDeviceChange: (deviceId: string) => void
 }
 
 export const HeaderBar = memo(function HeaderBar({
@@ -37,6 +48,7 @@ export const HeaderBar = memo(function HeaderBar({
   isAutoGain, autoGainDb, autoGainLocked,
   resetLayout, isFullscreen, toggleFullscreen,
   isFrozen, toggleFreeze,
+  devices, selectedDeviceId, onDeviceChange,
 }: HeaderBarProps) {
   return (
     <header className="relative flex items-center justify-between gap-2 px-3 py-3 border-b border-border bg-card/80 backdrop-blur-sm sm:px-4 sm:py-2 sm:gap-4">
@@ -128,6 +140,44 @@ export const HeaderBar = memo(function HeaderBar({
 
       {/* ── Action icons (right side) ──────────────────── */}
       <div className="flex items-center justify-end gap-2 sm:gap-2 sm:px-0 text-xs text-muted-foreground sm:flex-shrink-0">
+
+        {/* Audio source selector */}
+        {devices.length > 0 && (
+          <DropdownMenu>
+            <TooltipProvider delayDuration={400}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                      aria-label="Select audio input"
+                    >
+                      <Mic className="w-3 h-3" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  Audio input
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <DropdownMenuContent align="end" className="max-w-[280px]">
+              <DropdownMenuRadioGroup value={selectedDeviceId} onValueChange={onDeviceChange}>
+                <DropdownMenuRadioItem value="" className="text-xs">
+                  Default (System)
+                </DropdownMenuRadioItem>
+                {devices.map(d => (
+                  <DropdownMenuRadioItem key={d.deviceId} value={d.deviceId} className="text-xs truncate">
+                    {d.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
+
         {noiseFloorDb !== null && (
           <span className="font-mono text-[0.5625rem] sm:text-[0.625rem] hidden landscape:inline mr-auto sm:mr-0">
             Floor: {noiseFloorDb.toFixed(0)}dB

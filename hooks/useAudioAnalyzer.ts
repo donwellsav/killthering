@@ -61,8 +61,9 @@ export interface UseAudioAnalyzerState {
 }
 
 export interface UseAudioAnalyzerReturn extends UseAudioAnalyzerState {
-  start: () => Promise<void>
+  start: (options?: { deviceId?: string }) => Promise<void>
   stop: () => void
+  switchDevice: (deviceId: string) => Promise<void>
   updateSettings: (settings: Partial<DetectorSettings>) => void
   resetSettings: () => void
   settings: DetectorSettings
@@ -256,16 +257,19 @@ export function useAudioAnalyzer(
     dspWorkerRef.current.updateSettings(settings)
   }, [settings]) // dspWorker is stable — access via ref
 
-  const start = useCallback(async () => {
+  const deviceIdRef = useRef<string>('')
+
+  const start = useCallback(async (options: { deviceId?: string } = {}) => {
     if (!analyzerRef.current) return
-    
+    const deviceId = options.deviceId ?? deviceIdRef.current
+
     try {
       // Clear previous advisories + worker state when starting fresh analysis
       tracksRef.current = []
       setState(prev => ({ ...prev, advisories: [], earlyWarning: null }))
       dspWorkerRef.current.reset()
-      
-      await analyzerRef.current.start()
+
+      await analyzerRef.current.start({ deviceId: deviceId || undefined })
       const analyzerState = analyzerRef.current.getState()
 
       // Init worker with current settings + audio context params
@@ -301,6 +305,19 @@ export function useAudioAnalyzer(
     }))
   }, [])
 
+  const switchDevice = useCallback(async (deviceId: string) => {
+    deviceIdRef.current = deviceId
+    if (!analyzerRef.current) return
+    // Hot-swap: release old mic, start with new device
+    const wasRunning = state.isRunning
+    if (wasRunning) {
+      analyzerRef.current.stop({ releaseMic: true })
+      await analyzerRef.current.start({ deviceId: deviceId || undefined })
+      const analyzerState = analyzerRef.current.getState()
+      dspWorkerRef.current.init(settingsRef.current, analyzerState.sampleRate, analyzerState.fftSize)
+    }
+  }, [state.isRunning])
+
   const updateSettings = useCallback((newSettings: Partial<DetectorSettings>) => {
     setSettings(prev => ({ ...prev, ...newSettings }))
   }, [])
@@ -314,6 +331,7 @@ export function useAudioAnalyzer(
     settings,
     start,
     stop,
+    switchDevice,
     updateSettings,
     resetSettings,
     spectrumRef,

@@ -6,7 +6,7 @@
   "display": "standalone",
   "orientation": "any",
   "background_color": "#1a1a1a",
-  "theme_color": "#3B82F6",
+  "theme_color": "#1a1a1a",
   "scope": "/",
   "lang": "en",
   "categories": ["music", "utilities", "productivity"],

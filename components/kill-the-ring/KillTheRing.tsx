@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef, useMemo, memo } from 'react'
 import { useAudioAnalyzer } from '@/hooks/useAudioAnalyzer'
+import { useAudioDevices } from '@/hooks/useAudioDevices'
 import { useAdvisoryLogging } from '@/hooks/useAdvisoryLogging'
 import { useFullscreen } from '@/hooks/useFullscreen'
 import { HeaderBar } from './HeaderBar'
@@ -27,9 +28,12 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     settings,
     start,
     stop,
+    switchDevice,
     updateSettings,
     resetSettings,
   } = useAudioAnalyzer()
+
+  const { devices, selectedDeviceId, setSelectedDeviceId } = useAudioDevices()
 
   const activeAdvisoryCount = useMemo(
     () => advisories.filter(a => !a.resolved).length,
@@ -56,6 +60,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
   const rootRef = useRef<HTMLDivElement>(null)
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(rootRef)
 
+  // Wrap start to always pass the persisted device preference
+  const startWithDevice = useCallback(() => {
+    start({ deviceId: selectedDeviceId || undefined })
+  }, [start, selectedDeviceId])
+
   // Auto-unfreeze when stopping analysis
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: reset UI state on stop
@@ -69,7 +78,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       switch (e.key) {
         case ' ':
           e.preventDefault()
-          if (isRunning) stop(); else start()
+          if (isRunning) stop(); else startWithDevice()
           break
         case 'p': case 'P':
           if (!isRunning) return
@@ -96,7 +105,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isRunning, toggleFreeze, start, stop, toggleFullscreen])
+  }, [isRunning, toggleFreeze, startWithDevice, stop, toggleFullscreen])
 
   // Dismissed advisory IDs — hidden until the advisory disappears and a new one is detected
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
@@ -269,6 +278,11 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     updateSettings({ minFrequency: min, maxFrequency: max })
   }, [updateSettings])
 
+  const handleDeviceChange = useCallback((deviceId: string) => {
+    setSelectedDeviceId(deviceId)
+    switchDevice(deviceId)
+  }, [setSelectedDeviceId, switchDevice])
+
   const inputLevel = spectrumStatus?.peak ?? -60
   const autoGainDb = spectrumStatus?.autoGainDb
   const isAutoGain = spectrumStatus?.autoGainEnabled ?? settings.autoGainEnabled
@@ -278,7 +292,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
     <div ref={rootRef} className="flex flex-col h-screen bg-background">
       <HeaderBar
         isRunning={isRunning}
-        start={start}
+        start={startWithDevice}
         stop={stop}
         settings={settings}
         onSettingsChange={handleSettingsChange}
@@ -294,6 +308,9 @@ export const KillTheRing = memo(function KillTheRingComponent() {
         toggleFullscreen={toggleFullscreen}
         isFrozen={isFrozen}
         toggleFreeze={toggleFreeze}
+        devices={devices}
+        selectedDeviceId={selectedDeviceId}
+        onDeviceChange={handleDeviceChange}
       />
 
       {error && (
@@ -306,7 +323,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
         mobileTab={mobileTab}
         setMobileTab={setMobileTab}
         isRunning={isRunning}
-        start={start}
+        start={startWithDevice}
         isFrozen={isFrozen}
         toggleFreeze={toggleFreeze}
         advisories={advisories}
@@ -337,7 +354,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
       <DesktopLayout
         layoutKey={layoutKey}
         isRunning={isRunning}
-        start={start}
+        start={startWithDevice}
         isFrozen={isFrozen}
         toggleFreeze={toggleFreeze}
         advisories={advisories}

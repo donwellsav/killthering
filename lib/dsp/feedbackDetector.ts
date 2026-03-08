@@ -157,7 +157,7 @@ export class FeedbackDetector {
 
   // ==================== Public API ====================
 
-  async start(options: { stream?: MediaStream; audioContext?: AudioContext } = {}): Promise<void> {
+  async start(options: { stream?: MediaStream; audioContext?: AudioContext; deviceId?: string } = {}): Promise<void> {
     if (this.isRunning) return
 
     // Initialize AudioContext
@@ -179,6 +179,7 @@ export class FeedbackDetector {
       try {
         this.stream = await navigator.mediaDevices.getUserMedia({
           audio: {
+            ...(options.deviceId ? { deviceId: { exact: options.deviceId } } : {}),
             echoCancellation: false,
             noiseSuppression: false,
             autoGainControl: false,

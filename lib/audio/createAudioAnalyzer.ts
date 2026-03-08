@@ -86,11 +86,11 @@ export class AudioAnalyzer {
 
   // ==================== Public API ====================
 
-  async start(): Promise<void> {
+  async start(options: { deviceId?: string } = {}): Promise<void> {
     if (this._isRunning) return
 
     try {
-      await this.detector.start()
+      await this.detector.start({ deviceId: options.deviceId })
       this._isRunning = true
       this._hasPermission = true
       this._error = null
