@@ -702,7 +702,7 @@ export const VIZ_COLORS = {
   PHASE_RANDOM: '#9ca3af', // gray-400 (low coherence)
   COMPRESSION: '#f59e0b', // amber-500 (compression detected)
   COMB_PATTERN: '#8b5cf6', // violet-500 (comb pattern)
-  AXIS_LABEL: '#a1a1aa', // zinc-400 — readable on dark backgrounds
+  AXIS_LABEL: '#d4d4d8', // zinc-300 — brighter for outdoor readability
 } as const
 
 // ============================================================================

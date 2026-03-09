@@ -90,7 +90,14 @@ function drawIndicatorLines(
   // Noise floor
   if (spectrum?.noiseFloorDb !== null && spectrum?.noiseFloorDb !== undefined) {
     const floorY = ((range.dbMax - spectrum.noiseFloorDb) / (range.dbMax - range.dbMin)) * plotHeight
+
+    // Semi-transparent fill below noise floor (subtle region indicator)
+    ctx.fillStyle = `${VIZ_COLORS.NOISE_FLOOR}0D` // ~5% opacity
+    ctx.fillRect(0, floorY, plotWidth, plotHeight - floorY)
+
+    // Noise floor line
     ctx.strokeStyle = VIZ_COLORS.NOISE_FLOOR
+    ctx.globalAlpha = 0.6
     ctx.lineWidth = 1
     ctx.setLineDash([4, 4])
     ctx.beginPath()
@@ -98,10 +105,11 @@ function drawIndicatorLines(
     ctx.lineTo(plotWidth, floorY)
     ctx.stroke()
     ctx.setLineDash([])
+
     // Right-aligned label
     ctx.font = `${Math.max(8, fontSize - 2)}px monospace`
     ctx.fillStyle = VIZ_COLORS.NOISE_FLOOR
-    ctx.globalAlpha = 0.7
+    ctx.globalAlpha = 0.85
     ctx.textAlign = 'right'
     ctx.fillText('Floor', plotWidth - 4, floorY - 4)
     ctx.globalAlpha = 1
@@ -383,9 +391,15 @@ function drawAxisLabels(
   width: number,
   height: number,
 ) {
-  ctx.fillStyle = VIZ_COLORS.AXIS_LABEL
   ctx.font = `${fontSize}px monospace`
   ctx.textBaseline = 'middle'
+
+  // Text shadow for outdoor readability (dark halo behind bright labels)
+  ctx.shadowColor = 'rgba(0,0,0,0.7)'
+  ctx.shadowBlur = 3
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
+  ctx.fillStyle = VIZ_COLORS.AXIS_LABEL
 
   // Y-axis (dB)
   ctx.textAlign = 'right'
@@ -402,6 +416,10 @@ function drawAxisLabels(
     const label = freq >= 1000 ? `${freq / 1000}k` : `${freq}`
     ctx.fillText(label, x, xLabelY)
   }
+
+  // Reset shadow
+  ctx.shadowColor = 'transparent'
+  ctx.shadowBlur = 0
 }
 
 // ─── Placeholder spectrum (static ambient noise curve) ─────────────────────────

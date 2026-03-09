@@ -14,6 +14,14 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.115',
+    date: '2026-03-09',
+    changes: [
+      { type: 'ui', description: 'Noise floor line more visible with 5% fill below for region clarity' },
+      { type: 'ui', description: 'Axis labels brighter (zinc-300) with dark text shadow for outdoor readability' },
+    ],
+  },
+  {
     version: '1.0.114',
     date: '2026-03-09',
     changes: [
