@@ -93,7 +93,7 @@ export const DesktopLayout = memo(function DesktopLayout({
               {!issuesPanelOpen && (
                 <button
                   onClick={() => setActiveSidebarTab('issues')}
-                  className={`flex-1 py-1.5 text-[0.625rem] font-medium uppercase tracking-wide transition-colors ${
+                  className={`flex-1 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
                     activeSidebarTab === 'issues'
                       ? 'text-foreground border-b-2 border-primary'
                       : 'text-muted-foreground hover:text-foreground'
@@ -107,7 +107,7 @@ export const DesktopLayout = memo(function DesktopLayout({
               )}
               <button
                 onClick={() => setActiveSidebarTab('controls')}
-                className={`flex-1 py-1.5 text-[0.625rem] font-medium uppercase tracking-wide transition-colors ${
+                className={`flex-1 py-1.5 text-xs font-medium uppercase tracking-wide transition-colors ${
                   activeSidebarTab === 'controls'
                     ? 'text-foreground border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
@@ -173,7 +173,7 @@ export const DesktopLayout = memo(function DesktopLayout({
         >
           <div className="flex flex-col h-full bg-card/50 overflow-hidden">
             <div className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 border-b border-border bg-muted/20">
-              <h2 className="text-[0.625rem] text-muted-foreground uppercase tracking-wide font-medium flex items-center gap-1.5">
+              <h2 className="text-xs text-muted-foreground uppercase tracking-wide font-medium flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3" />
                 Issues
                 {activeAdvisoryCount > 0 && (
@@ -214,19 +214,19 @@ export const DesktopLayout = memo(function DesktopLayout({
                 <div className="h-full bg-card/60 rounded-lg border border-border overflow-hidden flex flex-col">
                   <div className="flex-shrink-0 flex items-center justify-between px-2 py-1 border-b border-border bg-muted/20">
                     <div className="flex items-center gap-1">
-                      <span className="text-[0.5rem] font-medium text-primary">RTA</span>
+                      <span className="text-xs font-medium text-primary">RTA</span>
                       {isRunning && (
-                        <button onClick={toggleFreeze} className={`px-1.5 py-0.5 rounded text-[0.5rem] font-medium transition-colors ${isFrozen ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}>
+                        <button onClick={toggleFreeze} className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${isFrozen ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}>
                           {isFrozen ? 'Live' : 'Freeze'}
                         </button>
                       )}
                       {hasActiveRTAMarkers && (
-                        <button onClick={onClearRTA} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <button onClick={onClearRTA} className="px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                           Clear
                         </button>
                       )}
                     </div>
-                    <span className="text-[0.625rem] text-muted-foreground font-mono whitespace-nowrap">
+                    <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
                       {isRunning && noiseFloorDb != null
                         ? `${noiseFloorDb.toFixed(0)}dB`
                         : 'Ready'}
@@ -247,9 +247,9 @@ export const DesktopLayout = memo(function DesktopLayout({
                 <div className="h-full bg-card/60 rounded-lg border border-border overflow-hidden flex flex-col min-w-0">
                   <div className="flex-shrink-0 flex items-center px-2 py-0.5 border-b border-border bg-muted/20">
                     <div className="flex items-center gap-1">
-                      <span className="text-[0.5rem] font-medium text-primary">GEQ</span>
+                      <span className="text-xs font-medium text-primary">GEQ</span>
                       {hasActiveGEQBars && (
-                        <button onClick={onClearGEQ} className="px-1.5 py-0.5 rounded text-[0.5rem] font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        <button onClick={onClearGEQ} className="px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                           Clear
                         </button>
                       )}

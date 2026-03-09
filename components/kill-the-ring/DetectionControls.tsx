@@ -50,7 +50,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                     minFrequency: preset.minFrequency,
                     maxFrequency: preset.maxFrequency,
                   })}
-                  className={`px-1.5 py-0.5 rounded text-[0.625rem] font-medium transition-colors ${
+                  className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-primary/20 text-primary border border-primary/40'
                       : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -96,7 +96,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
               </Tooltip>
             )}
             {settings.autoMusicAware && (
-              <span className={`px-1 py-px rounded text-[0.625rem] font-medium border leading-4 ${
+              <span className={`px-1 py-px rounded text-xs font-medium border leading-4 ${
                 settings.musicAware
                   ? 'bg-primary/10 border-primary/40 text-primary'
                   : 'bg-muted border-border text-muted-foreground'
@@ -132,7 +132,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
               onChange={(v) => onSettingsChange({ feedbackThresholdDb: v })}
             />
             <div className="flex items-center justify-end gap-1.5 mt-0.5">
-              <label htmlFor="show-threshold-line" className="text-[0.5625rem] text-muted-foreground cursor-pointer">Show on RTA</label>
+              <label htmlFor="show-threshold-line" className="text-xs text-muted-foreground cursor-pointer">Show on RTA</label>
               <Switch
                 id="show-threshold-line"
                 checked={settings.showThresholdLine}
@@ -206,7 +206,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                 onSettingsChange({ algorithmMode: 'custom' as AlgorithmMode })
               }
             }}
-            className={`w-full px-1.5 py-0.5 rounded text-[0.625rem] font-medium transition-colors ${
+            className={`w-full px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
               settings.algorithmMode === 'auto'
                 ? 'bg-primary/20 text-primary border border-primary/40'
                 : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -237,7 +237,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                     }
                     onSettingsChange({ enabledAlgorithms: next })
                   }}
-                  className={`px-1 py-0.5 rounded text-[0.625rem] font-medium text-center transition-colors ${
+                  className={`px-1 py-0.5 rounded text-xs font-medium text-center transition-colors ${
                     enabled
                       ? 'bg-primary/20 text-primary border border-primary/40'
                       : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -302,7 +302,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                   <button
                     key={mode}
                     onClick={() => onModeChange(mode)}
-                    className={`px-1.5 py-0.5 rounded text-[0.625rem] font-medium transition-colors ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
                       isActive
                         ? 'bg-primary/20 text-primary border border-primary/40'
                         : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -358,7 +358,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                   <button
                     key={style}
                     onClick={() => onSettingsChange({ eqPreset: style })}
-                    className={`px-1.5 py-0.5 rounded text-[0.625rem] font-medium transition-colors ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
                       isActive
                         ? 'bg-primary/20 text-primary border border-primary/40'
                         : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'

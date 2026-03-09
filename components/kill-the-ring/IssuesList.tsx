@@ -62,7 +62,7 @@ export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10,
               {onClearResolved && hasResolved && (
                 <button
                   onClick={onClearResolved}
-                  className="text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
                 >
                   Clear Resolved
                 </button>
@@ -70,7 +70,7 @@ export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10,
               {onClearAll && (
                 <button
                   onClick={onClearAll}
-                  className="text-[0.625rem] text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-wide"
                 >
                   Clear All
                 </button>
@@ -172,10 +172,10 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
               </Tooltip>
             </TooltipProvider>
             {pitchStr && (
-              <span className="text-[0.5625rem] font-mono text-muted-foreground leading-none">{pitchStr}</span>
+              <span className="text-xs font-mono text-muted-foreground leading-none">{pitchStr}</span>
             )}
             {bandHz != null && bandHz !== advisory.trueFrequencyHz && (
-              <span className="text-[0.5rem] font-mono text-muted-foreground/50 leading-none">
+              <span className="text-xs font-mono text-muted-foreground/50 leading-none">
                 → {formatFrequency(bandHz)}
               </span>
             )}
@@ -198,7 +198,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
         {/* Row 2: Badges — severity, confidence, repeat, cluster */}
         <div className="flex items-center gap-1 flex-wrap">
           <span
-            className="text-[0.5625rem] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none"
+            className="text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none"
             style={{ backgroundColor: `${severityColor}22`, color: severityColor, border: `1px solid ${severityColor}44` }}
           >
             {getSeverityText(advisory.severity)}
@@ -206,7 +206,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
 
           {advisory.confidence != null && (
             <span
-              className={`text-[0.5625rem] font-mono px-1 py-0.5 rounded-sm leading-none ${
+              className={`text-xs font-mono px-1 py-0.5 rounded-sm leading-none ${
                 advisory.confidence >= 0.85
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                   : advisory.confidence >= 0.70
@@ -225,7 +225,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
             <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-0.5 text-[0.5625rem] text-amber-400 bg-amber-500/20 px-1 py-0.5 rounded-sm border border-amber-500/30">
+                  <span className="inline-flex items-center gap-0.5 text-xs text-amber-400 bg-amber-500/20 px-1 py-0.5 rounded-sm border border-amber-500/30">
                     <TrendingUp className="w-2.5 h-2.5" />
                     {occurrenceCount}×
                   </span>
@@ -241,7 +241,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
             <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center text-[0.5625rem] text-sky-400 bg-sky-500/20 px-1 py-0.5 rounded-sm border border-sky-500/30">
+                  <span className="inline-flex items-center text-xs text-sky-400 bg-sky-500/20 px-1 py-0.5 rounded-sm border border-sky-500/30">
                     +{(advisory.clusterCount ?? 1) - 1}
                   </span>
                 </TooltipTrigger>
@@ -253,7 +253,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
           )}
 
           {isResolved && (
-            <span className="text-[0.5625rem] font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none bg-muted text-muted-foreground border border-border">
+            <span className="text-xs font-medium uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none bg-muted text-muted-foreground border border-border">
               Resolved
             </span>
           )}
@@ -261,7 +261,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
 
         {/* Row 3: Runaway / warning alert */}
         {(isRunaway || isWarning) && !isResolved && (
-          <div className={`flex items-center gap-1 text-[0.5625rem] font-bold uppercase tracking-wide ${
+          <div className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wide ${
             isRunaway ? 'text-red-400' : 'text-amber-400'
           }`}>
             <AlertTriangle className={`w-2.5 h-2.5 flex-shrink-0 ${isRunaway ? 'animate-pulse' : ''}`} />
@@ -273,7 +273,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
 
         {/* Row 4: EQ recommendation */}
         {hasEq && (
-          <div className="flex items-center gap-1.5 sm:gap-3 text-[0.5625rem] font-mono text-muted-foreground bg-muted/30 -mx-1.5 px-1.5 py-1 rounded-sm">
+          <div className="flex items-center gap-1.5 sm:gap-3 text-xs font-mono text-muted-foreground bg-muted/30 -mx-1.5 px-1.5 py-1 rounded-sm">
             <span>
               GEQ <span className="text-foreground font-medium">{geq?.suggestedDb}dB</span>
               <span className="text-muted-foreground/50"> @ {geq?.bandHz}</span>
