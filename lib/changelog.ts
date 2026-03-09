@@ -14,6 +14,23 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.75.0',
+    date: '2026-03-09',
+    changes: [
+      { type: 'feat', description: 'Moved export/clear actions from bottom to top of panel' },
+      { type: 'feat', description: 'Replaced fixed-height `ScrollArea h-[250px]` with natural `overflow-y-auto` panel scrolling' },
+      { type: 'feat', description: 'Added `SheetDescription` and `text-lg` title to match SettingsPanel/HelpMenu patterns' },
+      { type: 'feat', description: 'Replaced magic width classes with standard `sm:max-w-md`' },
+      { type: 'feat', description: 'Made Clear button visible with text label and destructive hover styling' },
+      { type: 'feat', description: '[ ] Open Feedback History panel — action buttons visible at top' },
+      { type: 'feat', description: '[ ] Panel scrolls naturally when content overflows' },
+      { type: 'feat', description: '[ ] Empty state shows no wasted space' },
+      { type: 'feat', description: '[ ] Clear button shows destructive hover styling' },
+      { type: 'feat', description: '[ ] AlertDialog confirmation still works on Clear' },
+      { type: 'feat', description: '[ ] Mobile viewport renders cleanly' },
+    ],
+  },
+  {
     version: '0.74.1',
     date: '2026-03-09',
     highlights: 'Codebase audit — 27 bug fixes',
