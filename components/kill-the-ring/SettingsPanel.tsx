@@ -77,7 +77,7 @@ export const SettingsPanel = memo(function SettingsPanel({
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="ghost" size="icon" className="h-14 w-14 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground" aria-label="Settings">
-          <Settings className="h-7 w-7 sm:h-4 sm:w-4" />
+          <Settings className="h-7 w-7 sm:h-5 sm:w-5" />
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
