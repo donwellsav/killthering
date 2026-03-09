@@ -195,7 +195,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
           {/* RIGHT: Badges in 2 rows + dismiss */}
           <div className="flex flex-col items-end gap-0.5 flex-shrink-0">
             {/* Row 1: status — repeat, cluster, resolved, dismiss */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 justify-end">
               {occurrenceCount >= 3 && (
                 <TooltipProvider delayDuration={300}>
                   <Tooltip>
@@ -247,7 +247,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
             </div>
 
             {/* Row 2: classification — severity, confidence */}
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 justify-end">
               <span
                 className="inline-flex items-center text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none"
                 style={{ backgroundColor: `${severityColor}22`, color: severityColor, border: `1px solid ${severityColor}44` }}
