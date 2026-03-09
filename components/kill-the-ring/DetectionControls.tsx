@@ -1,7 +1,7 @@
 'use client'
 
 import React, { memo, useCallback, useState, useMemo } from 'react'
-import { HelpCircle, Save, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
+import { HelpCircle, Save, Trash2 } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -102,14 +102,29 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
     <TooltipProvider delayDuration={400}>
       <div className="space-y-1.5">
 
-        {/* Quick / Full toggle */}
-        <button
-          onClick={() => onSettingsChange({ quickControlsMode: !isQuick })}
-          className="w-full flex items-center justify-between px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border"
-        >
-          <span>{isQuick ? 'Quick Controls' : 'Full Controls'}</span>
-          {isQuick ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
-        </button>
+        {/* Quick / Full toggle pills */}
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => onSettingsChange({ quickControlsMode: true })}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              isQuick
+                ? 'bg-primary/20 text-primary border border-primary/40'
+                : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+            }`}
+          >
+            Quick Controls
+          </button>
+          <button
+            onClick={() => onSettingsChange({ quickControlsMode: false })}
+            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+              !isQuick
+                ? 'bg-primary/20 text-primary border border-primary/40'
+                : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
+            }`}
+          >
+            Full Controls
+          </button>
+        </div>
 
         {/* Freq range — dual slider + preset chips */}
         <div className="space-y-1">
