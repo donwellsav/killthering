@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.112',
+    date: '2026-03-09',
+    changes: [
+      { type: 'fix', description: 'Header icons now actually render at 24px (shadcn Button was overriding w/h classes)' },
+    ],
+  },
+  {
     version: '1.0.111',
     date: '2026-03-09',
     changes: [

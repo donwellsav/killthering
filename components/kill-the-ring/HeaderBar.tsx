@@ -61,7 +61,7 @@ export const HeaderBar = memo(function HeaderBar({
                 <div className="absolute inset-1 rounded-full border-2 border-primary animate-ping opacity-30" />
               )}
               <svg
-                className={`w-6 h-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+                className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -94,7 +94,7 @@ export const HeaderBar = memo(function HeaderBar({
               <div className="absolute inset-1 rounded-full border-2 border-primary animate-ping opacity-30" />
             )}
             <svg
-              className={`w-6 h-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
               viewBox="0 0 24 24"
               fill="currentColor"
             >
@@ -129,7 +129,7 @@ export const HeaderBar = memo(function HeaderBar({
                     className="h-10 w-10 text-muted-foreground hover:text-foreground"
                     aria-label="Select audio input"
                   >
-                    <Mic className="w-6 h-6" />
+                    <Mic className="size-6" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
@@ -161,7 +161,7 @@ export const HeaderBar = memo(function HeaderBar({
               className="hidden landscape:flex h-10 w-10 text-muted-foreground hover:text-foreground"
               aria-label="Reset layout"
             >
-              <LayoutGrid className="w-6 h-6" />
+              <LayoutGrid className="size-6" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
@@ -178,7 +178,7 @@ export const HeaderBar = memo(function HeaderBar({
               className="hidden landscape:flex h-10 w-10 text-muted-foreground hover:text-foreground"
               aria-label="Toggle fullscreen"
             >
-              {isFullscreen ? <Minimize2 className="w-6 h-6" /> : <Maximize2 className="w-6 h-6" />}
+              {isFullscreen ? <Minimize2 className="size-6" /> : <Maximize2 className="size-6" />}
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
@@ -199,7 +199,7 @@ export const HeaderBar = memo(function HeaderBar({
                 aria-label={isFrozen ? 'Unfreeze spectrum' : 'Freeze spectrum'}
                 aria-pressed={isFrozen}
               >
-                {isFrozen ? <Play className="w-6 h-6" /> : <Pause className="w-6 h-6" />}
+                {isFrozen ? <Play className="size-6" /> : <Pause className="size-6" />}
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">
