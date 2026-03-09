@@ -573,6 +573,9 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
   const gradientHeightRef = useRef(0)
   const peakHoldRef = useRef<Float32Array | null>(null)
 
+  // Hover tooltip: track mouse position for freq+dB readout (null = not hovering)
+  const hoverPosRef = useRef<{ x: number; y: number } | null>(null)
+
   // Dirty-bit: skip canvas redraw when nothing has changed
   const lastSpectrumRef = useRef<SpectrumData | null>(null)
   const dirtyRef = useRef(true) // Start dirty to ensure first frame draws
@@ -701,6 +704,54 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       ctx.fillText(badgeText, bx, by + py)
     }
 
+    // Hover tooltip — freq + dB readout at cursor position
+    const hover = hoverPosRef.current
+    if (hover && !dragRef.current) {
+      const hPos = clamp(hover.x / plotWidth, 0, 1)
+      const hoverFreq = logPositionToFreq(hPos, range.freqMin, range.freqMax)
+      const hoverDb = range.dbMax - (hover.y / plotHeight) * (range.dbMax - range.dbMin)
+
+      const freqStr = formatFrequency(hoverFreq)
+      const dbStr = `${Math.round(hoverDb)} dB`
+      const label = `${freqStr}  ${dbStr}`
+
+      ctx.font = `bold ${fontSize - 1}px monospace`
+      const tw = ctx.measureText(label).width
+      const tipPad = 6
+      const tipH = fontSize + tipPad * 2
+      const tipW = tw + tipPad * 2
+
+      // Position tooltip near cursor, flip if near edges
+      let tipX = hover.x + 12
+      let tipY = hover.y - tipH - 4
+      if (tipX + tipW > plotWidth) tipX = hover.x - tipW - 12
+      if (tipY < 0) tipY = hover.y + 16
+
+      // Background pill
+      ctx.fillStyle = 'rgba(0,0,0,0.8)'
+      ctx.beginPath()
+      ctx.roundRect(tipX, tipY, tipW, tipH, 4)
+      ctx.fill()
+
+      // Text
+      ctx.fillStyle = '#e5e5e5'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'top'
+      ctx.fillText(label, tipX + tipPad, tipY + tipPad)
+
+      // Crosshair lines (subtle)
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+      ctx.lineWidth = 1
+      ctx.setLineDash([4, 4])
+      ctx.beginPath()
+      ctx.moveTo(hover.x, 0)
+      ctx.lineTo(hover.x, plotHeight)
+      ctx.moveTo(0, hover.y)
+      ctx.lineTo(plotWidth, hover.y)
+      ctx.stroke()
+      ctx.setLineDash([])
+    }
+
     ctx.restore()
 
     drawAxisLabels(ctx, padding, plotWidth, plotHeight, range, fontSize, width, height)
@@ -803,6 +854,47 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       canvas.removeEventListener('pointercancel', onPointerCancel)
     }
   }, [onFreqRangeChange])
+
+  // Hover tooltip: mousemove/mouseleave to track cursor for freq+dB readout
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    // Skip hover tooltip on touch-primary devices (interferes with touch interactions)
+    if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) return
+
+    function onMouseMove(e: MouseEvent) {
+      // Don't show tooltip while dragging freq range lines
+      if (dragRef.current) {
+        hoverPosRef.current = null
+        return
+      }
+      const rect = canvas!.getBoundingClientRect()
+      const { left: padLeft, top: padTop, plotWidth, plotHeight } = paddingRef.current
+      const x = e.clientX - rect.left - padLeft
+      const y = e.clientY - rect.top - padTop
+
+      // Only show tooltip within the plot area
+      if (x >= 0 && x <= plotWidth && y >= 0 && y <= plotHeight) {
+        hoverPosRef.current = { x, y }
+      } else {
+        hoverPosRef.current = null
+      }
+      dirtyRef.current = true
+    }
+
+    function onMouseLeave() {
+      hoverPosRef.current = null
+      dirtyRef.current = true
+    }
+
+    canvas.addEventListener('mousemove', onMouseMove)
+    canvas.addEventListener('mouseleave', onMouseLeave)
+    return () => {
+      canvas.removeEventListener('mousemove', onMouseMove)
+      canvas.removeEventListener('mouseleave', onMouseLeave)
+    }
+  }, [])
 
   // Keyboard handler for freq range adjustment (a11y: arrow keys)
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {

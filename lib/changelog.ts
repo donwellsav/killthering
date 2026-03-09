@@ -14,6 +14,15 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.0.113',
+    date: '2026-03-09',
+    changes: [
+      { type: 'ui', description: 'Keyboard shortcut labels added to header tooltips (L, F, P)' },
+      { type: 'feat', description: 'Hover tooltip on spectrum canvas shows frequency + dB at cursor position' },
+      { type: 'ui', description: 'Subtle crosshair lines follow cursor over spectrum display' },
+    ],
+  },
+  {
     version: '1.0.112',
     date: '2026-03-09',
     changes: [

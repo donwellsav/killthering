@@ -165,7 +165,7 @@ export const HeaderBar = memo(function HeaderBar({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            Reset layout
+            Reset layout (L)
           </TooltipContent>
         </Tooltip>
 
@@ -182,7 +182,7 @@ export const HeaderBar = memo(function HeaderBar({
             </Button>
           </TooltipTrigger>
           <TooltipContent side="bottom" className="text-xs">
-            {isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            {isFullscreen ? 'Exit fullscreen (F)' : 'Fullscreen (F)'}
           </TooltipContent>
         </Tooltip>
 
