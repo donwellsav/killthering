@@ -88,13 +88,14 @@ C:\ktr\v0sucks-killthering2\
 │   │   ├── IssuesList.tsx        #   Issue cards (detected feedback problems)
 │   │   ├── SpectrumCanvas.tsx    #   RTA graph (frequency spectrum visualization)
 │   │   ├── GEQBarView.tsx        #   Graphic EQ bar chart visualization
-│   │   ├── SettingsPanel.tsx     #   Settings dialog (5 tabs)
+│   │   ├── SettingsPanel.tsx     #   Settings dialog (6 tabs)
 │   │   ├── HelpMenu.tsx          #   Help/documentation dialog (5 tabs)
 │   │   ├── DetectionControls.tsx #   Mode selector + quick-adjust sliders
 │   │   ├── InputMeterSlider.tsx  #   Input gain slider with level meter
 │   │   ├── VerticalGainFader.tsx #   Vertical gain slider component
 │   │   ├── EQNotepad.tsx         #   Saved EQ cuts notepad
-│   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback frequency log
+│   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback frequency log (dynamic multi-column)
+│   │   ├── MissedFeedbackButton.tsx # Mark false negatives for calibration
 │   │   ├── EarlyWarningPanel.tsx     # Pre-feedback warning indicators
 │   │   ├── AlgorithmStatusBar.tsx    # Shows which detection algorithm is active
 │   │   ├── FullscreenOverlay.tsx     # Fullscreen RTA overlay
@@ -103,12 +104,13 @@ C:\ktr\v0sucks-killthering2\
 │   │   ├── ErrorBoundary.tsx     #   Catches React crashes gracefully
 │   │   ├── index.ts              #   Barrel file — re-exports everything
 │   │   └── settings/             #   Settings panel tab components
-│   │       ├── AdvancedTab.tsx   #     Advanced/debug settings
-│   │       ├── AlgorithmsTab.tsx #     Detection algorithm selection
 │   │       ├── DetectionTab.tsx  #     Sensitivity/threshold controls
+│   │       ├── AlgorithmsTab.tsx #     Detection algorithm selection
 │   │       ├── DisplayTab.tsx    #     Visual preferences
 │   │       ├── RoomTab.tsx       #     Room preset & dimensions
-│   │       └── SettingsShared.tsx #    Shared setting row components
+│   │       ├── AdvancedTab.tsx   #     Advanced/debug settings
+│   │       ├── CalibrationTab.tsx #    Room profile, ambient capture, session recording
+│   │       └── SettingsShared.tsx #    Shared Section/Grid layout components
 │   │
 │   └── ui/                       # SHADCN PRIMITIVES — don't edit these
 │       ├── button.tsx            #   Pre-built accessible components
@@ -125,8 +127,10 @@ C:\ktr\v0sucks-killthering2\
 ├── hooks/                        # REACT HOOKS — reusable logic
 │   ├── useAudioAnalyzer.ts       #   THE BIG ONE — manages mic + FFT + DSP worker
 │   ├── useDSPWorker.ts           #   Creates and talks to the Web Worker
+│   ├── useCalibrationSession.ts  #   Calibration session data collection
 │   ├── useAnimationFrame.ts      #   requestAnimationFrame loop helper
 │   ├── useAdvisoryLogging.ts     #   Records advisories to feedback history
+│   ├── useFpsMonitor.ts          #   Real-time FPS counter for canvas
 │   ├── useFullscreen.ts          #   Fullscreen API wrapper
 │   ├── useAudioDevices.ts        #   Enumerate/select audio input devices
 │   ├── use-mobile.ts             #   Detect mobile/portrait orientation
@@ -136,27 +140,39 @@ C:\ktr\v0sucks-killthering2\
 │   ├── audio/
 │   │   └── createAudioAnalyzer.ts  # Mic access + AudioContext + FFT capture
 │   │
-│   ├── dsp/                      # DSP ENGINE (~7,500 lines) — the brain
+│   ├── calibration/              # CALIBRATION SYSTEM
+│   │   ├── calibrationSession.ts #   Session data collection (detections, missed, spectra)
+│   │   ├── calibrationExport.ts  #   JSON export builder with room profile + session data
+│   │   └── index.ts              #   Barrel export
+│   │
+│   ├── dsp/                      # DSP ENGINE (14 modules) — the brain
 │   │   ├── constants.ts          #   All magic numbers + operation mode presets
 │   │   ├── feedbackDetector.ts   #   Peak detection from FFT data
 │   │   ├── trackManager.ts       #   Tracks peaks over time (is it sustained?)
 │   │   ├── classifier.ts         #   Decides: feedback vs whistle vs instrument
 │   │   ├── eqAdvisor.ts          #   Generates EQ cut recommendations
 │   │   ├── dspWorker.ts          #   Web Worker entry — runs classifier off main thread
-│   │   ├── advancedDetection.ts  #   MSD + phase coherence algorithms
+│   │   ├── advancedDetection.ts  #   Barrel re-export for MSD, phase, compression, fusion
+│   │   ├── algorithmFusion.ts    #   Weighted fusion of all algorithm scores → verdict
 │   │   ├── feedbackHistory.ts    #   Remembers repeat offender frequencies
 │   │   ├── acousticUtils.ts      #   Room acoustics calculations
 │   │   └── severityUtils.ts      #   Severity level helpers
+│   │
+│   ├── export/                   # MULTI-FORMAT EXPORT
+│   │   ├── downloadFile.ts       #   Browser download via Blob + <a> element
+│   │   ├── exportPdf.ts          #   PDF report generation (jsPDF, dynamic import)
+│   │   └── exportTxt.ts          #   Fixed-width plain text report
 │   │
 │   ├── utils/
 │   │   ├── pitchUtils.ts         #   Hz → musical note conversion (e.g., 440Hz → A4)
 │   │   └── mathHelpers.ts        #   Generic math utilities
 │   │
-│   ├── changelog.ts              #   Version history entries (shown in About tab)
+│   ├── changelog.ts              #   Version history (auto-updated by CI, shown in About tab)
 │   └── utils.ts                  #   cn() helper for combining CSS classes
 │
 ├── types/
-│   └── advisory.ts               #   ALL TypeScript types in one file
+│   ├── advisory.ts               #   Core DSP types (Advisory, DetectorSettings, Track, etc.)
+│   └── calibration.ts            #   Room profile, session data, export formats
 │
 ├── styles/
 │   └── (Tailwind config)
@@ -177,7 +193,8 @@ C:\ktr\v0sucks-killthering2\
 - **`components/kill-the-ring/`** = UI changes (what you see)
 - **`lib/dsp/`** = Detection logic (what it calculates)
 - **`hooks/`** = Glue between UI and logic
-- **`types/advisory.ts`** = Shared data shapes
+- **`types/advisory.ts`** = Core DSP data shapes
+- **`types/calibration.ts`** = Room profile + session data shapes
 
 ---
 
@@ -318,7 +335,8 @@ Advisory emitted back to main thread
 
 ## 7. The Type System — Your Safety Net
 
-**Everything flows through `types/advisory.ts`.** This is the single source of truth.
+**Core DSP types live in `types/advisory.ts`** — detection results, advisories, settings, tracks.
+**Calibration types live in `types/calibration.ts`** — room profiles, session data, export formats.
 
 Key types you'll encounter constantly:
 
@@ -356,6 +374,12 @@ interface DetectorSettings {
   // ... 40+ settings
 }
 ```
+
+**Calibration types** (`types/calibration.ts`) define the room profiling system:
+- `RoomProfile` — venue name, dimensions, materials, mic types
+- `CalibrationSession` — recorded detections, missed annotations, spectra, settings history
+- `CalibrationExport` — complete JSON export combining room profile + session data
+- `CalibrationStats` — live session counters (detections, false positives, missed, snapshots)
 
 **Pro tip:** When you're confused about what data a component has, check what props it receives and trace them back to `Advisory` or `DetectorSettings`.
 
@@ -527,6 +551,20 @@ JSON.parse(localStorage.getItem('ktr-settings'))
 
 **Example: Change EQ recommendations**
 → Edit `eqAdvisor.ts`
+
+### Adding a new export format
+
+1. Create a formatter in `lib/export/` (e.g., `exportCsv.ts`)
+2. Follow the pattern in `exportTxt.ts` — pure function that takes advisories + settings, returns a string
+3. Wire it into `FeedbackHistoryPanel.tsx` export dropdown
+4. PDF uses dynamic `import()` to avoid bundling jsPDF unless needed; simpler formats can be synchronous
+
+### Modifying calibration data collection
+
+1. Extend the `CalibrationSession` class in `lib/calibration/calibrationSession.ts`
+2. Update types in `types/calibration.ts` if adding new data fields
+3. Update `lib/calibration/calibrationExport.ts` to include new data in the JSON export
+4. The React hook `hooks/useCalibrationSession.ts` wraps the session class — update it if the API surface changes
 
 ### Adding a new component
 

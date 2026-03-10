@@ -14,10 +14,13 @@ Built by [Don Wells AV](https://donwellsav.com).
 
 **Key files to understand the system:**
 - `lib/dsp/feedbackDetector.ts` - Core FFT analysis engine
-- `lib/dsp/advancedDetection.ts` - MSD, Phase, Spectral, Comb algorithms
+- `lib/dsp/advancedDetection.ts` - MSD, Phase, Spectral, Comb, IHR, PTMR algorithms
 - `lib/dsp/classifier.ts` - Feedback vs music classification
 - `lib/dsp/constants.ts` - All tunable parameters and defaults
-- `types/advisory.ts` - All TypeScript interfaces
+- `types/advisory.ts` - Core DSP TypeScript interfaces
+- `types/calibration.ts` - Calibration & room profile types
+- `lib/calibration/calibrationSession.ts` - Session data collector
+- `hooks/useCalibrationSession.ts` - React hook for calibration state
 
 **Current default values (as of last update):**
 - Input Gain: **+15 dB**
@@ -74,6 +77,9 @@ Built by [Don Wells AV](https://donwellsav.com).
 - **8 operation modes** tailored for speech, worship, live music, theater, monitors, ring out, broadcast, and outdoor
 - **Feedback history** with repeat offender tracking (localStorage persistence)
 - **EQ Notepad** for accumulating applied cuts during a session
+- **Calibration mode** — Room profile (dimensions, materials, mic types), ambient noise floor capture, session recording with spectrum snapshots, detection/settings history
+- **Multi-format export** — PDF reports (jsPDF), TXT summaries, CSV data, JSON calibration sessions
+- **Missed feedback annotations** — Mark false negatives by frequency band for calibration refinement
 - **PWA support** — installable, works offline via Serwist service worker
 
 ---
@@ -142,23 +148,41 @@ kill-the-ring/
 │   │   ├── EQNotepad.tsx             # Accumulated applied cuts
 │   │   ├── AlgorithmStatusBar.tsx    # Real-time algorithm state display
 │   │   ├── InputMeterSlider.tsx      # Combined input gain + level meter
-│   │   ├── SettingsPanel.tsx         # Settings dialog (5 tabs: Detection, Algorithms, Display, Room, Advanced)
+│   │   ├── SettingsPanel.tsx         # Settings dialog (6 tabs: Detection, Algorithms, Display, Room, Advanced, Calibrate)
 │   │   ├── DetectionControls.tsx     # Sidebar mode/threshold controls
 │   │   ├── HelpMenu.tsx              # Help documentation (5 tabs: Guide, Modes, Algorithms, Reference, About)
-│   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback tracking
+│   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback tracking (dynamic multi-column)
+│   │   ├── MissedFeedbackButton.tsx  # Mark false negatives by frequency band
 │   │   ├── ResetConfirmDialog.tsx    # Settings reset confirmation
-│   │   └── ErrorBoundary.tsx         # Error boundary wrapper
+│   │   ├── ErrorBoundary.tsx         # Error boundary wrapper
+│   │   └── settings/
+│   │       ├── DetectionTab.tsx      # Sensitivity, thresholds, noise floor
+│   │       ├── AlgorithmsTab.tsx     # Algorithm mode + individual toggles
+│   │       ├── DisplayTab.tsx        # Canvas range, FPS, font size
+│   │       ├── RoomTab.tsx           # Room dimensions + acoustic presets
+│   │       ├── AdvancedTab.tsx       # FFT size, EQ preset, A-weighting
+│   │       ├── CalibrationTab.tsx    # Room profile, ambient capture, session recording
+│   │       └── SettingsShared.tsx    # Shared Section/Grid layout components
 │   └── ui/                           # shadcn/ui components
 │
 ├── hooks/
 │   ├── useAudioAnalyzer.ts           # Main audio analyzer lifecycle
+│   ├── useDSPWorker.ts              # Web Worker lifecycle + message passing
+│   ├── useCalibrationSession.ts     # Calibration session data collection
 │   ├── useAdvisoryLogging.ts         # Advisory → feedback history recording
-│   └── useAnimationFrame.ts          # rAF utility hook
+│   ├── useAnimationFrame.ts          # rAF utility hook
+│   ├── useFpsMonitor.ts             # Real-time FPS counter
+│   ├── useFullscreen.ts             # Fullscreen API wrapper
+│   ├── useAudioDevices.ts           # Enumerate/select audio inputs
+│   └── use-mobile.ts               # Responsive breakpoint hook
 │
 ├── lib/
 │   ├── audio/
 │   │   └── createAudioAnalyzer.ts    # AudioAnalyzer factory
-│   ├── changelog.ts                  # Version history (rendered in About tab)
+│   ├── calibration/
+│   │   ├── calibrationSession.ts    # Session data collection (detections, missed, spectra)
+│   │   └── calibrationExport.ts     # JSON export builder with room profile + session data
+│   ├── changelog.ts                  # Version history (auto-updated by CI, rendered in About tab)
 │   ├── dsp/
 │   │   ├── feedbackDetector.ts       # Core FFT analysis engine
 │   │   ├── advancedDetection.ts      # MSD, Phase, Spectral, Comb, IHR, PTMR
@@ -170,13 +194,18 @@ kill-the-ring/
 │   │   ├── severityUtils.ts          # Shared severity/urgency calculation
 │   │   ├── dspWorker.ts              # Web Worker entry point
 │   │   └── constants.ts              # All tunable parameters and mode presets
+│   ├── export/
+│   │   ├── downloadFile.ts          # Browser download via Blob + <a> element
+│   │   ├── exportPdf.ts             # PDF report generation (jsPDF, dynamic import)
+│   │   └── exportTxt.ts             # Fixed-width plain text report
 │   ├── utils.ts                      # cn() helper for Tailwind class merging
 │   └── utils/
 │       ├── mathHelpers.ts            # DSP math utilities
 │       └── pitchUtils.ts             # Hz to note/octave/cents
 │
 ├── types/
-│   └── advisory.ts                   # All TypeScript interfaces
+│   ├── advisory.ts                   # Core DSP types (Advisory, DetectorSettings, Track, etc.)
+│   └── calibration.ts               # Room profile, session data, export formats
 │
 └── styles/
     └── globals.css                   # Tailwind globals (OKLch theme)
@@ -244,7 +273,7 @@ React State Update → UI Render
 
 ## Advanced Detection Algorithms
 
-Kill The Ring uses five complementary detection algorithms based on peer-reviewed academic research. Each algorithm exploits a different physical property of acoustic feedback.
+Kill The Ring uses seven complementary detection algorithms based on peer-reviewed academic research. Each algorithm exploits a different physical property of acoustic feedback.
 
 ### 1. MSD (Magnitude Slope Deviation) - DAFx-16 Paper
 
@@ -359,6 +388,22 @@ When compression is detected, the system:
 3. Weights phase coherence more heavily
 
 **Implementation:** `lib/dsp/advancedDetection.ts` - `AmplitudeHistoryBuffer` class
+
+### 6. IHR (Inter-Harmonic Ratio)
+
+**Physical principle:** Feedback produces pure tones — the energy at the fundamental frequency far exceeds energy at non-harmonically-related frequencies. Musical instruments produce rich harmonic series with energy spread across many partials.
+
+IHR measures the ratio of harmonically-related peak energy to unrelated spectral energy. A high IHR (energy concentrated at harmonic multiples) suggests an instrument; a very narrow peak with no harmonic partners suggests feedback.
+
+**Implementation:** `lib/dsp/algorithmFusion.ts` — computed during fusion scoring
+
+### 7. PTMR (Peak-to-Median Ratio)
+
+**Physical principle:** Feedback creates very narrow spectral peaks — essentially a single frequency bin (or a few bins) rising far above the local neighborhood. Music and speech produce broad spectral energy across many bins.
+
+PTMR compares a peak's amplitude to the median amplitude in its local frequency neighborhood. A very high PTMR indicates an isolated, narrow peak characteristic of feedback.
+
+**Implementation:** `lib/dsp/algorithmFusion.ts` — computed during fusion scoring
 
 ---
 
@@ -609,6 +654,20 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
 | Max Issues | 3-12 | 8 | Maximum displayed issues |
 | EQ Style | Surgical/Heavy | Surgical | Cut depth preset |
 | Show Algorithm Scores | on/off | off | Display advanced metrics |
+
+### Calibrate Tab
+
+| Setting | Type | Description |
+|---|---|---|
+| Venue Name | text | Room/venue identifier for calibration reports |
+| Dimensions (L×W×H) | number, ft/m | Room dimensions for acoustic modeling |
+| Floor/Walls/Ceiling | select | Surface materials (carpet, hardwood, drywall, glass, etc.) |
+| Microphone Types | multi-select | LAV, HH, HEADSET, GOOSE, SHOT, PZM |
+| Mic Count | number | Number of open microphones |
+| Signal Path | text | Signal chain description (e.g., "Yamaha TF → USB → Laptop") |
+| Noise Floor Capture | button | Records 5s of ambient noise for baseline measurement |
+| Calibration Mode | on/off | Enable session recording of all detections + spectra |
+| Export Calibration | button | Download JSON with room profile, detections, settings history |
 
 ---
 
