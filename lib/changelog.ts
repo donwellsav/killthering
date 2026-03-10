@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.76.14',
+    date: '2026-03-10',
+    changes: [
+      { type: 'feat', description: 'feat: recalibrate all presets from real-world data + fix detection bugs' },
+    ],
+  },
+  {
     version: '0.76.13',
     date: '2026-03-10',
     changes: [
