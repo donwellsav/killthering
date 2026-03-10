@@ -17,7 +17,7 @@ const COLORS = {
   headerText: [255, 255, 255] as const,
   amber: [245, 158, 11] as const,         // #f59e0b
   amberLight: [254, 243, 199] as const,   // #fef3c7
-  blue: [59, 130, 246] as const,          // #3b82f6
+  blue: [75, 146, 255] as const,           // #4B92FF
   blueLight: [219, 234, 254] as const,    // #dbeafe
   green: [34, 197, 94] as const,          // #22c55e
   red: [239, 68, 68] as const,            // #ef4444

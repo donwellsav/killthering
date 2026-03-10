@@ -136,7 +136,7 @@ export const MobileLayout = memo(function MobileLayout({
               />
             </div>
             <div className="flex-1 overflow-y-auto p-3">
-              <h2 className="text-[0.625rem] text-muted-foreground uppercase tracking-wide mb-2 flex items-center justify-between">
+              <h2 className="section-label mb-2 flex items-center justify-between">
                 <span>Active Issues</span>
                 <span className="text-primary font-mono">{activeAdvisoryCount}</span>
               </h2>
@@ -158,12 +158,12 @@ export const MobileLayout = memo(function MobileLayout({
         {mobileTab === 'graph' && (
           <div className="flex-1 flex flex-col gap-0.5 overflow-hidden p-0.5">
             {/* RTA — top half */}
-            <div className="flex-1 min-h-0 bg-card/60 rounded-md border border-border overflow-hidden relative">
-              <span className="absolute top-1 left-1.5 z-20 text-[0.5rem] text-muted-foreground/60 font-medium uppercase tracking-wide pointer-events-none">RTA</span>
+            <div className="flex-1 min-h-0 bg-card/40 rounded border border-border/40 overflow-hidden relative">
+              <span className="absolute top-1 left-1.5 z-20 text-[0.625rem] text-muted-foreground font-mono font-bold uppercase tracking-[0.2em] pointer-events-none">RTA</span>
               {isRunning && (
                 <button
                   onClick={toggleFreeze}
-                  className={`absolute top-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-[0.5rem] font-medium border transition-colors flex items-center justify-center ${
+                  className={`absolute top-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-xs font-medium border transition-colors flex items-center justify-center ${
                     isFrozen
                       ? 'bg-blue-500/20 text-blue-400 border-blue-500/30'
                       : 'bg-card/80 text-muted-foreground border-border hover:text-foreground'
@@ -176,7 +176,7 @@ export const MobileLayout = memo(function MobileLayout({
               {hasActiveRTAMarkers && (
                 <button
                   onClick={onClearRTA}
-                  className="absolute top-1 right-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-[0.5rem] font-medium bg-card/80 text-muted-foreground border border-border hover:text-foreground transition-colors flex items-center justify-center"
+                  className="absolute top-1 right-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-xs font-medium bg-card/80 text-muted-foreground border border-border hover:text-foreground transition-colors flex items-center justify-center"
                 >
                   Clear
                 </button>
@@ -184,12 +184,12 @@ export const MobileLayout = memo(function MobileLayout({
               <SpectrumCanvas spectrumRef={spectrumRef} advisories={advisories} isRunning={isRunning} error={error} graphFontSize={settings.graphFontSize} onStart={!isRunning ? start : undefined} earlyWarning={earlyWarning} rtaDbMin={settings.rtaDbMin} rtaDbMax={settings.rtaDbMax} spectrumLineWidth={settings.spectrumLineWidth} clearedIds={rtaClearedIds} minFrequency={settings.minFrequency} maxFrequency={settings.maxFrequency} onFreqRangeChange={onFreqRangeChange} showThresholdLine={settings.showThresholdLine} feedbackThresholdDb={settings.feedbackThresholdDb} isFrozen={isFrozen} canvasTargetFps={settings.canvasTargetFps} />
             </div>
             {/* GEQ — bottom half */}
-            <div className="flex-1 min-h-0 bg-card/60 rounded-md border border-border overflow-hidden relative">
-              <span className="absolute top-1 left-1.5 z-20 text-[0.5rem] text-muted-foreground/60 font-medium uppercase tracking-wide pointer-events-none">GEQ</span>
+            <div className="flex-1 min-h-0 bg-card/40 rounded border border-border/40 overflow-hidden relative">
+              <span className="absolute top-1 left-1.5 z-20 text-[0.625rem] text-muted-foreground font-mono font-bold uppercase tracking-[0.2em] pointer-events-none">GEQ</span>
               {hasActiveGEQBars && (
                 <button
                   onClick={onClearGEQ}
-                  className="absolute top-1 right-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-[0.5rem] font-medium bg-card/80 text-muted-foreground border border-border hover:text-foreground transition-colors flex items-center justify-center"
+                  className="absolute top-1 right-1 z-20 px-2 py-0.5 min-h-[44px] min-w-[44px] rounded text-xs font-medium bg-card/80 text-muted-foreground border border-border hover:text-foreground transition-colors flex items-center justify-center"
                 >
                   Clear
                 </button>
@@ -203,7 +203,7 @@ export const MobileLayout = memo(function MobileLayout({
         {mobileTab === 'settings' && (
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-background">
             <section>
-              <h3 className="text-[0.625rem] text-muted-foreground uppercase tracking-wide mb-2">Input Gain</h3>
+              <h3 className="section-label mb-2">Input Gain</h3>
               <InputMeterSlider
                 value={settings.inputGainDb}
                 onChange={(v) => onSettingsChange({ inputGainDb: v })}
@@ -217,7 +217,7 @@ export const MobileLayout = memo(function MobileLayout({
             </section>
             <div className="border-t border-border" />
             <section>
-              <h3 className="text-[0.625rem] text-muted-foreground uppercase tracking-wide mb-2">Detection Controls</h3>
+              <h3 className="section-label mb-2">Detection Controls</h3>
               <DetectionControls settings={settings} onModeChange={onModeChange} onSettingsChange={onSettingsChange} />
             </section>
             <div className="border-t border-border" />
@@ -235,11 +235,11 @@ export const MobileLayout = memo(function MobileLayout({
       </div>
 
       {/* ── Page indicator dots (portrait only) ─────────────────── */}
-      <div className="landscape:hidden flex items-center justify-center gap-1.5 py-1 bg-card/80" aria-hidden="true">
+      <div className="landscape:hidden flex items-center justify-center gap-1.5 py-1 bg-card/90" aria-hidden="true">
         {TAB_ORDER.map(id => (
           <div
             key={id}
-            className={`w-1.5 h-1.5 rounded-full transition-colors ${
+            className={`w-1 h-1 rounded-full transition-colors ${
               mobileTab === id ? 'bg-primary' : 'bg-muted-foreground/25'
             }`}
           />
@@ -247,7 +247,7 @@ export const MobileLayout = memo(function MobileLayout({
       </div>
 
       {/* ── Mobile bottom tab bar (portrait only) ──────────────── */}
-      <nav className="landscape:hidden flex-shrink-0 border-t border-border bg-card/80 backdrop-blur-sm" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+      <nav className="landscape:hidden flex-shrink-0 border-t border-border/60 bg-card/90 backdrop-blur-sm" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
         <div className="flex items-stretch" role="tablist" onKeyDown={handleTabKeyDown}>
           {([
             { id: 'issues' as const, label: 'Issues', Icon: AlertTriangle, badge: activeAdvisoryCount },
@@ -277,7 +277,7 @@ export const MobileLayout = memo(function MobileLayout({
                   </span>
                 )}
               </div>
-              <span className="text-[0.6875rem] font-medium leading-none">{tab.label}</span>
+              <span className="text-xs font-mono font-bold tracking-[0.15em] leading-none">{tab.label}</span>
             </button>
           ))}
         </div>

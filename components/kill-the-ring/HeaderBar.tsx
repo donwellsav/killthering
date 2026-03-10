@@ -44,7 +44,7 @@ export const HeaderBar = memo(function HeaderBar({
   devices, selectedDeviceId, onDeviceChange,
 }: HeaderBarProps) {
   return (
-    <header className="relative flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-card/80 backdrop-blur-sm shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(59,130,246,0.06)] sm:px-4 sm:py-2 sm:gap-4">
+    <header className="relative flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-card/90 backdrop-blur-sm shadow-[0_1px_12px_rgba(0,0,0,0.5),0_1px_0_rgba(75,146,255,0.08)] sm:px-4 sm:py-2 sm:gap-4">
 
       {/* ── DESKTOP: Logo + button group (left side) ───────────────── */}
       <div className="flex items-center gap-1.5 sm:gap-3 sm:flex-shrink-0">
@@ -55,14 +55,14 @@ export const HeaderBar = memo(function HeaderBar({
             <button
               onClick={isRunning ? stop : start}
               aria-label={isRunning ? 'Stop analysis' : 'Start analysis'}
-              className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full ring-2 ring-primary/10"
+              className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full ring-1 ring-primary/20 shadow-[0_0_8px_rgba(75,146,255,0.15)]"
             >
               <div className={`absolute inset-1 rounded-full border-2 transition-colors duration-300 ${isRunning ? 'border-primary' : 'border-primary/50'}`} />
               {isRunning && (
-                <div className="absolute inset-1 rounded-full border-2 border-primary animate-ping opacity-30" />
+                <div className="absolute inset-1 rounded-full border border-primary/40 animate-led-blink" />
               )}
               <svg
-                className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+                className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary drop-shadow-[0_0_4px_rgba(75,146,255,0.4)]' : 'text-muted-foreground hover:text-primary'}`}
                 viewBox="0 0 24 24"
                 fill="currentColor"
               >
@@ -73,12 +73,12 @@ export const HeaderBar = memo(function HeaderBar({
 
           <div className="flex flex-col justify-center gap-[3px]">
             <div className="flex items-baseline gap-1.5 leading-none">
-              <span className="text-lg font-black tracking-tight text-foreground">KILL THE</span>
-              <span className="text-xl font-black tracking-tight text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">RING</span>
+              <span className="font-mono text-base font-black tracking-[0.2em] text-foreground/90">KILL THE</span>
+              <span className="font-mono text-lg font-black tracking-[0.2em] text-primary drop-shadow-[0_0_10px_rgba(75,146,255,0.4)]">RING</span>
             </div>
-            <span className="text-[0.625rem] font-semibold tracking-wider text-muted-foreground uppercase leading-none">
+            <span className="text-[0.625rem] font-mono font-medium tracking-[0.25em] text-muted-foreground uppercase leading-none">
               Don Wells AV{' '}
-              <span className="font-mono">v{process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'}</span>
+              v{process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'}
             </span>
           </div>
         </div>
@@ -88,14 +88,14 @@ export const HeaderBar = memo(function HeaderBar({
           <button
             onClick={isRunning ? stop : start}
             aria-label={isRunning ? 'Stop analysis' : 'Start analysis'}
-            className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full"
+            className="relative w-12 h-12 flex items-center justify-center flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-full ring-1 ring-primary/20 shadow-[0_0_8px_rgba(75,146,255,0.15)]"
           >
             <div className={`absolute inset-1 rounded-full border-2 transition-colors duration-300 ${isRunning ? 'border-primary' : 'border-primary/50'}`} />
             {isRunning && (
-              <div className="absolute inset-1 rounded-full border-2 border-primary animate-ping opacity-30" />
+              <div className="absolute inset-1 rounded-full border border-primary/40 animate-led-blink" />
             )}
             <svg
-              className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+              className={`size-6 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary drop-shadow-[0_0_4px_rgba(75,146,255,0.4)]' : 'text-muted-foreground hover:text-primary'}`}
               viewBox="0 0 24 24"
               fill="currentColor"
             >
@@ -104,12 +104,11 @@ export const HeaderBar = memo(function HeaderBar({
           </button>
           <div className="flex flex-col justify-center gap-0 min-w-0">
             <div className="flex items-baseline gap-1 leading-none">
-              <span className="text-base font-black tracking-tight text-foreground">KILL THE</span>
-              <span className="text-lg font-black tracking-tight text-primary drop-shadow-[0_0_8px_rgba(59,130,246,0.3)]">RING</span>
+              <span className="font-mono text-sm font-black tracking-[0.2em] text-foreground/90">KILL THE</span>
+              <span className="font-mono text-base font-black tracking-[0.2em] text-primary drop-shadow-[0_0_10px_rgba(75,146,255,0.4)]">RING</span>
             </div>
-            <span className="text-[0.5625rem] font-semibold tracking-wider text-muted-foreground uppercase leading-none">
-              Don Wells AV{' '}
-              <span className="font-mono">v{process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'}</span>
+            <span className="text-[0.5625rem] font-mono font-medium tracking-[0.25em] text-muted-foreground uppercase leading-none">
+              Don Wells AV v{process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'}
             </span>
           </div>
         </div>
@@ -127,7 +126,7 @@ export const HeaderBar = memo(function HeaderBar({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
+                    className="h-9 w-9 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
                     aria-label="Select audio input"
                   >
                     <Mic className="size-6" />
@@ -159,7 +158,7 @@ export const HeaderBar = memo(function HeaderBar({
               variant="ghost"
               size="icon"
               onClick={resetLayout}
-              className="hidden landscape:flex h-10 w-10 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
+              className="hidden landscape:flex h-9 w-9 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
               aria-label="Reset layout"
             >
               <LayoutGrid className="size-6" />
@@ -176,7 +175,7 @@ export const HeaderBar = memo(function HeaderBar({
               variant="ghost"
               size="icon"
               onClick={toggleFullscreen}
-              className="hidden landscape:flex h-10 w-10 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
+              className="hidden landscape:flex h-9 w-9 text-muted-foreground hover:text-foreground transition-all duration-150 active:scale-95"
               aria-label="Toggle fullscreen"
             >
               {isFullscreen ? <Minimize2 className="size-6" /> : <Maximize2 className="size-6" />}
@@ -194,7 +193,7 @@ export const HeaderBar = memo(function HeaderBar({
                 variant="ghost"
                 size="icon"
                 onClick={toggleFreeze}
-                className={`hidden landscape:flex h-10 w-10 ${
+                className={`hidden landscape:flex h-9 w-9 ${
                   isFrozen ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'
                 }`}
                 aria-label={isFrozen ? 'Unfreeze spectrum' : 'Freeze spectrum'}
@@ -210,10 +209,10 @@ export const HeaderBar = memo(function HeaderBar({
         )}
 
         <FeedbackHistoryPanel />
-        <Suspense fallback={<div className="h-10 w-10" />}>
+        <Suspense fallback={<div className="h-9 w-9" />}>
           <LazyHelpMenu />
         </Suspense>
-        <Suspense fallback={<div className="h-10 w-10" />}>
+        <Suspense fallback={<div className="h-9 w-9" />}>
           <LazySettingsPanel
             settings={settings}
             onSettingsChange={onSettingsChange}

@@ -28,23 +28,23 @@ export const AdvancedTab = memo(function AdvancedTab({
         <div className="space-y-3">
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Decay Rate</span>
-              <span className="text-xs font-mono">{settings.noiseFloorDecay.toFixed(3)}</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Decay Rate</span>
+              <span className="text-xs font-mono tabular-nums">{settings.noiseFloorDecay.toFixed(3)}</span>
             </div>
             <Slider
               value={[settings.noiseFloorDecay]}
               onValueChange={([v]) => onSettingsChange({ noiseFloorDecay: v })}
               min={0.90} max={0.999} step={0.005}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Fast (dynamic)</span><span>Slow (stable)</span>
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Attack Time</span>
-              <span className="text-xs font-mono">{settings.noiseFloorAttackMs}ms</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Attack Time</span>
+              <span className="text-xs font-mono tabular-nums">{settings.noiseFloorAttackMs}ms</span>
             </div>
             <Slider
               value={[settings.noiseFloorAttackMs]}
@@ -55,8 +55,8 @@ export const AdvancedTab = memo(function AdvancedTab({
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Release Time</span>
-              <span className="text-xs font-mono">{settings.noiseFloorReleaseMs}ms</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Release Time</span>
+              <span className="text-xs font-mono tabular-nums">{settings.noiseFloorReleaseMs}ms</span>
             </div>
             <Slider
               value={[settings.noiseFloorReleaseMs]}
@@ -76,45 +76,45 @@ export const AdvancedTab = memo(function AdvancedTab({
         <div className="space-y-3">
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Peak Merge Window</span>
-              <span className="text-xs font-mono">{settings.peakMergeCents}¢</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Peak Merge Window</span>
+              <span className="text-xs font-mono tabular-nums">{settings.peakMergeCents}¢</span>
             </div>
             <Slider
               value={[settings.peakMergeCents]}
               onValueChange={([v]) => onSettingsChange({ peakMergeCents: v })}
               min={10} max={150} step={5}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Narrow (precise)</span><span>Wide (merged)</span>
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Sustain Time</span>
-              <span className="text-xs font-mono">{settings.sustainMs}ms</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Sustain Time</span>
+              <span className="text-xs font-mono tabular-nums">{settings.sustainMs}ms</span>
             </div>
             <Slider
               value={[settings.sustainMs]}
               onValueChange={([v]) => onSettingsChange({ sustainMs: v })}
               min={100} max={2000} step={50}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Fast confirm</span><span>Cautious</span>
             </div>
           </div>
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Clear Time</span>
-              <span className="text-xs font-mono">{settings.clearMs}ms</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Clear Time</span>
+              <span className="text-xs font-mono tabular-nums">{settings.clearMs}ms</span>
             </div>
             <Slider
               value={[settings.clearMs]}
               onValueChange={([v]) => onSettingsChange({ clearMs: v })}
               min={100} max={2000} step={50}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Quick clear</span><span>Persistent</span>
             </div>
           </div>
@@ -141,8 +141,8 @@ export const AdvancedTab = memo(function AdvancedTab({
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Relative Threshold</span>
-              <span className="text-xs font-mono">{settings.relativeThresholdDb}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Relative Threshold</span>
+              <span className="text-xs font-mono tabular-nums">{settings.relativeThresholdDb}dB</span>
             </div>
             <Slider
               value={[settings.relativeThresholdDb]}
@@ -153,15 +153,15 @@ export const AdvancedTab = memo(function AdvancedTab({
 
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Prominence</span>
-              <span className="text-xs font-mono">{settings.prominenceDb}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Prominence</span>
+              <span className="text-xs font-mono tabular-nums">{settings.prominenceDb}dB</span>
             </div>
             <Slider
               value={[settings.prominenceDb]}
               onValueChange={([v]) => onSettingsChange({ prominenceDb: v })}
               min={4} max={30} step={1}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Sensitive</span><span>Only strong peaks</span>
             </div>
           </div>

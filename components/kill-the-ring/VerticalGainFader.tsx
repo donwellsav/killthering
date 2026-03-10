@@ -98,15 +98,15 @@ export const VerticalGainFader = memo(function VerticalGainFader({
     ctx.clearRect(0, 0, w, h)
 
     // Background
-    ctx.fillStyle = '#161616'
+    ctx.fillStyle = '#0e1012'
     ctx.fillRect(0, 0, w, h)
 
     // Cached vertical gradient — bottom-to-top
     let gradient = gradientRef.current
     if (!gradient || gradientHeightRef.current !== h) {
       gradient = ctx.createLinearGradient(0, h, 0, 0)
-      gradient.addColorStop(0, '#3b82f6')
-      gradient.addColorStop(0.6, '#3b82f6')
+      gradient.addColorStop(0, '#4B92FF')
+      gradient.addColorStop(0.6, '#4B92FF')
       gradient.addColorStop(0.8, '#eab308')
       gradient.addColorStop(0.95, '#ef4444')
       gradient.addColorStop(1, '#ef4444')
@@ -126,7 +126,7 @@ export const VerticalGainFader = memo(function VerticalGainFader({
     }
 
     // Scale ticks (horizontal lines at dB marks)
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)'
     ctx.lineWidth = 0.5
     for (const db of [-30, -20, -10, 10, 20, 30]) {
       const ratio = (db - min) / (max - min)
@@ -140,7 +140,7 @@ export const VerticalGainFader = memo(function VerticalGainFader({
     // Zero-dB reference line — prominent
     const zeroRatio = (0 - min) / (max - min)
     const zeroY = h * (1 - zeroRatio)
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(0, zeroY)
@@ -285,7 +285,7 @@ export const VerticalGainFader = memo(function VerticalGainFader({
           aria-label={`Input gain ${valueLabel}dB, click to edit`}
         >
           {valueLabel}
-          <span className="block text-xs text-muted-foreground/60">dB</span>
+          <span className="block text-xs text-muted-foreground">dB</span>
         </button>
       )}
 
@@ -351,7 +351,7 @@ export const VerticalGainFader = memo(function VerticalGainFader({
           />
           {/* Gain thumb — horizontal bar */}
           <div
-            className={`absolute left-1/2 -translate-x-1/2 translate-y-1/2 w-12 h-3 rounded-sm border-2 shadow-md pointer-events-none transition-[box-shadow] ${
+            className={`absolute left-1/2 -translate-x-1/2 translate-y-1/2 w-11 h-2.5 rounded-[2px] border-2 shadow-md pointer-events-none transition-[box-shadow] ${
               autoGainEnabled ? 'border-primary bg-primary/90' : 'border-background bg-white'
             }`}
             style={{ bottom: `${thumbBottom}%` }}
@@ -377,10 +377,10 @@ export const VerticalGainFader = memo(function VerticalGainFader({
           <button
             key={db}
             onClick={() => onAutoGainTargetChange(db)}
-            className={`w-full px-1 py-1.5 rounded-md text-xs font-bold uppercase tracking-wider transition-all duration-150 active:scale-95 ${
+            className={`w-full px-1 py-1.5 rounded font-mono text-xs font-bold uppercase tracking-[0.15em] transition-all duration-150 active:scale-95 ${
               autoGainEnabled && autoGainTargetDb === db
                 ? 'bg-primary/20 border border-primary/50 text-primary'
-                : 'bg-muted/50 border border-transparent text-muted-foreground hover:bg-muted'
+                : 'bg-card/40 border border-transparent text-muted-foreground hover:bg-muted'
             }`}
             title={`${label}: auto-gain target ${db} dBFS`}
           >
@@ -397,10 +397,10 @@ export const VerticalGainFader = memo(function VerticalGainFader({
       >
         <div className={`absolute inset-0.5 rounded-full border-2 transition-colors duration-300 ${isRunning ? 'border-primary' : 'border-primary/50'}`} />
         {isRunning && (
-          <div className="absolute inset-0.5 rounded-full border-2 border-primary animate-ping opacity-30" />
+          <div className="absolute inset-0.5 rounded-full border border-primary/40 animate-led-blink" />
         )}
         <svg
-          className={`w-4 h-4 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary' : 'text-primary/60 hover:text-primary'}`}
+          className={`w-4 h-4 relative z-10 transition-colors duration-300 ${isRunning ? 'text-primary drop-shadow-[0_0_4px_rgba(75,146,255,0.4)]' : 'text-muted-foreground hover:text-primary'}`}
           viewBox="0 0 24 24"
           fill="currentColor"
         >

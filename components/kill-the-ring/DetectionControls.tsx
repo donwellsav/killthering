@@ -106,7 +106,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onSettingsChange({ quickControlsMode: true })}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
               isQuick
                 ? 'bg-primary/20 text-primary border border-primary/40'
                 : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -116,7 +116,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
           </button>
           <button
             onClick={() => onSettingsChange({ quickControlsMode: false })}
-            className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+            className={`px-3 py-1 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
               !isQuick
                 ? 'bg-primary/20 text-primary border border-primary/40'
                 : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -140,7 +140,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                     minFrequency: preset.minFrequency,
                     maxFrequency: preset.maxFrequency,
                   })}
-                  className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
+                  className={`px-1.5 py-0.5 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
                     isActive
                       ? 'bg-primary/20 text-primary border border-primary/40'
                       : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -154,7 +154,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
 
           {/* Hz range label */}
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Freq Range</span>
+            <span className="text-xs font-mono text-muted-foreground tracking-wide">Freq Range</span>
             <span className="text-xs font-mono text-foreground tabular-nums">
               {formatFreqLabel(settings.minFrequency)}-{formatFreqLabel(settings.maxFrequency)}
             </span>
@@ -181,7 +181,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
             {settings.showTooltips && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="w-3 h-3 text-muted-foreground/40 hover:text-muted-foreground cursor-help" />
+                  <HelpCircle className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-[200px] text-xs">
                   Auto-activates when signal rises {settings.autoMusicAwareHysteresisDb}dB above noise floor.
@@ -298,7 +298,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
         {/* Algorithm Mode toggle grid — full mode only */}
         {!isQuick && (
         <div className="space-y-1">
-          <span className="text-xs text-muted-foreground">Algorithm Mode</span>
+          <span className="section-label">Algorithm Mode</span>
           <button
             onClick={() => {
               if (settings.algorithmMode !== 'auto') {
@@ -307,7 +307,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                 onSettingsChange({ algorithmMode: 'custom' as AlgorithmMode })
               }
             }}
-            className={`w-full px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
+            className={`w-full px-1.5 py-0.5 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
               settings.algorithmMode === 'auto'
                 ? 'bg-primary/20 text-primary border border-primary/40'
                 : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -342,11 +342,11 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                     }
                     onSettingsChange({ enabledAlgorithms: next })
                   }}
-                  className={`px-1 py-0.5 rounded text-xs font-medium text-center transition-colors ${
+                  className={`px-1 py-0.5 rounded text-xs font-mono font-bold text-center transition-colors ${
                     isAuto
                       ? autoActive
                         ? 'text-primary/60 border border-primary/20 bg-transparent'
-                        : 'text-muted-foreground/30 border border-transparent'
+                        : 'text-muted-foreground/50 border border-transparent'
                       : enabled
                         ? 'bg-primary/20 text-primary border border-primary/40'
                         : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -368,7 +368,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
             {settings.showTooltips && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HelpCircle className="w-3 h-3 text-muted-foreground/40 hover:text-muted-foreground cursor-help" />
+                  <HelpCircle className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent side="right" className="max-w-[200px] text-xs">
                   Apply IEC 61672-1 A-weighting. Emphasizes frequencies humans hear most (1-5kHz). Disable for flat response.
@@ -397,7 +397,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
 
           {/* Operation Mode chips — always visible */}
           <div className="space-y-1">
-            <span className="text-xs text-muted-foreground">Mode</span>
+            <span className="section-label">Mode</span>
             <div className="flex items-center gap-1 flex-wrap">
               {([
                 ['speech', 'Speech'],
@@ -414,7 +414,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                   <button
                     key={mode}
                     onClick={() => onModeChange(mode)}
-                    className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
                       isActive
                         ? 'bg-primary/20 text-primary border border-primary/40'
                         : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -455,7 +455,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                 onChange={(v) => onSettingsChange({ maxDisplayedIssues: v })}
               />
               <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">EQ Style</span>
+                <span className="section-label">EQ Style</span>
                 <div className="flex items-center gap-1 flex-wrap">
                   {([
                     ['surgical', 'Surgical'],
@@ -466,7 +466,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                       <button
                         key={style}
                         onClick={() => onSettingsChange({ eqPreset: style })}
-                        className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${
+                        className={`px-1.5 py-0.5 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
                           isActive
                             ? 'bg-primary/20 text-primary border border-primary/40'
                             : 'text-muted-foreground hover:text-foreground border border-transparent hover:border-border'
@@ -484,7 +484,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                   {settings.showTooltips && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <HelpCircle className="w-3 h-3 text-muted-foreground/40 hover:text-muted-foreground cursor-help" />
+                        <HelpCircle className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground cursor-help" />
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-[200px] text-xs">
                         Filter harmonic series to reduce false positives from instruments. Disable for ring-out or monitors.
@@ -512,7 +512,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
           {/* Custom presets — always visible */}
           {customPresets.length > 0 && (
             <div className="space-y-1 pt-1">
-              <span className="text-xs text-muted-foreground">Saved Presets</span>
+              <span className="section-label">Saved Presets</span>
               <div className="flex items-center gap-1 flex-wrap">
                 {customPresets.map((preset) => (
                   <div key={preset.name} className="inline-flex items-center gap-0.5">
@@ -524,7 +524,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                     </button>
                     <button
                       onClick={() => handleDeletePreset(preset.name)}
-                      className="text-muted-foreground/30 hover:text-red-400 transition-colors"
+                      className="text-muted-foreground/50 hover:text-red-400 transition-colors"
                       aria-label={`Delete ${preset.name} preset`}
                     >
                       <Trash2 className="w-2.5 h-2.5" />
@@ -543,7 +543,7 @@ export const DetectionControls = memo(function DetectionControls({ settings, onM
                 onChange={(e) => setPresetName(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSavePreset()}
                 placeholder="Preset name..."
-                className="flex-1 px-1.5 py-0.5 rounded text-xs bg-muted border border-border text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                className="flex-1 px-1.5 py-0.5 rounded text-xs bg-muted border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                 autoFocus
                 maxLength={20}
               />
@@ -596,11 +596,11 @@ function SliderRow({ label, value, tooltip, min, max, step, sliderValue, onChang
     <div className="space-y-0.5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-xs font-mono text-muted-foreground tracking-wide">{label}</span>
           {tooltip && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <HelpCircle className="w-3 h-3 text-muted-foreground/40 hover:text-muted-foreground cursor-help flex-shrink-0" />
+                <HelpCircle className="w-3 h-3 text-muted-foreground/70 hover:text-muted-foreground cursor-help flex-shrink-0" />
               </TooltipTrigger>
               <TooltipContent side="right" className="max-w-[200px] text-xs">
                 {tooltip}

@@ -51,9 +51,9 @@ export const IssuesList = memo(function IssuesList({ advisories, maxIssues = 10,
     <div className="flex flex-col gap-1.5">
       {sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-1 min-h-[120px] text-muted-foreground py-8">
-          <CheckCircle2 className="w-5 h-5 text-blue-500/40 mb-2" />
-          <div className="text-sm font-medium">No issues detected</div>
-          <div className="text-xs mt-1 text-muted-foreground/60">Monitoring for feedback...</div>
+          <CheckCircle2 className="w-5 h-5 text-primary/30 mb-2" />
+          <div className="font-mono text-xs font-bold tracking-[0.15em] uppercase">Standby</div>
+          <div className="font-mono text-xs mt-1 text-muted-foreground tracking-wide">Monitoring</div>
         </div>
       ) : (
         <>
@@ -160,7 +160,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
 
   return (
     <div
-      className={`relative flex flex-col rounded-md border bg-card transition-all overflow-hidden animate-in fade-in-0 slide-in-from-left-2 duration-200 ${
+      className={`relative flex flex-col rounded border bg-card/80 transition-all overflow-hidden animate-in fade-in-0 slide-in-from-left-2 duration-200 ${
         isResolved
           ? 'border-border/50'
           : isRunaway
@@ -185,7 +185,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
             <TooltipProvider delayDuration={300}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="font-mono text-lg font-bold text-foreground leading-none tracking-tight cursor-default">
+                  <span className="font-mono text-lg font-bold text-foreground leading-none tracking-wide cursor-default">
                     {exactFreqStr}
                   </span>
                 </TooltipTrigger>
@@ -201,7 +201,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
                 <span className="text-xs font-mono text-muted-foreground leading-none">{pitchStr}</span>
               )}
               {bandHz != null && bandHz !== advisory.trueFrequencyHz && (
-                <span className="text-xs font-mono text-muted-foreground/50 leading-none">
+                <span className="text-xs font-mono text-muted-foreground leading-none">
                   → {formatFrequency(bandHz)}
                 </span>
               )}
@@ -212,7 +212,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
                 </span>
               )}
               {!isResolved && (
-                <span className="text-[0.625rem] text-muted-foreground/40 leading-none font-mono">{ageStr}</span>
+                <span className="text-xs text-muted-foreground leading-none font-mono">{ageStr}</span>
               )}
             </div>
           </div>
@@ -262,7 +262,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
             {/* Row 2: classification — severity, confidence */}
             <div className="flex items-center gap-1 justify-end">
               <span
-                className="inline-flex items-center text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none"
+                className="inline-flex items-center text-xs font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none"
                 style={{ backgroundColor: `${severityColor}30`, color: severityColor, border: `1px solid ${severityColor}55`, boxShadow: `0 0 6px ${severityColor}20` }}
               >
                 {getSeverityText(advisory.severity)}
@@ -296,7 +296,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
                 className={`rounded transition-colors flex items-center justify-center ${
                   copied
                     ? 'text-emerald-400'
-                    : 'text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/60'
+                    : 'text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/60'
                 } ${touchFriendly ? 'w-11 h-11' : 'w-5 h-5'}`}
               >
                 {copied
@@ -312,7 +312,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
               <button
                 onClick={() => onDismiss(advisory.id)}
                 aria-label={`Dismiss ${exactFreqStr} issue`}
-                className={`rounded text-muted-foreground/30 hover:text-muted-foreground hover:bg-muted/60 transition-colors flex items-center justify-center ${
+                className={`rounded text-muted-foreground/50 hover:text-muted-foreground hover:bg-muted/60 transition-colors flex items-center justify-center ${
                   touchFriendly ? 'w-11 h-11' : 'w-5 h-5'
                 }`}
               >
@@ -325,7 +325,7 @@ const IssueCard = memo(function IssueCard({ advisory, onDismiss, touchFriendly }
         {/* Velocity + age — full-width below */}
         {velocity > 0 && !isResolved && (
           <div className={`flex items-center gap-1 text-xs font-bold uppercase tracking-wide ${
-            isRunaway ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-muted-foreground/60'
+            isRunaway ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-muted-foreground'
           }`}>
             {(isRunaway || isWarning) ? (
               <>

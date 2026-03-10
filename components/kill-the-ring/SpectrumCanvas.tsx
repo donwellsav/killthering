@@ -202,11 +202,11 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       const by = 6
       const px = 6, py = 3
 
-      ctx.fillStyle = 'rgba(59,130,246,0.2)'
+      ctx.fillStyle = 'rgba(75,146,255,0.2)'
       ctx.beginPath()
       ctx.roundRect(bx - px, by, tw + px * 2, fontSize + py * 2, 3)
       ctx.fill()
-      ctx.strokeStyle = 'rgba(59,130,246,0.5)'
+      ctx.strokeStyle = 'rgba(75,146,255,0.5)'
       ctx.lineWidth = 1
       ctx.stroke()
 
@@ -457,17 +457,17 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
             onKeyDown={onStart ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onStart(); } } : undefined}
           >
             {error ? (
-              <span className="flex flex-col items-center gap-1.5 px-5 py-3 rounded-md bg-black/70 backdrop-blur-sm pointer-events-none">
-                <span className="flex items-center gap-1.5 text-sm text-destructive font-medium">
+              <span className="flex flex-col items-center gap-1.5 px-5 py-3 rounded bg-card/80 backdrop-blur-sm pointer-events-none">
+                <span className="flex items-center gap-1.5 text-sm text-destructive font-mono font-medium">
                   <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>
                   </svg>
                   Mic unavailable
                 </span>
-                <span className="text-xs text-neutral-400">Tap to retry</span>
+                <span className="text-xs text-neutral-400 font-mono">Tap to retry</span>
               </span>
             ) : (
-              <span className="flex items-center gap-2 px-4 py-2 rounded-md bg-black/60 text-sm text-neutral-300 font-medium tracking-wide backdrop-blur-sm pointer-events-none">
+              <span className="flex items-center gap-2 px-4 py-2 rounded bg-card/80 text-sm text-neutral-300 font-mono font-bold tracking-wide backdrop-blur-sm pointer-events-none">
                 Press
                 {/* mini speaker button replica */}
                 <span className="inline-flex items-center justify-center w-6 h-6 rounded-full border border-primary/60 flex-shrink-0">
@@ -484,7 +484,7 @@ export const SpectrumCanvas = memo(function SpectrumCanvas({ spectrumRef, adviso
       {/* Error overlay for post-start failures (canvas shows stale data underneath) */}
       {!showPlaceholder && error && !isRunning && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-black/70 backdrop-blur-sm text-xs text-destructive font-medium">
+          <span className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-card/80 backdrop-blur-sm text-xs text-destructive font-mono font-medium">
             <svg className="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>
             </svg>

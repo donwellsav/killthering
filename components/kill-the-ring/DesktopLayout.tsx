@@ -78,7 +78,7 @@ export const DesktopLayout = memo(function DesktopLayout({
       <ResizablePanelGroup key={layoutKey} direction="horizontal" autoSaveId="ktr-layout-main-v4">
         {/* Sidebar panel */}
         <ResizablePanel defaultSize={20} minSize={8} maxSize={30} collapsible>
-          <div className="flex flex-col h-full bg-card/50 overflow-hidden">
+          <div className="flex flex-col h-full bg-card/40 channel-strip overflow-hidden">
             {/* Algorithm status */}
             <div className="flex-shrink-0 border-b border-border p-2">
               <AlgorithmStatusBar
@@ -98,9 +98,9 @@ export const DesktopLayout = memo(function DesktopLayout({
               {!issuesPanelOpen && (
                 <button
                   onClick={() => setActiveSidebarTab('issues')}
-                  className={`flex-1 py-1.5 text-xs font-medium uppercase tracking-wide transition-all duration-200 ${
+                  className={`flex-1 py-1 text-xs font-mono font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
                     activeSidebarTab === 'issues'
-                      ? 'text-foreground border-b-2 border-primary'
+                      ? 'text-foreground border-b border-primary bg-primary/5'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -112,9 +112,9 @@ export const DesktopLayout = memo(function DesktopLayout({
               )}
               <button
                 onClick={() => setActiveSidebarTab('controls')}
-                className={`flex-1 py-1.5 text-xs font-medium uppercase tracking-wide transition-all duration-200 ${
+                className={`flex-1 py-1 text-xs font-mono font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
                   activeSidebarTab === 'controls'
-                    ? 'text-foreground border-b-2 border-primary'
+                    ? 'text-foreground border-b border-primary bg-primary/5'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -125,7 +125,7 @@ export const DesktopLayout = memo(function DesktopLayout({
                 <TooltipTrigger asChild>
                   <button
                     onClick={issuesPanelOpen ? closeIssuesPanel : openIssuesPanel}
-                    className={`flex-shrink-0 px-2 py-1.5 transition-colors ${
+                    className={`flex-shrink-0 px-2 py-1 transition-colors ${
                       issuesPanelOpen
                         ? 'text-primary'
                         : 'text-muted-foreground hover:text-foreground'
@@ -178,9 +178,9 @@ export const DesktopLayout = memo(function DesktopLayout({
           onCollapse={() => setIssuesPanelOpen(false)}
           onExpand={() => setIssuesPanelOpen(true)}
         >
-          <div className="flex flex-col h-full bg-card/50 overflow-hidden">
-            <div className="flex-shrink-0 flex items-center justify-between px-3 py-1.5 border-b border-border bg-gradient-to-b from-muted/25 to-transparent">
-              <h2 className="text-xs text-muted-foreground uppercase tracking-wide font-medium flex items-center gap-1.5">
+          <div className="flex flex-col h-full bg-card/40 channel-strip overflow-hidden">
+            <div className="flex-shrink-0 flex items-center justify-between px-3 py-1 border-b border-border bg-card/60 panel-groove">
+              <h2 className="section-label flex items-center gap-1.5">
                 <AlertTriangle className="w-3 h-3" />
                 Issues
                 {activeAdvisoryCount > 0 && (
@@ -217,11 +217,11 @@ export const DesktopLayout = memo(function DesktopLayout({
           <ResizablePanelGroup direction="vertical" autoSaveId="ktr-layout-vertical">
             {/* Top graph */}
             <ResizablePanel defaultSize={60} minSize={20} collapsible>
-              <div className="h-full p-1.5 pb-0.5">
-                <div className="h-full bg-card/60 rounded-lg border border-border/60 overflow-hidden flex flex-col panel-recessed hover:border-border/80 transition-colors duration-300">
-                  <div className="flex-shrink-0 flex items-center justify-between px-2 py-1 border-b border-border bg-gradient-to-b from-muted/25 to-transparent">
+              <div className="h-full p-1 pb-0.5">
+                <div className="h-full bg-card/40 rounded border border-border/40 overflow-hidden flex flex-col panel-recessed hover:border-border/60 transition-colors duration-300">
+                  <div className="flex-shrink-0 flex items-center justify-between px-2 py-0.5 border-b border-border bg-card/60 panel-groove">
                     <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium text-primary">RTA</span>
+                      <span className="text-xs font-mono font-bold tracking-[0.15em] text-primary">RTA</span>
                       {isRunning && (
                         <button onClick={toggleFreeze} className={`px-1.5 py-0.5 rounded text-xs font-medium transition-colors ${isFrozen ? 'text-blue-400' : 'text-muted-foreground hover:text-foreground'}`}>
                           {isFrozen ? 'Live' : 'Freeze'}
@@ -250,11 +250,11 @@ export const DesktopLayout = memo(function DesktopLayout({
 
             {/* Bottom row */}
             <ResizablePanel defaultSize={40} minSize={15} collapsible>
-              <div className="h-full p-1.5 pt-0.5">
-                <div className="h-full bg-card/60 rounded-lg border border-border/60 overflow-hidden flex flex-col min-w-0 panel-recessed hover:border-border/80 transition-colors duration-300">
-                  <div className="flex-shrink-0 flex items-center px-2 py-0.5 border-b border-border bg-gradient-to-b from-muted/25 to-transparent">
+              <div className="h-full p-1 pt-0.5">
+                <div className="h-full bg-card/40 rounded border border-border/40 overflow-hidden flex flex-col min-w-0 panel-recessed hover:border-border/60 transition-colors duration-300">
+                  <div className="flex-shrink-0 flex items-center px-2 py-0.5 border-b border-border bg-card/60 panel-groove">
                     <div className="flex items-center gap-1">
-                      <span className="text-xs font-medium text-primary">GEQ</span>
+                      <span className="text-xs font-mono font-bold tracking-[0.15em] text-primary">GEQ</span>
                       {hasActiveGEQBars && (
                         <button onClick={onClearGEQ} className="px-1.5 py-0.5 rounded text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                           Clear
@@ -273,7 +273,7 @@ export const DesktopLayout = memo(function DesktopLayout({
       </ResizablePanelGroup>
 
       {/* Gain fader strip */}
-      <div className="flex-shrink-0 w-16 border-l border-border bg-card/50">
+      <div className="flex-shrink-0 w-16 border-l border-border/50 channel-strip">
         <VerticalGainFader
           value={settings.inputGainDb}
           onChange={(v) => onSettingsChange({ inputGainDb: v })}

@@ -33,7 +33,7 @@ export const EarlyWarningPanel = memo(function EarlyWarningPanel({ earlyWarning 
   const confidencePct = Math.round(confidence * 100)
 
   return (
-    <div className="mt-2 rounded-md border border-amber-500/20 bg-amber-500/5 overflow-hidden">
+    <div className="mt-2 rounded border border-amber-500/20 bg-amber-500/5 overflow-hidden">
       <button
         onClick={() => setIsExpanded(prev => !prev)}
         className="w-full flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-amber-400 font-medium uppercase tracking-wide hover:bg-amber-500/10 transition-colors"
@@ -42,13 +42,13 @@ export const EarlyWarningPanel = memo(function EarlyWarningPanel({ earlyWarning 
         <Radio className="w-3 h-3 animate-pulse" aria-hidden="true" />
         <span>Early Warning</span>
         {elapsedSec > 0 && (
-          <span className={`font-mono text-[0.625rem] tabular-nums ${
-            elapsedSec >= 10 ? 'text-red-400' : elapsedSec >= 5 ? 'text-amber-300' : 'text-amber-400/60'
+          <span className={`font-mono text-xs tabular-nums ${
+            elapsedSec >= 10 ? 'text-red-400' : elapsedSec >= 5 ? 'text-amber-300' : 'text-amber-400'
           }`}>
             {elapsedSec}s
           </span>
         )}
-        <span className="ml-auto font-mono text-amber-400/70">{confidencePct}%</span>
+        <span className="ml-auto font-mono text-amber-400">{confidencePct}%</span>
         {isExpanded
           ? <ChevronDown className="w-3 h-3 text-amber-400/50" />
           : <ChevronRight className="w-3 h-3 text-amber-400/50" />

@@ -58,15 +58,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Threshold</span>
-              <span className="text-xs font-mono">{settings.feedbackThresholdDb}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Threshold</span>
+              <span className="text-xs font-mono tabular-nums">{settings.feedbackThresholdDb}dB</span>
             </div>
             <Slider
               value={[settings.feedbackThresholdDb]}
               onValueChange={([v]) => onSettingsChange({ feedbackThresholdDb: v })}
               min={2} max={20} step={1}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Aggressive</span><span>Conservative</span>
             </div>
           </div>
@@ -79,15 +79,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Threshold</span>
-              <span className="text-xs font-mono">{settings.ringThresholdDb}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Threshold</span>
+              <span className="text-xs font-mono tabular-nums">{settings.ringThresholdDb}dB</span>
             </div>
             <Slider
               value={[settings.ringThresholdDb]}
               onValueChange={([v]) => onSettingsChange({ ringThresholdDb: v })}
               min={1} max={12} step={0.5}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Sensitive</span><span>Tolerant</span>
             </div>
           </div>
@@ -100,15 +100,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Rate</span>
-              <span className="text-xs font-mono">{settings.growthRateThreshold.toFixed(1)}dB/s</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Rate</span>
+              <span className="text-xs font-mono tabular-nums">{settings.growthRateThreshold.toFixed(1)}dB/s</span>
             </div>
             <Slider
               value={[settings.growthRateThreshold]}
               onValueChange={([v]) => onSettingsChange({ growthRateThreshold: v })}
               min={0.5} max={8} step={0.5}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Early catch</span><span>Runaway only</span>
             </div>
           </div>
@@ -121,15 +121,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Min. Confidence</span>
-              <span className="text-xs font-mono">{Math.round(settings.confidenceThreshold * 100)}%</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Min. Confidence</span>
+              <span className="text-xs font-mono tabular-nums">{Math.round(settings.confidenceThreshold * 100)}%</span>
             </div>
             <Slider
               value={[settings.confidenceThreshold * 100]}
               onValueChange={([v]) => onSettingsChange({ confidenceThreshold: v / 100 })}
               min={0} max={100} step={1}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Catch everything</span><span>High confidence only</span>
             </div>
           </div>
@@ -142,22 +142,22 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Duration</span>
-              <span className="text-xs font-mono">{(settings.holdTimeMs / 1000).toFixed(1)}s</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Duration</span>
+              <span className="text-xs font-mono tabular-nums">{(settings.holdTimeMs / 1000).toFixed(1)}s</span>
             </div>
             <Slider
               value={[settings.holdTimeMs]}
               onValueChange={([v]) => onSettingsChange({ holdTimeMs: v })}
               min={500} max={5000} step={250}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Quick</span><span>Persistent</span>
             </div>
           </div>
         </Section>
       </SectionGroup>
 
-      <div className="border-t border-border/30" />
+      <div className="border-t border-border/40" />
 
       <SectionGroup title="Analysis" defaultOpen={false}>
         <Section
@@ -187,15 +187,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Amount</span>
-              <span className="text-xs font-mono">{(settings.smoothingTimeConstant * 100).toFixed(0)}%</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Amount</span>
+              <span className="text-xs font-mono tabular-nums">{(settings.smoothingTimeConstant * 100).toFixed(0)}%</span>
             </div>
             <Slider
               value={[settings.smoothingTimeConstant]}
               onValueChange={([v]) => onSettingsChange({ smoothingTimeConstant: v })}
               min={0} max={0.95} step={0.05}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Raw</span><span>Smooth</span>
             </div>
           </div>
@@ -207,7 +207,7 @@ export const DetectionTab = memo(function DetectionTab({
           tooltip="IEC 61672-1 A-weighting curve matching human hearing sensitivity. Reduces low-frequency emphasis."
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Apply A-weighting curve</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Apply A-weighting curve</span>
             <Switch
               checked={settings.aWeightingEnabled}
               onCheckedChange={(checked) => onSettingsChange({ aWeightingEnabled: checked })}
@@ -216,7 +216,7 @@ export const DetectionTab = memo(function DetectionTab({
         </Section>
       </SectionGroup>
 
-      <div className="border-t border-border/30" />
+      <div className="border-t border-border/40" />
 
       <SectionGroup title="Filtering" defaultOpen={false}>
         <Section
@@ -225,7 +225,7 @@ export const DetectionTab = memo(function DetectionTab({
           tooltip="Detects harmonic overtones to reduce false positives for instruments like bass guitar."
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Filter instruments</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Filter instruments</span>
             <Switch
               checked={settings.harmonicFilterEnabled}
               onCheckedChange={(checked) => onSettingsChange({ harmonicFilterEnabled: checked })}
@@ -240,15 +240,15 @@ export const DetectionTab = memo(function DetectionTab({
         >
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Window</span>
-              <span className="text-xs font-mono">{settings.harmonicToleranceCents}¢</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Window</span>
+              <span className="text-xs font-mono tabular-nums">{settings.harmonicToleranceCents}¢</span>
             </div>
             <Slider
               value={[settings.harmonicToleranceCents]}
               onValueChange={([v]) => onSettingsChange({ harmonicToleranceCents: v })}
               min={25} max={400} step={25}
             />
-            <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+            <div className="flex justify-between text-xs text-muted-foreground font-mono">
               <span>Tight (ring out)</span><span>Wide (live)</span>
             </div>
           </div>

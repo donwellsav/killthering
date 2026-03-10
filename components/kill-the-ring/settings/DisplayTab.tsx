@@ -47,15 +47,15 @@ export const DisplayTab = memo(function DisplayTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">Limit</span>
-            <span className="text-xs font-mono">{settings.maxDisplayedIssues}</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Limit</span>
+            <span className="text-xs font-mono tabular-nums">{settings.maxDisplayedIssues}</span>
           </div>
           <Slider
             value={[settings.maxDisplayedIssues]}
             onValueChange={([v]) => onSettingsChange({ maxDisplayedIssues: v })}
             min={3} max={12} step={1}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Focused</span><span>All Issues</span>
           </div>
         </div>
@@ -69,8 +69,8 @@ export const DisplayTab = memo(function DisplayTab({
         <div className="space-y-3">
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Min</span>
-              <span className="text-xs font-mono">{settings.rtaDbMin}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Min</span>
+              <span className="text-xs font-mono tabular-nums">{settings.rtaDbMin}dB</span>
             </div>
             <Slider
               value={[settings.rtaDbMin]}
@@ -80,8 +80,8 @@ export const DisplayTab = memo(function DisplayTab({
           </div>
           <div className="space-y-1">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-muted-foreground">Max</span>
-              <span className="text-xs font-mono">{settings.rtaDbMax}dB</span>
+              <span className="text-xs text-muted-foreground font-mono tracking-wide">Max</span>
+              <span className="text-xs font-mono tabular-nums">{settings.rtaDbMax}dB</span>
             </div>
             <Slider
               value={[settings.rtaDbMax]}
@@ -99,15 +99,15 @@ export const DisplayTab = memo(function DisplayTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">Width</span>
-            <span className="text-xs font-mono">{settings.spectrumLineWidth.toFixed(1)}px</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Width</span>
+            <span className="text-xs font-mono tabular-nums">{settings.spectrumLineWidth.toFixed(1)}px</span>
           </div>
           <Slider
             value={[settings.spectrumLineWidth]}
             onValueChange={([v]) => onSettingsChange({ spectrumLineWidth: v })}
             min={0.5} max={4} step={0.5}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Thin</span><span>Thick</span>
           </div>
         </div>
@@ -120,15 +120,15 @@ export const DisplayTab = memo(function DisplayTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">FPS</span>
-            <span className="text-xs font-mono">{settings.canvasTargetFps}</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">FPS</span>
+            <span className="text-xs font-mono tabular-nums">{settings.canvasTargetFps}</span>
           </div>
           <Slider
             value={[settings.canvasTargetFps]}
             onValueChange={([v]) => onSettingsChange({ canvasTargetFps: v })}
             min={15} max={60} step={5}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Battery saver</span><span>Smooth</span>
           </div>
         </div>
@@ -141,15 +141,15 @@ export const DisplayTab = memo(function DisplayTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">Size</span>
-            <span className="text-xs font-mono">{settings.graphFontSize}px</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Size</span>
+            <span className="text-xs font-mono tabular-nums">{settings.graphFontSize}px</span>
           </div>
           <Slider
             value={[settings.graphFontSize]}
             onValueChange={([v]) => onSettingsChange({ graphFontSize: v })}
             min={8} max={26} step={1}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Small</span><span>Large</span>
           </div>
         </div>
@@ -161,7 +161,7 @@ export const DisplayTab = memo(function DisplayTab({
         tooltip="Show contextual help on controls. Disable once you know the system."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Show help tooltips</span>
+          <span className="text-xs text-muted-foreground font-mono tracking-wide">Show help tooltips</span>
           <Switch
             checked={settings.showTooltips}
             onCheckedChange={(checked) => onSettingsChange({ showTooltips: checked })}

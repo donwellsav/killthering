@@ -22,6 +22,7 @@ pnpm dev              # Start Next.js dev server on :3000 (Turbopack, no SW)
 pnpm build            # Production build (webpack, generates SW)
 pnpm start            # Start production server
 pnpm lint             # Run ESLint (flat config, eslint.config.mjs)
+npx tsc --noEmit      # Type-check without emitting (run before pnpm build)
 ```
 
 ## Project Structure
@@ -31,14 +32,21 @@ app/                        # Next.js App Router pages + API routes
 components/
   kill-the-ring/            # Domain components (~21 files)
     settings/               # Settings panel tab components (6 files)
-  ui/                       # shadcn/ui primitives (~40 files)
+  ui/                       # shadcn/ui primitives (~48 files)
 contexts/                   # React context providers (PortalContainerContext)
-hooks/                      # Custom React hooks (8 files)
+hooks/                      # Custom React hooks (9 files)
 lib/
   audio/                    # AudioAnalyzer factory
   canvas/                   # Pure canvas drawing helpers (no React dependency)
   changelog.ts              # Version history (rendered in About tab)
-  dsp/                      # DSP engine: detector, classifier, advisor, worker (split into focused modules)
+  dsp/                      # DSP engine (14 modules):
+    feedbackDetector.ts     #   Core peak detection + MSD + persistence scoring
+    advancedDetection.ts    #   Barrel re-export for msdAnalysis, phaseCoherence, compressionDetection, algorithmFusion
+    classifier.ts           #   Track classification (feedback vs harmonic vs transient)
+    eqAdvisor.ts            #   EQ recommendation generation
+    trackManager.ts         #   Track lifecycle management
+    dspWorker.ts            #   Web Worker entry point
+    constants.ts            #   All DSP tuning constants
   utils/                    # Math helpers, pitch utilities
   utils.ts                  # cn() helper for Tailwind class merging
 types/                      # TypeScript interfaces (advisory.ts)
@@ -53,6 +61,7 @@ types/                      # TypeScript interfaces (advisory.ts)
 - `contexts/PortalContainerContext.tsx` provides a portal mount point for mobile overlays
 - **Security headers:** `next.config.mjs` sets `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy` (microphone only)
 - **No environment variables required** — app is fully client-side with localStorage persistence
+- **Changelog:** `lib/changelog.ts` is manually maintained — update it when shipping user-visible features (rendered in About tab)
 - **Mobile:** MobileLayout uses WAI-ARIA tabs pattern (roving tabindex, ArrowLeft/Right/Home/End keyboard nav); DesktopLayout uses `landscape:flex` CSS toggle — never modify DesktopLayout for mobile-specific changes
 - **Accessibility:** Touch targets ≥44×44px (`min-h-[44px] min-w-[44px]`), `role="status"` sr-only spans for clipboard announcements
 
@@ -74,6 +83,6 @@ types/                      # TypeScript interfaces (advisory.ts)
 
 ## CI/CD
 
-- **Versioning:** `1.{MINOR}.{PATCH}` — PR merge bumps minor + resets patch (`auto-version.yml`), direct push increments patch (`patch-on-push.yml`). Both commit with `[skip ci]`.
+- **Versioning:** `0.{PR_NUMBER}.0` — PR merge sets version to PR number (`auto-version.yml`), direct push increments patch (`patch-on-push.yml`). Both commit with `[skip ci]`.
 - **Deployment:** Vercel auto-deploys on push to `main`; the `[skip ci]` in auto-version commits prevents double-deploys
 - **Version flow:** `package.json` version → `next.config.mjs` reads via `readFileSync` → `NEXT_PUBLIC_APP_VERSION` env → HeaderBar + HelpMenu

@@ -21,7 +21,7 @@ export const FullscreenOverlay = memo(function FullscreenOverlay({
 }: FullscreenOverlayProps) {
   return (
     <div
-      className="fixed top-3 right-3 z-50 flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 transition-opacity duration-300"
+      className="fixed top-3 right-3 z-50 flex items-center gap-2 px-2.5 py-1.5 rounded bg-card/80 backdrop-blur-sm border border-border/40 transition-opacity duration-300"
       style={{
         opacity: isOverlayVisible ? 1 : 0,
         pointerEvents: isOverlayVisible ? 'auto' : 'none',
@@ -48,7 +48,7 @@ export const FullscreenOverlay = memo(function FullscreenOverlay({
 
       {/* Active issue count badge */}
       {activeAdvisoryCount > 0 && (
-        <span className="bg-primary text-primary-foreground text-[0.625rem] rounded-full min-w-[20px] h-[20px] flex items-center justify-center font-bold leading-none px-1">
+        <span className="bg-primary text-primary-foreground text-[0.625rem] rounded-full min-w-[20px] h-[20px] flex items-center justify-center font-mono font-bold leading-none px-1">
           {activeAdvisoryCount}
         </span>
       )}
@@ -58,7 +58,7 @@ export const FullscreenOverlay = memo(function FullscreenOverlay({
         variant="ghost"
         size="sm"
         onClick={onExitFullscreen}
-        className="h-7 w-7 p-0 text-white/70 hover:text-white hover:bg-white/10"
+        className="h-7 w-7 p-0 text-white/70 hover:text-white hover:bg-accent/20"
         aria-label="Exit fullscreen"
       >
         <Minimize2 className="w-3.5 h-3.5" />

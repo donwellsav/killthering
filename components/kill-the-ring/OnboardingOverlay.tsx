@@ -95,14 +95,14 @@ export const OnboardingOverlay = memo(function OnboardingOverlay() {
       aria-labelledby="onboarding-title"
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
     >
-      <div className="bg-card border border-border rounded-lg max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-card/90 border border-border/40 rounded max-w-md w-full p-6 shadow-xl backdrop-blur-sm animate-in fade-in zoom-in-95 duration-200">
         {/* Icon */}
         <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 border border-primary/20 mb-4 mx-auto">
           <Icon className="w-6 h-6 text-primary" />
         </div>
 
         {/* Content */}
-        <h2 id="onboarding-title" className="text-lg font-bold text-foreground text-center mb-2">
+        <h2 id="onboarding-title" className="text-lg font-mono font-bold tracking-wide text-foreground text-center mb-2">
           {current.title}
         </h2>
         <p className="text-sm text-muted-foreground text-center leading-relaxed mb-6">
@@ -128,14 +128,14 @@ export const OnboardingOverlay = memo(function OnboardingOverlay() {
           {step === 0 ? (
             <button
               onClick={dismiss}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+              className="text-xs font-mono tracking-wide text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded hover:bg-card/40"
             >
               Skip
             </button>
           ) : (
             <button
               onClick={back}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted/50"
+              className="inline-flex items-center gap-1 text-xs font-mono tracking-wide text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded hover:bg-card/40"
             >
               <ChevronLeft className="w-4 h-4" />
               Back
@@ -145,7 +145,7 @@ export const OnboardingOverlay = memo(function OnboardingOverlay() {
           {/* Right: Next or Get Started */}
           <button
             onClick={next}
-            className="inline-flex items-center gap-1 text-sm font-medium bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-mono font-bold tracking-wide bg-primary text-primary-foreground px-4 py-2 rounded hover:bg-primary/90 transition-colors"
           >
             {isLast ? 'Get Started' : 'Next'}
             {!isLast && <ChevronRight className="w-4 h-4" />}

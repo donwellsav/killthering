@@ -99,9 +99,9 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
           History
         </TooltipContent>
       </Tooltip>
-      <SheetContent side="right" className="sm:max-w-md overflow-y-auto">
+      <SheetContent side="right" className="sm:max-w-md overflow-y-auto channel-strip">
         <SheetHeader className="pb-1">
-          <SheetTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
+          <SheetTitle className="text-lg flex items-center gap-2">
             <History className="h-5 w-5" />
             Feedback History
           </SheetTitle>
@@ -111,7 +111,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
         </SheetHeader>
 
         {/* Export/Clear Actions */}
-        <div className="flex gap-2 pb-3 border-b border-border">
+        <div className="flex gap-2 pb-3 border-b border-border/40 panel-groove">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -183,13 +183,13 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
-                <span className="text-sm font-bold tracking-tight">Repeat Offenders</span>
+                <span className="section-label">Repeat Offenders</span>
               </div>
               <div className="space-y-2">
                 {hotspots.filter(h => h.isRepeatOffender).slice(0, 5).map((hotspot, i) => (
                   <div
                     key={i}
-                    className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 hover:bg-amber-500/15 transition-colors"
+                    className="bg-amber-500/10 border border-amber-500/30 rounded panel-recessed p-2 hover:bg-amber-500/15 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-amber-400 font-medium">
@@ -214,14 +214,14 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-bold tracking-tight">All Problem Frequencies</span>
+              <span className="section-label">All Problem Frequencies</span>
             </div>
             <div className="space-y-1.5">
               {hotspots.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-1">
-                  <BarChart3 className="w-5 h-5 text-muted-foreground/30 mb-1" />
-                  <span className="text-sm font-medium">No feedback events recorded yet</span>
-                  <span className="text-xs text-muted-foreground/60">Events will appear here as they are detected</span>
+                  <BarChart3 className="w-5 h-5 text-muted-foreground/50 mb-1" />
+                  <span className="text-sm font-mono font-medium">No feedback events recorded yet</span>
+                  <span className="text-xs text-muted-foreground font-mono">Events will appear here as they are detected</span>
                 </div>
               ) : (
                 hotspots.map((hotspot, i) => (
@@ -230,7 +230,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
                     className={`rounded px-2 py-1.5 flex items-center justify-between transition-colors ${
                       hotspot.isRepeatOffender
                         ? 'bg-amber-500/10 border-l-2 border-amber-500 hover:bg-amber-500/15'
-                        : 'bg-muted/30 hover:bg-accent/5'
+                        : 'bg-card/40 hover:bg-accent/5'
                     }`}
                   >
                     <div className="flex items-center gap-2">

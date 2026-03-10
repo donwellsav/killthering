@@ -28,10 +28,10 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
                 onSettingsChange({ algorithmMode: 'custom' as AlgorithmMode })
               }
             }}
-            className={`w-full px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+            className={`w-full px-2 py-1 rounded text-xs font-mono font-bold tracking-wide transition-colors ${
               settings.algorithmMode === 'auto'
                 ? 'bg-primary/20 border border-primary/50 text-primary'
-                : 'bg-muted/50 border border-transparent text-muted-foreground hover:bg-muted'
+                : 'bg-card/40 border border-transparent text-muted-foreground hover:bg-muted'
             }`}
           >
             Auto — Content Adaptive
@@ -66,14 +66,14 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
                     }
                     onSettingsChange({ enabledAlgorithms: next })
                   }}
-                  className={`flex flex-col items-center px-1 py-0.5 rounded-md transition-colors ${
+                  className={`flex flex-col items-center px-1 py-0.5 rounded transition-colors ${
                     enabled
                       ? 'bg-primary/20 border border-primary/50 text-primary'
-                      : 'bg-muted/50 border border-transparent text-muted-foreground hover:bg-muted'
+                      : 'bg-card/40 border border-transparent text-muted-foreground hover:bg-muted'
                   }`}
                 >
-                  <span className="text-xs font-medium">{label}</span>
-                  <span className="text-[0.5rem] text-muted-foreground">{desc}</span>
+                  <span className="text-xs font-mono font-bold">{label}</span>
+                  <span className="text-[0.625rem] text-muted-foreground">{desc}</span>
                 </button>
               )
             })}
@@ -88,7 +88,7 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
       >
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">Auto Music-Aware</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Auto Music-Aware</span>
             <Switch
               checked={settings.autoMusicAware}
               onCheckedChange={(checked) => onSettingsChange({ autoMusicAware: checked })}
@@ -97,15 +97,15 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
           {settings.autoMusicAware && (
             <div className="space-y-1">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">Trigger Level</span>
-                <span className="text-xs font-mono">{settings.autoMusicAwareHysteresisDb}dB</span>
+                <span className="text-xs text-muted-foreground font-mono tracking-wide">Trigger Level</span>
+                <span className="text-xs font-mono tabular-nums">{settings.autoMusicAwareHysteresisDb}dB</span>
               </div>
               <Slider
                 value={[settings.autoMusicAwareHysteresisDb]}
                 onValueChange={([v]) => onSettingsChange({ autoMusicAwareHysteresisDb: v })}
                 min={5} max={30} step={1}
               />
-              <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+              <div className="flex justify-between text-xs text-muted-foreground font-mono">
                 <span>Sensitive (5dB)</span><span>Loud only (30dB)</span>
               </div>
             </div>
@@ -119,7 +119,7 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
         tooltip="When enabled, whistle classifications are suppressed from results. Disable if you want to detect human whistling or whistle-like feedback."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Ignore whistle</span>
+          <span className="text-xs text-muted-foreground font-mono tracking-wide">Ignore whistle</span>
           <Switch
             checked={settings.ignoreWhistle}
             onCheckedChange={(checked) => onSettingsChange({ ignoreWhistle: checked })}
@@ -134,15 +134,15 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">Limit</span>
-            <span className="text-xs font-mono">{settings.maxTracks}</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Limit</span>
+            <span className="text-xs font-mono tabular-nums">{settings.maxTracks}</span>
           </div>
           <Slider
             value={[settings.maxTracks]}
             onValueChange={([v]) => onSettingsChange({ maxTracks: v })}
             min={8} max={128} step={8}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Fewer</span><span>More</span>
           </div>
         </div>
@@ -155,15 +155,15 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
       >
         <div className="space-y-1">
           <div className="flex justify-between items-center">
-            <span className="text-xs text-muted-foreground">Timeout</span>
-            <span className="text-xs font-mono">{settings.trackTimeoutMs}ms</span>
+            <span className="text-xs text-muted-foreground font-mono tracking-wide">Timeout</span>
+            <span className="text-xs font-mono tabular-nums">{settings.trackTimeoutMs}ms</span>
           </div>
           <Slider
             value={[settings.trackTimeoutMs]}
             onValueChange={([v]) => onSettingsChange({ trackTimeoutMs: v })}
             min={200} max={5000} step={100}
           />
-          <div className="flex justify-between text-[0.5625rem] text-muted-foreground">
+          <div className="flex justify-between text-xs text-muted-foreground font-mono">
             <span>Responsive</span><span>Tolerant</span>
           </div>
         </div>
@@ -175,7 +175,7 @@ export const AlgorithmsTab = memo(function AlgorithmsTab({
         tooltip="Shows live algorithm scoring in the status bar. Useful for diagnosing detection behavior."
       >
         <div className="flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">Show live scores</span>
+          <span className="text-xs text-muted-foreground font-mono tracking-wide">Show live scores</span>
           <Switch
             checked={settings.showAlgorithmScores}
             onCheckedChange={(checked) => onSettingsChange({ showAlgorithmScores: checked })}

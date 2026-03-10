@@ -80,9 +80,9 @@ export const SettingsPanel = memo(function SettingsPanel({
           <Settings className="size-7 sm:size-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="sm:max-w-lg overflow-y-auto">
+      <SheetContent side="right" className="sm:max-w-lg overflow-y-auto channel-strip">
         <SheetHeader>
-          <SheetTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
+          <SheetTitle className="text-lg flex items-center gap-2">
             <Settings className="w-5 h-5" />
             Settings
           </SheetTitle>
@@ -136,7 +136,7 @@ export const SettingsPanel = memo(function SettingsPanel({
           </TabsContent>
         </Tabs>
 
-        <div className="pt-3 mt-2 border-t border-border space-y-2">
+        <div className="pt-3 mt-2 border-t border-border/40 panel-groove space-y-2">
           <ResetConfirmDialog
             onConfirm={onReset}
             trigger={
@@ -146,7 +146,7 @@ export const SettingsPanel = memo(function SettingsPanel({
               </Button>
             }
           />
-          <p className="text-[0.5625rem] text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center font-mono">
             Restores Speech mode defaults for corporate/conference PA
           </p>
           <div className="flex gap-2">
@@ -166,7 +166,7 @@ export const SettingsPanel = memo(function SettingsPanel({
               Load Saved
             </Button>
           </div>
-          <p className="text-[0.5625rem] text-muted-foreground text-center">
+          <p className="text-xs text-muted-foreground text-center font-mono">
             {hasSavedDefaults ? 'Saved defaults available' : 'Save current settings to reuse later'}
           </p>
         </div>

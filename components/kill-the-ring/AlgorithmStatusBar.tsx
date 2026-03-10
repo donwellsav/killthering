@@ -55,17 +55,17 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
 
   if (!isRunning) {
     return (
-      <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 px-2 py-0.5 text-xs tracking-wide text-muted-foreground">
         <span className="font-mono">ALGO: {ALGORITHM_MODE_LABELS[algorithmMode]}</span>
-        <span className="text-muted-foreground/50">|</span>
-        <span>Waiting for audio...</span>
+        <span className="text-muted-foreground/25 mx-0.5">|</span>
+        <span className="font-mono">Waiting for audio...</span>
       </div>
     )
   }
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-2 px-2 py-1 text-xs font-mono">
+      <div className="flex items-center gap-1.5 px-2 py-0.5 text-xs tracking-wide font-mono">
         {/* Algorithm Mode + auto-selected indicators */}
         <Tooltip>
           <TooltipTrigger asChild>
@@ -93,7 +93,7 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
           </TooltipContent>
         </Tooltip>
 
-        <span className="text-muted-foreground/50">|</span>
+        <span className="text-muted-foreground/25 mx-0.5">|</span>
 
         {/* Content Type */}
         <Tooltip>
@@ -113,7 +113,7 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
           </TooltipContent>
         </Tooltip>
 
-        <span className="text-muted-foreground/50">|</span>
+        <span className="text-muted-foreground/25 mx-0.5">|</span>
 
         {/* MSD Buffer Status */}
         <Tooltip>
@@ -150,7 +150,7 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
         {/* Compression Indicator */}
         {isCompressed && (
           <>
-            <span className="text-muted-foreground/50">|</span>
+            <span className="text-muted-foreground/25 mx-0.5">|</span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-amber-400 animate-pulse">
@@ -177,7 +177,7 @@ export const AlgorithmStatusBar = memo(function AlgorithmStatusBar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className={`tabular-nums ${
-                  droppedPercent > 20 ? 'text-red-400' : droppedPercent > 5 ? 'text-amber-400' : 'text-muted-foreground/50'
+                  droppedPercent > 20 ? 'text-red-400' : droppedPercent > 5 ? 'text-amber-400' : 'text-muted-foreground'
                 }`}>
                   {actualFps}fps
                 </span>

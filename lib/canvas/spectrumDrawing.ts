@@ -58,7 +58,7 @@ export function drawGrid(
   range: DbRange,
 ) {
   // Background
-  ctx.fillStyle = '#0c0c0c'
+  ctx.fillStyle = '#080a0c'
   ctx.fillRect(0, 0, plotWidth, plotHeight)
 
   // Radial vignette — subtle depth from center to edges
@@ -67,12 +67,12 @@ export function drawGrid(
     plotWidth / 2, plotHeight / 2, plotWidth * 0.75,
   )
   vg.addColorStop(0, 'transparent')
-  vg.addColorStop(1, 'rgba(0, 0, 0, 0.3)')
+  vg.addColorStop(1, 'rgba(0, 0, 0, 0.4)')
   ctx.fillStyle = vg
   ctx.fillRect(0, 0, plotWidth, plotHeight)
 
   // Minor dB grid (subtle, drawn first)
-  ctx.strokeStyle = '#161616'
+  ctx.strokeStyle = '#121416'
   ctx.lineWidth = 0.5
   ctx.beginPath()
   for (const db of DB_MINOR) {
@@ -83,7 +83,7 @@ export function drawGrid(
   ctx.stroke()
 
   // Major dB grid (brighter, on top)
-  ctx.strokeStyle = '#2a2a2a'
+  ctx.strokeStyle = '#1e2024'
   ctx.lineWidth = 1
   ctx.beginPath()
   for (const db of DB_MAJOR) {
@@ -94,7 +94,7 @@ export function drawGrid(
   ctx.stroke()
 
   // Frequency grid
-  ctx.strokeStyle = '#1e1e1e'
+  ctx.strokeStyle = '#161820'
   ctx.lineWidth = 0.5
   ctx.beginPath()
   for (const freq of FREQ_LABELS) {
@@ -200,9 +200,9 @@ export function drawSpectrum(
   let gradient = gradientRef.current
   if (!gradient || gradientHeightRef.current !== plotHeight) {
     gradient = ctx.createLinearGradient(0, 0, 0, plotHeight)
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.85)')
-    gradient.addColorStop(0.5, 'rgba(59, 130, 246, 0.35)')
-    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)')
+    gradient.addColorStop(0, 'rgba(75, 146, 255, 0.85)')
+    gradient.addColorStop(0.4, 'rgba(75, 146, 255, 0.35)')
+    gradient.addColorStop(1, 'rgba(75, 146, 255, 0.05)')
     gradientRef.current = gradient
     gradientHeightRef.current = plotHeight
   }
@@ -270,14 +270,14 @@ export function drawSpectrum(
   // Sharp pass — crisp line with shadow bloom
   ctx.globalAlpha = 1
   ctx.lineWidth = spectrumLineWidth
-  ctx.shadowColor = 'rgba(59, 130, 246, 0.3)'
+  ctx.shadowColor = 'rgba(75, 146, 255, 0.35)'
   ctx.shadowBlur = 6
   ctx.stroke(strokePath)
   ctx.shadowColor = 'transparent'
   ctx.shadowBlur = 0
 
   // ── Peak hold trace — thin white line above spectrum ──────────
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)'
+  ctx.strokeStyle = 'rgba(200, 210, 225, 0.25)'
   ctx.lineWidth = 1
   ctx.stroke(holdPath)
 }
@@ -298,7 +298,7 @@ export function drawFreqRangeOverlay(
   if (rangeMaxX < plotWidth) ctx.fillRect(rangeMaxX, 0, plotWidth - rangeMaxX, plotHeight)
 
   // Vertical boundary lines
-  const lineColor = '#3b82f6' // blue-500
+  const lineColor = '#4B92FF' // LED blue
   ctx.strokeStyle = lineColor
   ctx.lineWidth = 2
   ctx.globalAlpha = 0.85
@@ -550,7 +550,7 @@ export function drawPlaceholder(
   // Sharp line with bloom
   ctx.globalAlpha = 1
   ctx.lineWidth = 1.5
-  ctx.shadowColor = 'rgba(59, 130, 246, 0.3)'
+  ctx.shadowColor = 'rgba(75, 146, 255, 0.35)'
   ctx.shadowBlur = 6
   ctx.stroke(strokePath)
   ctx.shadowColor = 'transparent'

@@ -95,15 +95,15 @@ export const InputMeterSlider = memo(function InputMeterSlider({
     ctx.clearRect(0, 0, w, h)
 
     // Background
-    ctx.fillStyle = '#161616'
+    ctx.fillStyle = '#0e1012'
     ctx.fillRect(0, 0, w, h)
 
     // Cached meter gradient — only recreated when width changes
     let gradient = gradientRef.current
     if (!gradient || gradientWidthRef.current !== w) {
       gradient = ctx.createLinearGradient(0, 0, w, 0)
-      gradient.addColorStop(0, '#3b82f6')
-      gradient.addColorStop(0.6, '#3b82f6')
+      gradient.addColorStop(0, '#4B92FF')
+      gradient.addColorStop(0.6, '#4B92FF')
       gradient.addColorStop(0.8, '#eab308')
       gradient.addColorStop(0.95, '#ef4444')
       gradient.addColorStop(1, '#ef4444')
@@ -122,7 +122,7 @@ export const InputMeterSlider = memo(function InputMeterSlider({
     }
 
     // Scale ticks (minor dB marks)
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)'
     ctx.lineWidth = 0.5
     for (const db of [-30, -20, -10, 10, 20, 30]) {
       const x = ((db - min) / (max - min)) * w
@@ -134,7 +134,7 @@ export const InputMeterSlider = memo(function InputMeterSlider({
 
     // Zero-dB tick mark
     const zeroPos = ((0 - min) / (max - min)) * w
-    ctx.strokeStyle = 'rgba(255,255,255,0.4)'
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)'
     ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(zeroPos, 0)
@@ -325,7 +325,7 @@ export const InputMeterSlider = memo(function InputMeterSlider({
         {/* 0dB unity label — positioned at the center (50%) of the range */}
         {!compact && (
           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 pointer-events-none">
-            <span className="text-[0.5rem] text-muted-foreground/60 font-mono leading-none">0</span>
+            <span className="text-[0.625rem] text-muted-foreground font-mono leading-none">0</span>
           </div>
         )}
       </div>

@@ -694,18 +694,18 @@ export const VIZ_COLORS = {
   POSSIBLE_RING: '#c084fc', // purple-400 (WCAG AA ≥4.5:1 on dark)
   WHISTLE: '#06b6d4', // cyan-500
   INSTRUMENT: '#4ade80', // green-400 (WCAG AA ≥4.8:1 on dark)
-  NOISE_FLOOR: '#6b7280', // gray-500
-  THRESHOLD: '#3b82f6', // blue-500
-  SPECTRUM: '#3b82f6', // blue-500
+  NOISE_FLOOR: '#4a5060', // dimmed gray — pro tools keep data lines dominant
+  THRESHOLD: '#4B92FF', // LED blue
+  SPECTRUM: '#4B92FF', // LED blue
   PEAK_MARKER: '#f59e0b', // amber-500
   // Advanced algorithm colors
   MSD_HIGH: '#22c55e', // green-500 (likely feedback)
   MSD_LOW: '#6b7280', // gray-500 (not feedback)
-  PHASE_COHERENT: '#3b82f6', // blue-500 (high coherence)
+  PHASE_COHERENT: '#4B92FF', // LED blue (high coherence)
   PHASE_RANDOM: '#9ca3af', // gray-400 (low coherence)
   COMPRESSION: '#f59e0b', // amber-500 (compression detected)
   COMB_PATTERN: '#8b5cf6', // violet-500 (comb pattern)
-  AXIS_LABEL: '#d4d4d8', // zinc-300 — brighter for outdoor readability
+  AXIS_LABEL: '#8891a0', // dimmed — pro tools keep grid labels subtle, data pops
 } as const
 
 // ============================================================================

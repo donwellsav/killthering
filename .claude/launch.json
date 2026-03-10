@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "next-dev",
-      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
-      "runtimeArgs": ["C:\\ktr\\v0sucks-killthering2\\node_modules\\next\\dist\\bin\\next", "dev", "--turbopack"],
-      "port": 3000
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "--turbopack", "--port", "3002"],
+      "port": 3002
     },
     {
       "name": "next-start",

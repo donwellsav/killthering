@@ -40,9 +40,9 @@ export const HelpMenu = memo(function HelpMenu() {
           <HelpCircle className="size-7 sm:size-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="sm:max-w-xl overflow-y-auto">
+      <SheetContent side="right" className="sm:max-w-xl overflow-y-auto channel-strip">
         <SheetHeader>
-          <SheetTitle className="text-lg font-bold tracking-tight">Kill The Ring Help</SheetTitle>
+          <SheetTitle className="text-lg">Kill The Ring Help</SheetTitle>
         </SheetHeader>
 
         <Tabs defaultValue="guide" className="mt-4">
@@ -250,7 +250,7 @@ export const HelpMenu = memo(function HelpMenu() {
             </Section>
 
             <Accordion type="multiple" className="space-y-1">
-              <AccordionItem value="msd" className="border rounded-lg px-3">
+              <AccordionItem value="msd" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">1. MSD — Magnitude Slope Deviation</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">DAFx-16 Paper — Growth pattern analysis</p>
@@ -308,7 +308,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="phase" className="border rounded-lg px-3">
+              <AccordionItem value="phase" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">2. Phase Coherence Analysis</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">KU Leuven 2025 / Nyquist stability theory</p>
@@ -357,7 +357,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="spectral" className="border rounded-lg px-3">
+              <AccordionItem value="spectral" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">3. Spectral Flatness + Kurtosis</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">Wiener entropy — Tone vs. broadband discrimination</p>
@@ -397,7 +397,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="comb" className="border rounded-lg px-3">
+              <AccordionItem value="comb" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">4. Comb Filter Pattern Detection</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">DBX Paper — Acoustic path geometry</p>
@@ -440,7 +440,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="ihr" className="border rounded-lg px-3">
+              <AccordionItem value="ihr" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">5. Inter-Harmonic Ratio (IHR)</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">Harmonic vs. inter-harmonic energy analysis</p>
@@ -478,7 +478,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="ptmr" className="border rounded-lg px-3">
+              <AccordionItem value="ptmr" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">6. Peak-to-Median Ratio (PTMR)</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">Spectral prominence measurement</p>
@@ -512,7 +512,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="compression" className="border rounded-lg px-3">
+              <AccordionItem value="compression" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">7. Compression Detection</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-xs italic text-muted-foreground">DAFx-16 research — Adaptive threshold adjustment</p>
@@ -551,7 +551,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="fusion" className="border rounded-lg px-3">
+              <AccordionItem value="fusion" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">Fusion Engine — Weighted Voting</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <p className="text-sm text-muted-foreground">
@@ -596,7 +596,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="physics" className="border rounded-lg px-3">
+              <AccordionItem value="physics" className="border border-border/40 rounded px-3">
                 <AccordionTrigger className="text-sm py-2">Acoustic Physics & References</AccordionTrigger>
                 <AccordionContent className="space-y-3 pb-3">
                   <div className="bg-muted p-3 rounded font-mono text-xs space-y-1">
@@ -676,7 +676,7 @@ export const HelpMenu = memo(function HelpMenu() {
                   </div>
 
                   <div className="mt-3">
-                    <p className="text-sm font-semibold text-foreground mb-2">References</p>
+                    <p className="section-label mb-2">References</p>
                     <ul className="text-xs space-y-2 text-muted-foreground">
                       <li><strong>DAFx-16:</strong> Magnitude Slope Deviation algorithm for acoustic feedback detection. Demonstrates 100% accuracy for speech/classical with 7–13 frame windows. Introduces the &ldquo;Summing MSD&rdquo; method (140× speedup).</li>
                       <li><strong>DBX:</strong> Comb filter pattern analysis for feedback suppression. Equation 1: f<sub>n</sub> = n · c / d for open acoustic loop feedback frequencies.</li>
@@ -711,13 +711,13 @@ export const HelpMenu = memo(function HelpMenu() {
           <TabsContent value="reference" className="mt-4 space-y-4">
             <Section title="Keyboard Shortcuts">
               <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">Space</kbd><span>Start / stop analysis</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">P</kbd><span>Freeze / unfreeze spectrum display</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">F</kbd><span>Toggle fullscreen</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">L</kbd><span>Toggle layout</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">1</kbd><span>Switch to RTA view</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">2</kbd><span>Switch to GEQ view</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-[0.625rem]">3</kbd><span>Switch to Controls view</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">Space</kbd><span>Start / stop analysis</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">P</kbd><span>Freeze / unfreeze spectrum display</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">F</kbd><span>Toggle fullscreen</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">L</kbd><span>Toggle layout</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">1</kbd><span>Switch to RTA view</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">2</kbd><span>Switch to GEQ view</span>
+                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs">3</kbd><span>Switch to Controls view</span>
               </div>
             </Section>
 
@@ -837,7 +837,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 KILL THE <span className="text-primary">RING</span>
               </div>
               <div className="text-sm text-muted-foreground/80">Real-Time Acoustic Feedback Detection</div>
-              <div className="font-mono text-xs bg-muted/60 text-muted-foreground px-3 py-1.5 rounded-md border border-border/50">
+              <div className="font-mono text-xs bg-card/40 text-muted-foreground px-3 py-1.5 rounded border border-border/40">
                 v{process.env.NEXT_PUBLIC_APP_VERSION ?? '0.0.0'}
               </div>
             </div>
@@ -871,8 +871,8 @@ export const HelpMenu = memo(function HelpMenu() {
               </p>
             </Section>
 
-            <div className="border-t border-border pt-4 mt-4">
-              <h3 className="text-sm font-bold text-foreground mb-3 tracking-tight">Changelog</h3>
+            <div className="border-t border-border/40 pt-4 mt-4">
+              <h3 className="section-label mb-3">Changelog</h3>
               {CHANGELOG.map((entry) => (
                 <Section key={entry.version} title={`v${entry.version} — ${entry.date}${entry.highlights ? ` · ${entry.highlights}` : ''}`}>
                   <ul className="space-y-1.5">
@@ -880,7 +880,7 @@ export const HelpMenu = memo(function HelpMenu() {
                       const style = TYPE_STYLES[change.type]
                       return (
                         <li key={change.description} className="flex items-start gap-2">
-                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium leading-none shrink-0 mt-0.5 ${style.className}`}>
+                          <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-medium leading-none shrink-0 mt-0.5 ${style.className}`}>
                             {style.label}
                           </span>
                           <span>{change.description}</span>
@@ -901,7 +901,7 @@ export const HelpMenu = memo(function HelpMenu() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-sm font-bold text-foreground mb-2 tracking-tight">{title}</h3>
+      <h3 className="section-label mb-2">{title}</h3>
       <div className="text-sm text-muted-foreground leading-relaxed">
         {children}
       </div>

@@ -26,7 +26,7 @@ function drawGEQGrid(
   centerY: number,
 ) {
   // Background
-  ctx.fillStyle = '#0c0c0c'
+  ctx.fillStyle = '#080a0c'
   ctx.fillRect(0, 0, plotWidth, plotHeight)
 
   // Radial vignette
@@ -35,12 +35,12 @@ function drawGEQGrid(
     plotWidth / 2, plotHeight / 2, plotWidth * 0.75,
   )
   vg.addColorStop(0, 'transparent')
-  vg.addColorStop(1, 'rgba(0, 0, 0, 0.3)')
+  vg.addColorStop(1, 'rgba(0, 0, 0, 0.4)')
   ctx.fillStyle = vg
   ctx.fillRect(0, 0, plotWidth, plotHeight)
 
   // Grid lines at ±6, ±12 dB (drawn first, underneath)
-  ctx.strokeStyle = '#1e1e1e'
+  ctx.strokeStyle = '#161820'
   ctx.lineWidth = 0.5
   ctx.setLineDash([2, 2])
   for (const db of [-12, -6, 6, 12]) {
@@ -53,7 +53,7 @@ function drawGEQGrid(
   ctx.setLineDash([])
 
   // Center line (0 dB) — major reference line, on top
-  ctx.strokeStyle = '#2a2a2a'
+  ctx.strokeStyle = '#1e2024'
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(0, centerY)
@@ -131,7 +131,7 @@ function drawBars(
       }
     } else {
       // Inactive - subtle bar slot (barely visible, reduces visual noise)
-      ctx.strokeStyle = '#181818'
+      ctx.strokeStyle = '#121416'
       ctx.lineWidth = 0.5
       ctx.strokeRect(x, centerY - (plotHeight / 2) + 5, barWidth, plotHeight - 10)
     }

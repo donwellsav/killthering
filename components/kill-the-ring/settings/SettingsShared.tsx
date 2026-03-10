@@ -34,7 +34,7 @@ export const Section = memo(function Section({ title, tooltip, showTooltip = tru
     <TooltipProvider delayDuration={300}>
       <div className="space-y-2">
         <div className="flex items-center gap-1.5">
-          <h3 className="text-sm font-medium text-foreground">{title}</h3>
+          <h3 className="section-label">{title}</h3>
           {tooltip && showTooltip && (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -62,7 +62,7 @@ export const SectionGroup = memo(function SectionGroup({ title, defaultOpen = tr
   const [open, setOpen] = useState(defaultOpen)
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="flex items-center gap-2 w-full py-1.5 text-xs font-semibold font-mono uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors">
+      <CollapsibleTrigger className="flex items-center gap-2 w-full py-1.5 section-label panel-groove hover:text-foreground transition-colors">
         <span className="flex-1 text-left">{title}</span>
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? '' : '-rotate-90'}`} />
       </CollapsibleTrigger>
