@@ -104,6 +104,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 <li><strong>Layout (L):</strong> Toggle between desktop layouts. Fullscreen (F) for dedicated spectrum view.</li>
                 <li><strong>Freeze (P):</strong> Pause the spectrum display for closer inspection without stopping analysis.</li>
                 <li><strong>Settings / Help / History:</strong> Access configuration, documentation, and feedback history.</li>
+                <li><strong>Missed Feedback (⊕):</strong> Mark a false negative during calibration — flags the current frequency band as missed by the detector.</li>
               </ul>
             </Section>
 
@@ -118,13 +119,14 @@ export const HelpMenu = memo(function HelpMenu() {
               </ul>
             </Section>
 
-            <Section title="Settings Panel (5 Tabs)">
+            <Section title="Settings Panel (6 Tabs)">
               <ul className="space-y-2">
                 <li><strong>Detection:</strong> FFT size, smoothing, thresholds, A-weighting, harmonic filter, noise floor, peak detection.</li>
                 <li><strong>Algorithms:</strong> Algorithm mode, algorithm scores display, music-aware, max tracks, track timeout, whistle suppression.</li>
                 <li><strong>Display:</strong> Tooltips, graph font size, max issues, EQ style, RTA dB range, spectrum line width.</li>
                 <li><strong>Room:</strong> Room acoustics presets, RT60, volume, Schroeder frequency, modal overlap.</li>
                 <li><strong>Advanced:</strong> Save/load defaults, reset to factory settings.</li>
+                <li><strong>Calibrate:</strong> Room profile (dimensions, materials, mics), ambient noise capture, calibration session recording with live stats and JSON export.</li>
               </ul>
             </Section>
 
@@ -161,28 +163,28 @@ export const HelpMenu = memo(function HelpMenu() {
             <Section title="Operation Modes">
               <ul className="space-y-3">
                 <li>
-                  <strong>Speech (Default):</strong> Corporate conferences, lectures. Threshold 6 dB, Ring 3 dB, Growth 1.0 dB/s. A-weighted, 150–8000 Hz.
+                  <strong>Speech (Default):</strong> Corporate conferences, lectures. Threshold 30 dB, Ring 5 dB, Growth 1.0 dB/s. A-weighted, 150–10000 Hz.
                 </li>
                 <li>
-                  <strong>Worship:</strong> Churches, reverberant spaces. Threshold 8 dB, Ring 5 dB, Growth 2.0 dB/s. Music-aware, 100–12000 Hz.
+                  <strong>Worship:</strong> Churches, reverberant spaces. Threshold 35 dB, Ring 5 dB, Growth 2.0 dB/s. Music-aware, 100–12000 Hz.
                 </li>
                 <li>
-                  <strong>Live Music:</strong> Concerts, clubs, festivals. Threshold 14 dB, Ring 8 dB, Growth 4.0 dB/s. Music-aware, 60–16000 Hz.
+                  <strong>Live Music:</strong> Concerts, clubs, festivals. Threshold 42 dB, Ring 8 dB, Growth 4.0 dB/s. Music-aware, 60–16000 Hz.
                 </li>
                 <li>
-                  <strong>Theater:</strong> Drama, musicals, body mics. Threshold 7 dB, Ring 4 dB, Growth 1.5 dB/s. Auto music-aware, 150–10000 Hz.
+                  <strong>Theater:</strong> Drama, musicals, body mics. Threshold 28 dB, Ring 4 dB, Growth 1.5 dB/s. Auto music-aware, 150–10000 Hz.
                 </li>
                 <li>
-                  <strong>Monitors:</strong> Stage wedges, sidefills. Threshold 5 dB, Ring 3 dB, Growth 0.8 dB/s. Ultra-fast, 200–6000 Hz.
+                  <strong>Monitors:</strong> Stage wedges, sidefills. Threshold 15 dB, Ring 3 dB, Growth 0.8 dB/s. Ultra-fast, 200–6000 Hz.
                 </li>
                 <li>
-                  <strong>Ring Out:</strong> System calibration, sound check. Threshold 4 dB, Ring 2 dB, Growth 0.5 dB/s. Max sensitivity, 60–16000 Hz.
+                  <strong>Ring Out:</strong> System calibration, sound check. Threshold 12 dB, Ring 2 dB, Growth 0.5 dB/s. Max sensitivity, 60–16000 Hz.
                 </li>
                 <li>
-                  <strong>Broadcast:</strong> Studio, podcast, radio. Threshold 5 dB, Ring 3 dB, Growth 1.0 dB/s. A-weighted, 80–12000 Hz.
+                  <strong>Broadcast:</strong> Studio, podcast, radio. Threshold 22 dB, Ring 3 dB, Growth 1.0 dB/s. A-weighted, 80–12000 Hz.
                 </li>
                 <li>
-                  <strong>Outdoor:</strong> Open air, festivals. Threshold 10 dB, Ring 6 dB, Growth 2.5 dB/s. Wind-resistant, 100–12000 Hz.
+                  <strong>Outdoor:</strong> Open air, festivals. Threshold 38 dB, Ring 6 dB, Growth 2.5 dB/s. Wind-resistant, 100–12000 Hz.
                 </li>
               </ul>
             </Section>
@@ -708,10 +710,6 @@ export const HelpMenu = memo(function HelpMenu() {
                 <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">Space</kbd><span>Start / stop analysis</span>
                 <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">P</kbd><span>Freeze / unfreeze spectrum display</span>
                 <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">F</kbd><span>Toggle fullscreen</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">L</kbd><span>Toggle layout</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">1</kbd><span>Switch to RTA view</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">2</kbd><span>Switch to GEQ view</span>
-                <kbd className="font-mono bg-muted px-1.5 py-0.5 rounded text-sm">3</kbd><span>Switch to Controls view</span>
               </div>
             </Section>
 
@@ -729,19 +727,19 @@ export const HelpMenu = memo(function HelpMenu() {
             <Section title="Default Configuration (Speech Mode)">
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
                 <span className="text-muted-foreground">Mode</span><span className="font-mono">Speech — Corporate &amp; Conference</span>
-                <span className="text-muted-foreground">Frequency range</span><span className="font-mono">150 Hz – 8 kHz</span>
+                <span className="text-muted-foreground">Frequency range</span><span className="font-mono">150 Hz – 10 kHz</span>
                 <span className="text-muted-foreground">FFT size</span><span className="font-mono">8192 (5.86 Hz/bin @ 48 kHz)</span>
                 <span className="text-muted-foreground">Smoothing</span><span className="font-mono">50%</span>
-                <span className="text-muted-foreground">Feedback threshold</span><span className="font-mono">6 dB</span>
-                <span className="text-muted-foreground">Ring threshold</span><span className="font-mono">3 dB</span>
+                <span className="text-muted-foreground">Feedback threshold</span><span className="font-mono">30 dB</span>
+                <span className="text-muted-foreground">Ring threshold</span><span className="font-mono">5 dB</span>
                 <span className="text-muted-foreground">Growth rate</span><span className="font-mono">1.0 dB/s</span>
                 <span className="text-muted-foreground">Hold time</span><span className="font-mono">4 s</span>
-                <span className="text-muted-foreground">Input gain</span><span className="font-mono">+6 dB</span>
+                <span className="text-muted-foreground">Input gain</span><span className="font-mono">0 dB</span>
                 <span className="text-muted-foreground">Confidence threshold</span><span className="font-mono">35%</span>
                 <span className="text-muted-foreground">Algorithm mode</span><span className="font-mono">Auto (content-adaptive)</span>
                 <span className="text-muted-foreground">A-weighting</span><span className="font-mono">Enabled</span>
-                <span className="text-muted-foreground">Sustain time</span><span className="font-mono">250 ms</span>
-                <span className="text-muted-foreground">Clear time</span><span className="font-mono">350 ms</span>
+                <span className="text-muted-foreground">Sustain time</span><span className="font-mono">300 ms</span>
+                <span className="text-muted-foreground">Clear time</span><span className="font-mono">400 ms</span>
                 <span className="text-muted-foreground">Threshold mode</span><span className="font-mono">Hybrid</span>
                 <span className="text-muted-foreground">Prominence</span><span className="font-mono">8 dB</span>
                 <span className="text-muted-foreground">Max tracks</span><span className="font-mono">64</span>
