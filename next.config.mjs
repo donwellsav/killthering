@@ -20,23 +20,6 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'microphone=(self), camera=(), geolocation=()',
   },
-  {
-    key: 'Content-Security-Policy-Report-Only',
-    value: [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "worker-src 'self' blob:",
-      "connect-src 'self'",
-      "img-src 'self' data: blob:",
-      "media-src 'self' blob: mediastream:",
-      "font-src 'self' https://fonts.gstatic.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "frame-ancestors 'none'",
-    ].join('; '),
-  },
 ]
 
 /** @type {import('next').NextConfig} */
