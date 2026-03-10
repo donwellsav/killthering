@@ -21,11 +21,11 @@ const securityHeaders = [
     value: 'microphone=(self), camera=(), geolocation=()',
   },
   {
-    key: 'Content-Security-Policy',
+    key: 'Content-Security-Policy-Report-Only',
     value: [
       "default-src 'self'",
       "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
-      "style-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "worker-src 'self' blob:",
       "connect-src 'self'",
       "img-src 'self' data: blob:",
