@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.76.19',
+    date: '2026-03-11',
+    changes: [
+      { type: 'fix', description: 'fix: calibration mode never started recording' },
+    ],
+  },
+  {
     version: '0.76.18',
     date: '2026-03-11',
     changes: [
