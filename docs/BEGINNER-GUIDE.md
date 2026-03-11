@@ -93,7 +93,6 @@ C:\ktr\v0sucks-killthering2\
 │   │   ├── DetectionControls.tsx #   Mode selector + quick-adjust sliders
 │   │   ├── InputMeterSlider.tsx  #   Input gain slider with level meter
 │   │   ├── VerticalGainFader.tsx #   Vertical gain slider component
-│   │   ├── EQNotepad.tsx         #   Saved EQ cuts notepad
 │   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback frequency log (dynamic multi-column)
 │   │   ├── MissedFeedbackButton.tsx # Mark false negatives for calibration
 │   │   ├── EarlyWarningPanel.tsx     # Pre-feedback warning indicators
@@ -119,7 +118,7 @@ C:\ktr\v0sucks-killthering2\
 │       ├── slider.tsx
 │       ├── accordion.tsx
 │       ├── tooltip.tsx
-│       └── ... (40+ more)
+│       └── ... (48 total)
 │
 ├── contexts/                     # REACT CONTEXTS
 │   └── PortalContainerContext.tsx #   Portal mount point for mobile overlays
@@ -140,6 +139,9 @@ C:\ktr\v0sucks-killthering2\
 │   ├── audio/
 │   │   └── createAudioAnalyzer.ts  # Mic access + AudioContext + FFT capture
 │   │
+│   ├── canvas/
+│   │   └── spectrumDrawing.ts      # Pure canvas drawing helpers (spectrum/GEQ)
+│   │
 │   ├── calibration/              # CALIBRATION SYSTEM
 │   │   ├── calibrationSession.ts #   Session data collection (detections, missed, spectra)
 │   │   ├── calibrationExport.ts  #   JSON export builder with room profile + session data
@@ -153,6 +155,9 @@ C:\ktr\v0sucks-killthering2\
 │   │   ├── eqAdvisor.ts          #   Generates EQ cut recommendations
 │   │   ├── dspWorker.ts          #   Web Worker entry — runs classifier off main thread
 │   │   ├── advancedDetection.ts  #   Barrel re-export for MSD, phase, compression, fusion
+│   │   ├── msdAnalysis.ts        #   Magnitude Slope Deviation (DAFx-16)
+│   │   ├── phaseCoherence.ts     #   Phase coherence analysis
+│   │   ├── compressionDetection.ts # Spectral flatness + compression detection
 │   │   ├── algorithmFusion.ts    #   Weighted fusion of all algorithm scores → verdict
 │   │   ├── feedbackHistory.ts    #   Remembers repeat offender frequencies
 │   │   ├── acousticUtils.ts      #   Room acoustics calculations
@@ -173,9 +178,6 @@ C:\ktr\v0sucks-killthering2\
 ├── types/
 │   ├── advisory.ts               #   Core DSP types (Advisory, DetectorSettings, Track, etc.)
 │   └── calibration.ts            #   Room profile, session data, export formats
-│
-├── styles/
-│   └── (Tailwind config)
 │
 ├── public/                       #   Static files (icons, manifest)
 ├── .github/workflows/
@@ -260,8 +262,8 @@ app/page.tsx
             │   ├── InputMeterSlider (gain control + level meter)
             │   ├── FeedbackHistoryPanel (history icon)
             │   ├── HelpMenu (? icon → 5-tab dialog)
-            │   └── SettingsPanel (gear icon → 5-tab settings)
-            │       └── settings/ tabs (Detection, Display, Room, Algorithms, Advanced)
+            │   └── SettingsPanel (gear icon → 6-tab settings)
+            │       └── settings/ tabs (Detection, Algorithms, Display, Room, Advanced, Calibrate)
             │
             ├── OnboardingOverlay (first-run, conditional)
             ├── FullscreenOverlay (fullscreen RTA, conditional)
@@ -276,7 +278,7 @@ app/page.tsx
                 │   ├── AlgorithmStatusBar
                 │   ├── EarlyWarningPanel
                 │   ├── Issues tab → IssuesList
-                │   └── EQ Notepad tab → EQNotepad
+                │   └── Controls tab → DetectionControls + InputMeterSlider
                 │
                 └── Graph Area (resizable panels)
                     ├── Top panel → SpectrumCanvas / GEQBarView / Controls
@@ -301,7 +303,11 @@ All in `lib/dsp/`. Here's what each file does:
 | `feedbackDetector.ts` | Scans FFT for peaks above threshold | Every frame (60fps) on main thread |
 | `trackManager.ts` | Groups peaks into "tracks" over time | In worker, per peak |
 | `classifier.ts` | Classifies: feedback vs instrument vs whistle | In worker, per track |
-| `advancedDetection.ts` | MSD + phase coherence algorithms | In worker, per track |
+| `advancedDetection.ts` | Barrel re-export for MSD, phase, compression, fusion | In worker, per track |
+| `msdAnalysis.ts` | Magnitude Slope Deviation — feedback growth detection | In worker, per track |
+| `phaseCoherence.ts` | Phase coherence analysis — feedback phase lock | In worker, per track |
+| `compressionDetection.ts` | Spectral flatness + compression ratio | In worker, per frame |
+| `algorithmFusion.ts` | Weighted fusion of all algorithm scores → verdict | In worker, per track |
 | `eqAdvisor.ts` | Maps frequency → nearest GEQ band + PEQ params | In worker, per classification |
 | `dspWorker.ts` | Worker entry point, coordinates the above | In Web Worker thread |
 | `feedbackHistory.ts` | Tracks repeat offenders, stores EQ recs, exports CSV/JSON | Main thread |
@@ -623,9 +629,9 @@ import { Advisory } from '../../types/advisory'     // ❌
 | **Serwist** | Library that generates the service worker for offline support |
 | **shadcn/ui** | Pre-built accessible UI components (buttons, dialogs, etc.) |
 | **Tailwind** | CSS framework — style with utility classes instead of CSS files |
-| **OKLch** | Color space used for the theme (perceptually uniform) |
+| **HSL** | Color model used for the theme (hue, saturation, lightness) |
 | **Barrel export** | An `index.ts` that re-exports everything from a folder |
 
 ---
 
-*Last updated: March 2026 — Kill The Ring v1.0.116*
+*Last updated: March 2026 — Kill The Ring v0.76.16*

@@ -257,7 +257,7 @@ export const RoomTab = memo(function RoomTab({
               </div>
 
               {/* Room Modes */}
-              <div className="pt-2 border-t border-border/40">
+              <div className="pt-2 panel-groove">
                 <RoomModesDisplay
                   lengthM={settings.roomDimensionsUnit === 'feet' ? settings.roomLengthM * 0.3048 : settings.roomLengthM}
                   widthM={settings.roomDimensionsUnit === 'feet' ? settings.roomWidthM * 0.3048 : settings.roomWidthM}

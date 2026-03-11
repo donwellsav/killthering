@@ -85,9 +85,9 @@ export const SettingsPanel = memo(function SettingsPanel({
         </Button>
       </SheetTrigger>
       <SheetContent side="right" className="sm:max-w-7xl overflow-y-auto channel-strip">
-        <SheetHeader>
+        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
           <SheetTitle className="text-lg flex items-center gap-2">
-            <Settings className="w-5 h-5" />
+            <Settings className="w-5 h-5 text-primary" />
             Settings
           </SheetTitle>
           <SheetDescription className="text-sm">
@@ -96,30 +96,30 @@ export const SettingsPanel = memo(function SettingsPanel({
         </SheetHeader>
 
         <Tabs defaultValue="detection" className="mt-4">
-          <TabsList className={`grid w-full ${calibration ? 'grid-cols-6' : 'grid-cols-5'}`}>
-            <TabsTrigger value="detection" className="flex-col gap-0.5 text-xs py-2">
-              <BarChart3 className="w-4 h-4" />
+          <TabsList className="flex w-full bg-transparent rounded-none border-0 border-b border-border h-auto p-0">
+            <TabsTrigger value="detection" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+              <BarChart3 className="w-4 h-4 text-primary" />
               Detection
             </TabsTrigger>
-            <TabsTrigger value="algorithms" className="flex-col gap-0.5 text-xs py-2">
-              <Cpu className="w-4 h-4" />
+            <TabsTrigger value="algorithms" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+              <Cpu className="w-4 h-4 text-primary" />
               Algorithms
             </TabsTrigger>
-            <TabsTrigger value="display" className="flex-col gap-0.5 text-xs py-2">
-              <Monitor className="w-4 h-4" />
+            <TabsTrigger value="display" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+              <Monitor className="w-4 h-4 text-primary" />
               Display
             </TabsTrigger>
-            <TabsTrigger value="room" className="flex-col gap-0.5 text-xs py-2">
-              <Ruler className="w-4 h-4" />
+            <TabsTrigger value="room" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+              <Ruler className="w-4 h-4 text-primary" />
               Room
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex-col gap-0.5 text-xs py-2">
-              <Wrench className="w-4 h-4" />
+            <TabsTrigger value="advanced" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+              <Wrench className="w-4 h-4 text-primary" />
               Advanced
             </TabsTrigger>
             {calibration && (
-              <TabsTrigger value="calibrate" className="flex-col gap-0.5 text-xs py-2">
-                <Crosshair className="w-4 h-4" />
+              <TabsTrigger value="calibrate" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
+                <Crosshair className="w-4 h-4 text-primary" />
                 Calibrate
               </TabsTrigger>
             )}
@@ -152,7 +152,7 @@ export const SettingsPanel = memo(function SettingsPanel({
           )}
         </Tabs>
 
-        <div className="pt-3 mt-2 border-t border-border/40 panel-groove space-y-2">
+        <div className="pt-3 mt-2 border-t border-border/40 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 space-y-2">
           <ResetConfirmDialog
             onConfirm={onReset}
             trigger={

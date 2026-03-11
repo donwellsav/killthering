@@ -30,11 +30,11 @@ npx tsc --noEmit      # Type-check without emitting (run before pnpm build)
 ```
 app/                        # Next.js App Router pages + API routes
 components/
-  kill-the-ring/            # Domain components (~22 files)
+  kill-the-ring/            # Domain components (21 files + barrel index.ts)
     settings/               # Settings panel tab components (7 files)
-  ui/                       # shadcn/ui primitives (~49 files)
+  ui/                       # shadcn/ui primitives (48 files)
 contexts/                   # React context providers (PortalContainerContext)
-hooks/                      # Custom React hooks (10+ files)
+hooks/                      # Custom React hooks (10 files)
 lib/
   audio/                    # AudioAnalyzer factory
   calibration/              # Calibration system (3 files):
@@ -42,6 +42,7 @@ lib/
     calibrationExport.ts    #   JSON export builder with room profile + session data
     index.ts                #   Barrel export
   canvas/                   # Pure canvas drawing helpers (no React dependency)
+    spectrumDrawing.ts      #   Spectrum/GEQ canvas render functions
   changelog.ts              # Version history (auto-updated by CI, rendered in About tab)
   dsp/                      # DSP engine (14 modules):
     feedbackDetector.ts     #   Core peak detection + persistence scoring

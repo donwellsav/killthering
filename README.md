@@ -22,13 +22,12 @@ Built by [Don Wells AV](https://donwellsav.com).
 - `lib/calibration/calibrationSession.ts` - Session data collector
 - `hooks/useCalibrationSession.ts` - React hook for calibration state
 
-**Current default values (as of last update):**
-- Input Gain: **+15 dB**
-- Confidence Threshold: **30%**
-- Algorithm Mode: **Combined (MSD + Phase)**
-- MSD Min Frames: **15**
-- Phase Coherence Threshold: **75%**
-- Fusion Feedback Threshold: **65%**
+**Current default values (as of v0.76):**
+- Input Gain: **0 dB**
+- Confidence Threshold: **35%**
+- Algorithm Mode: **Auto** (content-adaptive)
+- Feedback Threshold: **30 dB** above noise floor
+- Room Preset: **none** (room physics disabled by default)
 
 ---
 
@@ -57,7 +56,7 @@ Built by [Don Wells AV](https://donwellsav.com).
 
 ### Core Analysis
 - **Real-time FFT spectrum analysis** via Web Audio API (4096, 8192, or 16384 bins)
-- **Three simultaneous live visualizations:** RTA Spectrum, 31-Band GEQ, and Waterfall
+- **Two simultaneous live visualizations:** RTA Spectrum and 31-Band GEQ
 - **Adaptive noise floor** with configurable attack/release time constants
 - **Peak detection with quadratic interpolation** for sub-bin frequency accuracy
 - **Harmonic tracking** suppresses harmonics (up to 8th) of detected fundamentals
@@ -76,7 +75,6 @@ Built by [Don Wells AV](https://donwellsav.com).
 - **Pitch translation** - every frequency shown as musical note (e.g., A4, C#3 +15 cents)
 - **8 operation modes** tailored for speech, worship, live music, theater, monitors, ring out, broadcast, and outdoor
 - **Feedback history** with repeat offender tracking (localStorage persistence)
-- **EQ Notepad** for accumulating applied cuts during a session
 - **Calibration mode** — Room profile (dimensions, materials, mic types), ambient noise floor capture, session recording with spectrum snapshots, detection/settings history
 - **Multi-format export** — PDF reports (jsPDF), TXT summaries, CSV data, JSON calibration sessions
 - **Missed feedback annotations** — Mark false negatives by frequency band for calibration refinement
@@ -145,16 +143,20 @@ kill-the-ring/
 │   │   ├── SpectrumCanvas.tsx        # RTA Spectrum visualization
 │   │   ├── GEQBarView.tsx            # 31-Band GEQ bar visualization
 │   │   ├── IssuesList.tsx            # Active issues with Apply buttons
-│   │   ├── EQNotepad.tsx             # Accumulated applied cuts
 │   │   ├── AlgorithmStatusBar.tsx    # Real-time algorithm state display
 │   │   ├── InputMeterSlider.tsx      # Combined input gain + level meter
+│   │   ├── VerticalGainFader.tsx     # Vertical gain slider component
 │   │   ├── SettingsPanel.tsx         # Settings dialog (6 tabs: Detection, Algorithms, Display, Room, Advanced, Calibrate)
 │   │   ├── DetectionControls.tsx     # Sidebar mode/threshold controls
 │   │   ├── HelpMenu.tsx              # Help documentation (5 tabs: Guide, Modes, Algorithms, Reference, About)
 │   │   ├── FeedbackHistoryPanel.tsx  # Historical feedback tracking (dynamic multi-column)
 │   │   ├── MissedFeedbackButton.tsx  # Mark false negatives by frequency band
+│   │   ├── EarlyWarningPanel.tsx     # Pre-feedback warning indicators
+│   │   ├── FullscreenOverlay.tsx     # Fullscreen RTA overlay
+│   │   ├── OnboardingOverlay.tsx     # First-run welcome/permissions flow
 │   │   ├── ResetConfirmDialog.tsx    # Settings reset confirmation
 │   │   ├── ErrorBoundary.tsx         # Error boundary wrapper
+│   │   ├── index.ts                  # Barrel file — re-exports everything
 │   │   └── settings/
 │   │       ├── DetectionTab.tsx      # Sensitivity, thresholds, noise floor
 │   │       ├── AlgorithmsTab.tsx     # Algorithm mode + individual toggles
@@ -174,18 +176,26 @@ kill-the-ring/
 │   ├── useFpsMonitor.ts             # Real-time FPS counter
 │   ├── useFullscreen.ts             # Fullscreen API wrapper
 │   ├── useAudioDevices.ts           # Enumerate/select audio inputs
-│   └── use-mobile.ts               # Responsive breakpoint hook
+│   ├── use-mobile.ts               # Responsive breakpoint hook
+│   └── use-toast.ts                 # Toast notification hook (shadcn)
 │
 ├── lib/
 │   ├── audio/
 │   │   └── createAudioAnalyzer.ts    # AudioAnalyzer factory
 │   ├── calibration/
 │   │   ├── calibrationSession.ts    # Session data collection (detections, missed, spectra)
-│   │   └── calibrationExport.ts     # JSON export builder with room profile + session data
+│   │   ├── calibrationExport.ts     # JSON export builder with room profile + session data
+│   │   └── index.ts                  # Barrel export
+│   ├── canvas/
+│   │   └── spectrumDrawing.ts        # Pure canvas drawing helpers (spectrum/GEQ render)
 │   ├── changelog.ts                  # Version history (auto-updated by CI, rendered in About tab)
 │   ├── dsp/
 │   │   ├── feedbackDetector.ts       # Core FFT analysis engine
-│   │   ├── advancedDetection.ts      # MSD, Phase, Spectral, Comb, IHR, PTMR
+│   │   ├── advancedDetection.ts      # Barrel re-export for MSD, Phase, Compression, Fusion
+│   │   ├── msdAnalysis.ts            # Magnitude Slope Deviation (DAFx-16)
+│   │   ├── phaseCoherence.ts         # Phase coherence analysis (KU Leuven 2025)
+│   │   ├── compressionDetection.ts   # Spectral flatness + compression ratio estimation
+│   │   ├── algorithmFusion.ts        # Weighted fusion of all algorithm scores → verdict
 │   │   ├── classifier.ts             # Feedback/whistle/instrument classifier
 │   │   ├── eqAdvisor.ts              # GEQ/PEQ recommendation generator
 │   │   ├── trackManager.ts           # Peak track lifecycle management
@@ -207,8 +217,7 @@ kill-the-ring/
 │   ├── advisory.ts                   # Core DSP types (Advisory, DetectorSettings, Track, etc.)
 │   └── calibration.ts               # Room profile, session data, export formats
 │
-└── styles/
-    └── globals.css                   # Tailwind globals (OKLch theme)
+└── public/                           # Static files (icons, manifest)
 ```
 
 ---
@@ -224,7 +233,7 @@ Microphone
 MediaStream (getUserMedia)
     │
     ▼
-GainNode (software input gain, +15 dB default)
+GainNode (software input gain, 0 dB default)
     │
     ▼
 AnalyserNode (passive, no output connection)
@@ -478,8 +487,6 @@ stop(): void
 // Configuration
 updateSettings(settings: Partial<DetectorSettings>): void
 setAlgorithmMode(mode: AlgorithmMode): void
-setMSDMinFrames(frames: number): void
-updateFusionConfig(config: Partial<FusionConfig>): void
 
 // State
 getState(): FeedbackDetectorState
@@ -612,14 +619,14 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
 
 | Mode | Threshold | Ring | Growth | Use Case |
 |---|---|---|---|---|
-| **Speech** (Default) | 6 dB | 3 dB | 1.0 dB/s | Corporate conferences, lectures |
-| **Worship** | 8 dB | 5 dB | 2.0 dB/s | Churches, reverberant spaces |
-| **Live Music** | 14 dB | 8 dB | 4.0 dB/s | Concerts, clubs, festivals |
-| **Theater** | 7 dB | 4 dB | 1.5 dB/s | Drama, musicals, body mics |
-| **Monitors** | 5 dB | 3 dB | 0.8 dB/s | Stage wedges, sidefills |
-| **Ring Out** | 4 dB | 2 dB | 0.5 dB/s | System calibration, sound check |
-| **Broadcast** | 5 dB | 3 dB | 1.0 dB/s | Studio, podcast, radio |
-| **Outdoor** | 10 dB | 6 dB | 2.5 dB/s | Open air, festivals |
+| **Speech** (Default) | 30 dB | 5 dB | 1.0 dB/s | Corporate conferences, lectures |
+| **Worship** | 35 dB | 5 dB | 2.0 dB/s | Churches, reverberant spaces |
+| **Live Music** | 42 dB | 8 dB | 4.0 dB/s | Concerts, clubs, festivals |
+| **Theater** | 28 dB | 4 dB | 1.5 dB/s | Drama, musicals, body mics |
+| **Monitors** | 15 dB | 3 dB | 0.8 dB/s | Stage wedges, sidefills |
+| **Ring Out** | 12 dB | 2 dB | 0.5 dB/s | System calibration, sound check |
+| **Broadcast** | 22 dB | 3 dB | 1.0 dB/s | Studio, podcast, radio |
+| **Outdoor** | 38 dB | 6 dB | 2.5 dB/s | Open air, festivals |
 
 ---
 
@@ -632,19 +639,15 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
 | FFT Size | 4096/8192/16384 | 8192 | Frequency resolution |
 | Smoothing | 0-95% | 50% | Frame averaging |
 | Hold Time | 0.5-8s | 4s | Issue visibility duration |
-| Input Gain | -40 to +40 dB | **+15 dB** | Software boost before analysis |
-| Confidence | 30-95% | **30%** | Minimum confidence to display |
+| Input Gain | -40 to +40 dB | **0 dB** | Software boost before analysis |
+| Confidence | 30-95% | **35%** | Minimum confidence to display |
 
 ### Algorithms Tab
 
 | Setting | Range | Default | Description |
 |---|---|---|---|
-| Algorithm Mode | Auto/MSD/Phase/Combined/All | **Combined** | Which algorithms to use |
-| MSD Min Frames | 7-50 | **15** | Frames for MSD analysis |
-| Phase Threshold | 40-95% | **75%** | Phase coherence threshold |
-| Fusion Threshold | 40-90% | **65%** | Combined probability threshold |
-| Compression Detection | on/off | **on** | Adapt for compressed content |
-| Comb Pattern Detection | on/off | **on** | Detect acoustic path patterns |
+| Algorithm Mode | Auto/Custom | **Auto** | Content-adaptive or user-selected algorithms |
+| Enabled Algorithms | MSD, Phase, Spectral, Comb, IHR, PTMR | **All enabled** | Individual algorithm toggles (Custom mode) |
 
 ### Display Tab
 
@@ -687,49 +690,46 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
 ## Default Configuration
 
 ```typescript
-// lib/dsp/constants.ts - DEFAULT_SETTINGS
+// lib/dsp/constants.ts - DEFAULT_SETTINGS (key values)
 
 {
   // Core detection
   mode: 'speech',
   fftSize: 8192,
   smoothingTimeConstant: 0.5,
-  minFrequency: 200,
-  maxFrequency: 8000,
-  feedbackThresholdDb: 6,
-  ringThresholdDb: 4,
-  growthRateThreshold: 1.5,
-  
+  minFrequency: 150,
+  maxFrequency: 10000,
+  feedbackThresholdDb: 30,            // 30 dB above noise floor
+  ringThresholdDb: 5,
+  growthRateThreshold: 1.0,
+
   // Timing
   holdTimeMs: 4000,
+  sustainMs: 300,
+  clearMs: 400,
   noiseFloorDecay: 0.98,
-  
+
   // Display
   maxDisplayedIssues: 8,
   eqPreset: 'surgical',
   graphFontSize: 15,
-  
+
   // Input
-  inputGainDb: 15,                    // Default input gain (+15 dB)
-  
+  inputGainDb: 0,                     // Zero gain — modern interfaces deliver adequate signal
+
   // Filtering
-  confidenceThreshold: 0.30,          // 30% — very aggressive, load-in optimized
+  confidenceThreshold: 0.35,          // 35% — catches early feedback, filters artifacts
   aWeightingEnabled: true,
-  
+
   // Advanced algorithms
-  algorithmMode: 'combined',
-  msdMinFrames: 15,
-  phaseCoherenceThreshold: 0.75,
-  enableCompressionDetection: true,
-  enableCombPatternDetection: true,
-  fusionFeedbackThreshold: 0.65,
+  algorithmMode: 'auto',              // Content-adaptive algorithm selection
+  enabledAlgorithms: ['msd', 'phase', 'spectral', 'comb', 'ihr', 'ptmr'],
   showAlgorithmScores: false,
-  showPhaseDisplay: false,
-  
+
   // Room acoustics
   roomRT60: 1.0,
   roomVolume: 1000,
-  roomPreset: 'large',
+  roomPreset: 'none',                 // Room physics disabled by default
 }
 ```
 

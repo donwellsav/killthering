@@ -157,7 +157,7 @@ export const DetectionTab = memo(function DetectionTab({
         </Section>
       </SectionGroup>
 
-      <div className="border-t border-border/40" />
+      <div className="panel-groove" />
 
       <SectionGroup title="Analysis">
         <Section
@@ -216,7 +216,7 @@ export const DetectionTab = memo(function DetectionTab({
         </Section>
       </SectionGroup>
 
-      <div className="border-t border-border/40" />
+      <div className="panel-groove" />
 
       <SectionGroup title="Filtering">
         <Section

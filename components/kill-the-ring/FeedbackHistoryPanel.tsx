@@ -90,9 +90,9 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
   const colCount = hotspots.length >= 12 ? 3 : hotspots.length >= 6 ? 2 : 1
   const maxW = colCount === 3 ? 'sm:max-w-7xl' : colCount === 2 ? 'sm:max-w-4xl' : 'sm:max-w-xl'
   const gridCls = colCount === 3
-    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2'
+    ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-1.5'
     : colCount === 2
-      ? 'grid grid-cols-1 sm:grid-cols-2 gap-2'
+      ? 'grid grid-cols-1 sm:grid-cols-2 gap-1.5'
       : 'space-y-2'
 
   return (
@@ -110,9 +110,9 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
         </TooltipContent>
       </Tooltip>
       <SheetContent side="right" className={cn("overflow-y-auto channel-strip", maxW)}>
-        <SheetHeader className="pb-1">
+        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
           <SheetTitle className="text-lg flex items-center gap-2">
-            <History className="h-5 w-5" />
+            <History className="h-5 w-5 text-primary" />
             Feedback History
           </SheetTitle>
           <SheetDescription className="text-sm">
@@ -121,7 +121,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
         </SheetHeader>
 
         {/* Export/Clear Actions */}
-        <div className="flex gap-2 pb-3 border-b border-border/40 panel-groove">
+        <div className="flex gap-2 pb-3 border-b border-border/40 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -191,7 +191,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
           {/* Repeat Offenders Section */}
           {hotspots.filter(h => h.isRepeatOffender).length > 0 && (
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 py-1.5 px-2 panel-groove bg-card/60">
                 <AlertTriangle className="h-4 w-4 text-amber-400" />
                 <span className="section-label">Repeat Offenders</span>
               </div>
@@ -199,7 +199,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
                 {hotspots.filter(h => h.isRepeatOffender).slice(0, 5).map((hotspot, i) => (
                   <div
                     key={i}
-                    className="bg-amber-500/10 border border-amber-500/30 rounded panel-recessed p-2 hover:bg-amber-500/15 transition-colors"
+                    className="bg-amber-500/10 border border-amber-500/30 rounded p-2 hover:bg-amber-500/15 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <span className="font-mono text-amber-400 font-medium">
@@ -222,13 +222,13 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
 
           {/* All Hotspots */}
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 mb-2 py-1.5 px-2 panel-groove bg-card/60">
+              <BarChart3 className="h-4 w-4 text-primary" />
               <span className="section-label">All Problem Frequencies</span>
             </div>
             <div className={hotspots.length === 0 ? 'space-y-1.5' : gridCls}>
               {hotspots.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-1">
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground gap-1 bg-card/80 rounded border">
                   <BarChart3 className="w-5 h-5 text-muted-foreground/50 mb-1" />
                   <span className="text-sm font-mono font-medium">No feedback events recorded yet</span>
                   <span className="text-sm text-muted-foreground font-mono">Events will appear here as they are detected</span>
@@ -240,7 +240,7 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
                     className={`rounded px-2 py-1.5 flex items-center justify-between transition-colors ${
                       hotspot.isRepeatOffender
                         ? 'bg-amber-500/10 border-l-2 border-amber-500 hover:bg-amber-500/15'
-                        : 'bg-card/40 hover:bg-accent/5'
+                        : 'bg-card/80 hover:bg-accent/5'
                     }`}
                   >
                     <div className="flex items-center gap-2">

@@ -73,7 +73,7 @@ export const SectionGroup = memo(function SectionGroup({ title, children }: {
       <div className="py-1.5 section-label panel-groove">
         {title}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-3 pt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-3 pt-3">
         {children}
       </div>
     </div>
