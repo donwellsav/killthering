@@ -80,7 +80,8 @@ types/                      # TypeScript interfaces:
 - **Security headers:** `next.config.mjs` sets `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and `Permissions-Policy` (microphone only)
 - **No environment variables required** — app is fully client-side with localStorage persistence
 - **Changelog:** `lib/changelog.ts` is auto-updated by GitHub Actions on PR merge (`auto-version.yml`) and direct push (`patch-on-push.yml`). Rendered in About tab.
-- **Calibration:** `lib/calibration/` collects room profile (dimensions, materials, mics), ambient noise baseline, detection events, missed-feedback annotations, settings changes, and spectrum snapshots — exports as JSON
+- **Calibration:** `lib/calibration/` collects room profile (dimensions, materials, mics), ambient noise baseline, detection events, missed-feedback annotations, settings changes, and spectrum snapshots — exports as JSON v1.1 with per-event `micCalibrationApplied` flags and `MicCalibrationMetadata` (38-point ECM8000 calibration curve)
+- **Mic Calibration:** ECM8000 frequency response compensation (CSL #746) applied per FFT bin in `feedbackDetector.ts` hot loop alongside A-weighting; toggle in Calibrate tab; curve data in `lib/dsp/constants.ts` (`ECM8000_CALIBRATION`)
 - **Export:** `lib/export/` provides multi-format export (PDF via jsPDF dynamic import, TXT, CSV, JSON) with browser download trigger
 - **Mobile:** MobileLayout uses WAI-ARIA tabs pattern (roving tabindex, ArrowLeft/Right/Home/End keyboard nav); DesktopLayout uses `landscape:flex` CSS toggle — never modify DesktopLayout for mobile-specific changes
 - **Accessibility:** Touch targets ≥44×44px (`min-h-[44px] min-w-[44px]`), `role="status"` sr-only spans for clipboard announcements

@@ -76,7 +76,8 @@ Built by [Don Wells AV](https://donwellsav.com).
 - **8 operation modes** tailored for speech, worship, live music, theater, monitors, ring out, broadcast, and outdoor
 - **Feedback history** with repeat offender tracking (localStorage persistence)
 - **Calibration mode** — Room profile (dimensions, materials, mic types), ambient noise floor capture, session recording with spectrum snapshots, detection/settings history
-- **Multi-format export** — PDF reports (jsPDF), TXT summaries, CSV data, JSON calibration sessions
+- **ECM8000 mic calibration compensation** — Flattens Behringer ECM8000 measurement mic frequency response using a 38-point calibration curve (CSL #746), applied per FFT bin alongside A-weighting
+- **Multi-format export** — PDF reports (jsPDF), TXT summaries, CSV data, JSON calibration sessions (v1.1 with per-event mic calibration flags and calibration curve metadata)
 - **Missed feedback annotations** — Mark false negatives by frequency band for calibration refinement
 - **PWA support** — installable, works offline via Serwist service worker
 
@@ -249,7 +250,7 @@ rafLoop (requestAnimationFrame @ 60fps)
 ┌─────────────────────────────────────────────────────────┐
 │  CORE ANALYSIS PIPELINE                                 │
 ├─────────────────────────────────────────────────────────┤
-│  1. Apply input gain + optional A-weighting            │
+│  1. Apply input gain + optional A-weighting + mic cal   │
 │  2. Build power array + prefix sum for neighborhoods   │
 │  3. Update adaptive noise floor (EMA attack/release)   │
 │  4. Update MSD history buffer (for advanced detection) │
@@ -593,6 +594,12 @@ R_A(f) = 12194² × f⁴ / ((f² + 20.6²) × √((f² + 107.7²)(f² + 737.9²)
 A(f) = 20 × log₁₀(R_A(f)) + 2.0
 ```
 
+### ECM8000 Mic Calibration Compensation
+
+When enabled, applies inverse frequency response compensation for the Behringer ECM8000 measurement mic (Cross-Spectrum Labs calibration #746). A 38-point 1/3-octave calibration curve is interpolated in log-frequency space to produce per-bin dB offsets, which are added in the hot loop alongside A-weighting. Both offsets stack additively.
+
+Key deviations compensated: +1.2 dB @ 8 kHz, +3.4 dB @ 12.5 kHz, +4.7 dB @ 16 kHz. This flattens the mic so the RTA shows true SPL. Calibration exports (v1.1) include per-event `micCalibrationApplied` flags and the full calibration curve for offline reversal: `rawDb[bin] = compensatedDb[bin] + interpolate(curve, binFreqHz)`.
+
 ### Q Factor Estimation
 
 Estimated from -3 dB bandwidth:
@@ -669,8 +676,9 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
 | Mic Count | number | Number of open microphones |
 | Signal Path | text | Signal chain description (e.g., "Yamaha TF → USB → Laptop") |
 | Noise Floor Capture | button | Records 5s of ambient noise for baseline measurement |
+| ECM8000 Compensation | on/off | Mic frequency response compensation (Behringer ECM8000, CSL 746) — flattens +4.7 dB rise at 10–16 kHz |
 | Calibration Mode | on/off | Enable session recording of all detections + spectra |
-| Export Calibration | button | Download JSON with room profile, detections, settings history |
+| Export Calibration | button | Download JSON v1.1 with room profile, detections, mic calibration metadata, settings history |
 
 ---
 
@@ -720,6 +728,7 @@ Where RT60 is reverberation time in seconds and Volume is in cubic meters.
   // Filtering
   confidenceThreshold: 0.35,          // 35% — catches early feedback, filters artifacts
   aWeightingEnabled: true,
+  micCalibrationEnabled: false,       // ECM8000 mic compensation — off by default
 
   // Advanced algorithms
   algorithmMode: 'auto',              // Content-adaptive algorithm selection

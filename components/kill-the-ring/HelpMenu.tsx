@@ -149,7 +149,7 @@ export const HelpMenu = memo(function HelpMenu() {
                     <li><strong>Display:</strong> Tooltips, graph font size, max issues, EQ style, RTA dB range, spectrum line width.</li>
                     <li><strong>Room:</strong> Room acoustics presets, RT60, volume, Schroeder frequency, modal overlap.</li>
                     <li><strong>Advanced:</strong> Save/load defaults, reset to factory settings.</li>
-                    <li><strong>Calibrate:</strong> Room profile (dimensions, materials, mics), ambient noise capture, calibration session recording with live stats and JSON export.</li>
+                    <li><strong>Calibrate:</strong> Room profile (dimensions, materials, mics), ambient noise capture, ECM8000 mic calibration compensation, calibration session recording with live stats and JSON export (v1.1 with per-event mic cal flags).</li>
                   </ul>
                 </HelpSection>
 
@@ -729,6 +729,16 @@ export const HelpMenu = memo(function HelpMenu() {
                   </div>
 
                   <div className="bg-background/80 px-3 py-2 rounded font-mono text-sm border border-border/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] space-y-0.5">
+                    <p className="text-foreground font-semibold">ECM8000 Mic Calibration Compensation</p>
+                    <p>Behringer ECM8000 measurement mic (CSL calibration #746)</p>
+                    <p>38-point 1/3-octave compensation curve, interpolated per FFT bin</p>
+                    <p className="mt-1">Key deviations: +1.2 dB @ 8 kHz, +3.4 dB @ 12.5 kHz, +4.7 dB @ 16 kHz</p>
+                    <p>Compensation: negate the curve → flatten mic response → true SPL</p>
+                    <p className="mt-1 text-muted-foreground">Applied in DSP hot loop alongside A-weighting. Both offsets stack additively per FFT bin.</p>
+                    <p className="text-muted-foreground">Calibration export v1.1 includes per-event flags and the full 38-point curve for reversal.</p>
+                  </div>
+
+                  <div className="bg-background/80 px-3 py-2 rounded font-mono text-sm border border-border/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)] space-y-0.5">
                     <p className="text-foreground font-semibold">MIDI Note Number</p>
                     <p>midi = 12 · log₂(f / 440) + 69</p>
                     <p>f = 440 · 2<sup>((midi - 69) / 12)</sup></p>
@@ -821,6 +831,7 @@ export const HelpMenu = memo(function HelpMenu() {
                 <span className="text-muted-foreground">Confidence threshold</span><span className="font-mono">35%</span>
                 <span className="text-muted-foreground">Algorithm mode</span><span className="font-mono">Auto (content-adaptive)</span>
                 <span className="text-muted-foreground">A-weighting</span><span className="font-mono">Enabled</span>
+                <span className="text-muted-foreground">Mic calibration</span><span className="font-mono">Off (ECM8000 compensation)</span>
                 <span className="text-muted-foreground">Sustain time</span><span className="font-mono">300 ms</span>
                 <span className="text-muted-foreground">Clear time</span><span className="font-mono">400 ms</span>
                 <span className="text-muted-foreground">Threshold mode</span><span className="font-mono">Hybrid</span>

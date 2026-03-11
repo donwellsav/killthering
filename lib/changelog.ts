@@ -16,8 +16,11 @@ export const CHANGELOG: ChangelogEntry[] = [
   {
     version: '0.76.20',
     date: '2026-03-11',
+    highlights: 'ECM8000 mic calibration compensation + calibration export v1.1',
     changes: [
-      { type: 'feat', description: 'feat: add ECM8000 mic calibration compensation + export metadata' },
+      { type: 'feat', description: 'feat: ECM8000 mic calibration compensation — flattens measurement mic frequency response in the DSP hot loop for true SPL readings' },
+      { type: 'feat', description: 'feat: calibration export v1.1 — per-detection/snapshot micCalibrationApplied flags, MicCalibrationMetadata with 38-point calibration curve' },
+      { type: 'feat', description: 'feat: ECM8000 toggle in Calibrate tab with live "ECM8000 compensated" session indicator' },
     ],
   },
   {

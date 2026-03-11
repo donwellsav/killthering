@@ -108,7 +108,7 @@ C:\ktr\v0sucks-killthering2\
 │   │       ├── DisplayTab.tsx    #     Visual preferences
 │   │       ├── RoomTab.tsx       #     Room preset & dimensions
 │   │       ├── AdvancedTab.tsx   #     Advanced/debug settings
-│   │       ├── CalibrationTab.tsx #    Room profile, ambient capture, session recording
+│   │       ├── CalibrationTab.tsx #    Room profile, ambient capture, ECM8000 mic cal, session recording
 │   │       └── SettingsShared.tsx #    Shared Section/Grid layout components
 │   │
 │   └── ui/                       # SHADCN PRIMITIVES — don't edit these
@@ -384,8 +384,9 @@ interface DetectorSettings {
 **Calibration types** (`types/calibration.ts`) define the room profiling system:
 - `RoomProfile` — venue name, dimensions, materials, mic types
 - `CalibrationSession` — recorded detections, missed annotations, spectra, settings history
-- `CalibrationExport` — complete JSON export combining room profile + session data
+- `CalibrationExport` — complete JSON v1.1 export combining room profile + session data + mic calibration metadata
 - `CalibrationStats` — live session counters (detections, false positives, missed, snapshots)
+- `MicCalibrationMetadata` — ECM8000 compensation metadata (mic model, calibration ID, 38-point curve, reversal note)
 
 **Pro tip:** When you're confused about what data a component has, check what props it receives and trace them back to `Advisory` or `DetectorSettings`.
 
@@ -572,6 +573,8 @@ JSON.parse(localStorage.getItem('ktr-settings'))
 3. Update `lib/calibration/calibrationExport.ts` to include new data in the JSON export
 4. The React hook `hooks/useCalibrationSession.ts` wraps the session class — update it if the API surface changes
 
+**Mic calibration system:** The ECM8000 compensation curve lives in `lib/dsp/constants.ts` (`ECM8000_CALIBRATION`). It's a 38-point 1/3-octave table that gets interpolated per FFT bin in `feedbackDetector.ts`. The toggle is in the Calibrate tab (`CalibrationTab.tsx`). Calibration exports (v1.1) include per-event `micCalibrationApplied` flags and the full curve in `MicCalibrationMetadata`.
+
 ### Adding a new component
 
 1. Create `components/kill-the-ring/MyComponent.tsx`
@@ -615,6 +618,7 @@ import { Advisory } from '../../types/advisory'     // ❌
 | **Advisory** | A detected problem + its EQ fix recommendation |
 | **FFT** | Fast Fourier Transform — breaks audio into frequency bins |
 | **FFT Size** | Number of samples per analysis (4096/8192/16384). Bigger = more frequency detail, slower |
+| **ECM8000** | Behringer ECM8000 measurement microphone — flat response mic used for calibration. Kill The Ring compensates its +4.7 dB rise at 10–16 kHz |
 | **GEQ** | Graphic Equalizer — fixed frequency bands (31-band standard) |
 | **PEQ** | Parametric Equalizer — adjustable frequency, Q, and gain |
 | **Q Factor** | How narrow/wide an EQ cut is. High Q = surgical, Low Q = broad |
@@ -634,4 +638,4 @@ import { Advisory } from '../../types/advisory'     // ❌
 
 ---
 
-*Last updated: March 2026 — Kill The Ring v0.76.16*
+*Last updated: March 2026 — Kill The Ring v0.76.20*
