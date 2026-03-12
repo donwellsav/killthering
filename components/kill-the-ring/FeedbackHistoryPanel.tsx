@@ -109,13 +109,13 @@ export const FeedbackHistoryPanel = memo(function FeedbackHistoryPanel() {
         </TooltipContent>
       </Tooltip>
       <SheetContent side="right" className={cn("overflow-y-auto channel-strip", maxW)}>
-        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
+        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 max-sm:pt-2 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
           <SheetTitle className="text-lg flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
             Feedback History
           </SheetTitle>
           <SheetDescription className="text-sm">
-            Tracks repeat offenders and frequency hotspots across sessions.
+            Frequency hotspots & repeat offenders.
           </SheetDescription>
         </SheetHeader>
 

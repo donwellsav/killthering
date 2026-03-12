@@ -86,42 +86,42 @@ export const SettingsPanel = memo(function SettingsPanel({
           <Settings className="size-5 sm:size-6" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="sm:max-w-7xl overflow-y-auto channel-strip">
-        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
+      <SheetContent side="right" className="sm:max-w-7xl overflow-y-auto channel-strip max-sm:pb-10">
+        <SheetHeader className="pb-3 panel-groove bg-card/60 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-4 max-sm:pt-2 shadow-[0_1px_8px_rgba(0,0,0,0.3),0_1px_0_rgba(75,146,255,0.06)]">
           <SheetTitle className="text-lg flex items-center gap-2">
             <Settings className="w-5 h-5 text-primary" />
             Settings
           </SheetTitle>
           <SheetDescription className="text-sm">
-            Detection, algorithms, display, room acoustics, and advanced tuning.
+            Detection, display, room & advanced tuning.
           </SheetDescription>
         </SheetHeader>
 
-        <Tabs defaultValue="detection" className="mt-4">
+        <Tabs defaultValue="detection" className="mt-4 max-sm:mt-1">
           <TabsList className="flex w-full bg-transparent rounded-none border-0 border-b border-border h-auto p-0">
-            <TabsTrigger value="detection" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-              <BarChart3 className="w-4 h-4 text-primary" />
+            <TabsTrigger value="detection" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+              <BarChart3 className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
               Detection
             </TabsTrigger>
-            <TabsTrigger value="algorithms" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-              <Cpu className="w-4 h-4 text-primary" />
+            <TabsTrigger value="algorithms" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+              <Cpu className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
               Algorithms
             </TabsTrigger>
-            <TabsTrigger value="display" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-              <Monitor className="w-4 h-4 text-primary" />
+            <TabsTrigger value="display" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+              <Monitor className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
               Display
             </TabsTrigger>
-            <TabsTrigger value="room" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-              <Ruler className="w-4 h-4 text-primary" />
+            <TabsTrigger value="room" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+              <Ruler className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
               Room
             </TabsTrigger>
-            <TabsTrigger value="advanced" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-              <Wrench className="w-4 h-4 text-primary" />
+            <TabsTrigger value="advanced" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+              <Wrench className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
               Advanced
             </TabsTrigger>
             {calibration && (
-              <TabsTrigger value="calibrate" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200">
-                <Crosshair className="w-4 h-4 text-primary" />
+              <TabsTrigger value="calibrate" className="flex-1 flex-col gap-0.5 py-2 text-xs rounded-none border-0 border-b-2 border-transparent uppercase tracking-[0.15em] data-[state=active]:bg-primary/5 data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground hover:text-foreground transition-all duration-200 max-sm:text-[10px] max-sm:tracking-[0.05em] max-sm:gap-0 max-sm:py-1.5 max-sm:px-0.5">
+                <Crosshair className="w-4 h-4 max-sm:w-3 max-sm:h-3 text-primary" />
                 Calibrate
               </TabsTrigger>
             )}
