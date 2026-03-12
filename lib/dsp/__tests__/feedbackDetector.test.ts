@@ -110,6 +110,52 @@ describe('FeedbackDetector', () => {
     })
   })
 
+  // ── updateConfig ────────────────────────────────────────────────
+
+  describe('updateConfig', () => {
+    it('updates fftSize', () => {
+      const detector = new FeedbackDetector({ fftSize: 4096 })
+      detector.updateConfig({ fftSize: 8192 })
+      expect(detector.getState().fftSize).toBe(8192)
+    })
+
+    it('updates threshold and reflects in effectiveThresholdDb', () => {
+      const detector = new FeedbackDetector()
+      detector.updateConfig({ thresholdDb: 25 })
+      const state = detector.getState()
+      expect(state.effectiveThresholdDb).toBeLessThanOrEqual(25)
+    })
+
+    it('partial config preserves other settings', () => {
+      const detector = new FeedbackDetector({ fftSize: 4096 })
+      detector.updateConfig({ thresholdDb: 20 })
+      expect(detector.getState().fftSize).toBe(4096)
+    })
+  })
+
+  // ── Noise floor tracking ──────────────────────────────────────────
+
+  describe('noise floor', () => {
+    it('starts as null (no data yet)', () => {
+      const detector = new FeedbackDetector()
+      const state = detector.getState()
+      // noiseFloorDb is null until audio is analyzed
+      expect(state.noiseFloorDb).toBeNull()
+    })
+  })
+
+  // ── Auto-gain state ────────────────────────────────────────────────
+
+  describe('auto-gain state', () => {
+    it('defaults to disabled with initial gain', () => {
+      const detector = new FeedbackDetector()
+      const state = detector.getState()
+      expect(state.autoGainEnabled).toBe(false)
+      expect(typeof state.autoGainDb).toBe('number')
+      expect(state.autoGainLocked).toBe(false)
+    })
+  })
+
   // ── setAlgorithmState ────────────────────────────────────────────
 
   describe('setAlgorithmState', () => {

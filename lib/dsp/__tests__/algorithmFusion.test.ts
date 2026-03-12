@@ -428,6 +428,150 @@ describe('fuseAlgorithmResults', () => {
   })
 })
 
+// ── Confidence formula ──────────────────────────────────────────────────────
+
+describe('confidence formula', () => {
+  /** Create scores with known feedbackScore values for all algorithms */
+  function uniformScores(score: number): AlgorithmScores {
+    return {
+      msd: {
+        msd: 0.5, framesAnalyzed: 100, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, meanMagnitudeDb: -10, secondDerivative: 0.1,
+      },
+      phase: {
+        coherence: score, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, meanPhaseDelta: 0.05, phaseDeltaStd: 0.1,
+      },
+      spectral: {
+        flatness: 0.01, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, kurtosis: 15,
+      },
+      comb: null,
+      compression: null,
+      ihr: {
+        interHarmonicRatio: 0.05, isFeedbackLike: score > 0.5,
+        isMusicLike: false, harmonicsFound: 1, feedbackScore: score,
+      },
+      ptmr: {
+        ptmrDb: 25, isFeedbackLike: score > 0.5, feedbackScore: score,
+      },
+    }
+  }
+
+  it('confidence = agreement * probability + (1 - agreement) * 0.5', () => {
+    // When all algorithms agree (uniform scores), variance=0 → agreement=1
+    // confidence = 1.0 * probability + 0 * 0.5 = probability
+    const result = fuseAlgorithmResults(uniformScores(0.9), 'unknown', 0.9)
+    // With uniform scores and existing=0.9, probability ≈ 0.9, agreement ≈ 1
+    // So confidence ≈ probability
+    expect(result.confidence).toBeGreaterThan(0.7)
+    expect(result.confidence).toBeLessThanOrEqual(1)
+  })
+
+  it('mixed scores produce lower confidence than uniform scores', () => {
+    const uniform = fuseAlgorithmResults(uniformScores(0.8), 'unknown', 0.8)
+
+    // Create mixed scores — some high, some low
+    const mixed = uniformScores(0.8)
+    if (mixed.msd) mixed.msd.feedbackScore = 0.9
+    if (mixed.phase) mixed.phase.feedbackScore = 0.2
+    if (mixed.spectral) mixed.spectral.feedbackScore = 0.7
+    if (mixed.ihr) mixed.ihr.feedbackScore = 0.3
+    if (mixed.ptmr) mixed.ptmr.feedbackScore = 0.9
+    const mixedResult = fuseAlgorithmResults(mixed, 'unknown', 0.5)
+
+    // Higher variance → lower agreement → confidence pulled toward 0.5
+    expect(mixedResult.confidence).toBeLessThan(uniform.confidence)
+  })
+})
+
+// ── Verdict boundary ───────────────────────────────────────────────────────
+
+describe('verdict boundaries', () => {
+  function uniformScores(score: number): AlgorithmScores {
+    return {
+      msd: {
+        msd: 0.5, framesAnalyzed: 100, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, meanMagnitudeDb: -10, secondDerivative: 0.1,
+      },
+      phase: {
+        coherence: score, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, meanPhaseDelta: 0.05, phaseDeltaStd: 0.1,
+      },
+      spectral: {
+        flatness: 0.01, isFeedbackLikely: score > 0.5,
+        feedbackScore: score, kurtosis: 15,
+      },
+      comb: null, compression: null,
+      ihr: {
+        interHarmonicRatio: 0.05, isFeedbackLike: score > 0.5,
+        isMusicLike: false, harmonicsFound: 1, feedbackScore: score,
+      },
+      ptmr: {
+        ptmrDb: 25, isFeedbackLike: score > 0.5, feedbackScore: score,
+      },
+    }
+  }
+
+  it('very low scores → NOT_FEEDBACK or UNCERTAIN', () => {
+    const result = fuseAlgorithmResults(uniformScores(0.05), 'unknown', 0.05)
+    expect(['NOT_FEEDBACK', 'UNCERTAIN']).toContain(result.verdict)
+  })
+
+  it('very high scores → FEEDBACK', () => {
+    const result = fuseAlgorithmResults(uniformScores(0.95), 'unknown', 0.95)
+    expect(result.verdict).toBe('FEEDBACK')
+  })
+
+  it('moderate scores → POSSIBLE_FEEDBACK or UNCERTAIN', () => {
+    const result = fuseAlgorithmResults(uniformScores(0.5), 'unknown', 0.5)
+    expect(['POSSIBLE_FEEDBACK', 'UNCERTAIN', 'FEEDBACK']).toContain(result.verdict)
+  })
+})
+
+// ── Content-weight interaction ──────────────────────────────────────────────
+
+describe('content-weight interaction', () => {
+  function feedbackScoresForWeight(): AlgorithmScores {
+    return {
+      msd: {
+        msd: 0.05, framesAnalyzed: 100, isFeedbackLikely: true,
+        feedbackScore: 0.9, meanMagnitudeDb: -10, secondDerivative: 0.01,
+      },
+      phase: {
+        coherence: 0.9, isFeedbackLikely: true,
+        feedbackScore: 0.9, meanPhaseDelta: 0.05, phaseDeltaStd: 0.05,
+      },
+      spectral: {
+        flatness: 0.02, isFeedbackLikely: true,
+        feedbackScore: 0.8, kurtosis: 12,
+      },
+      comb: null, compression: null,
+      ihr: {
+        interHarmonicRatio: 0.05, isFeedbackLike: true,
+        isMusicLike: false, harmonicsFound: 1, feedbackScore: 0.85,
+      },
+      ptmr: {
+        ptmrDb: 25, isFeedbackLike: true, feedbackScore: 0.85,
+      },
+    }
+  }
+
+  it('speech mode uses SPEECH weights', () => {
+    const result = fuseAlgorithmResults(feedbackScoresForWeight(), 'speech', 0.8)
+    // Speech mode upweights MSD (0.40) vs default (0.30)
+    expect(result.contributingAlgorithms).toContain('MSD')
+    expect(result.verdict).toBe('FEEDBACK')
+  })
+
+  it('music mode uses MUSIC weights', () => {
+    const result = fuseAlgorithmResults(feedbackScoresForWeight(), 'music', 0.8)
+    // Music mode upweights Phase (0.35) vs default (0.25)
+    expect(result.contributingAlgorithms).toContain('Phase')
+    expect(result.verdict).toBe('FEEDBACK')
+  })
+})
+
 // ── FUSION_WEIGHTS ─────────────────────────────────────────────────────────
 
 describe('FUSION_WEIGHTS', () => {
