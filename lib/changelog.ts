@@ -14,6 +14,23 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.89.0',
+    date: '2026-03-13',
+    changes: [
+      { type: 'feat', description: '**Root cause**: `import(\'../data/snapshotCollector\')` inside the Web Worker was silently failing in production. Webpack\'s dynamic chunk resolution doesn\'t work reliably in worker contexts, leaving `snapshotCollector` permanently `null`. Every `if (snapshotCollector)` guard evaluates to false — zero data collected.' },
+      { type: 'feat', description: '**Fix**: Static import since the module has zero runtime dependencies (all imports are `import type`, erased at compile time). The "premium tier code splitting" optimization was premature and introduced a catastrophic silent failure.' },
+      { type: 'feat', description: '**Diagnostic logging**: Added `console.log` at every critical pipeline point so future issues are immediately visible in DevTools:' },
+      { type: 'feat', description: '`[DataCollection]` — enableCollection called, uploader created' },
+      { type: 'feat', description: '`[DSP Worker]` — enableCollection received, collector created, batch posted' },
+      { type: 'feat', description: '`[Uploader]` — batch enqueued, upload success/failure with status' },
+      { type: 'feat', description: '[x] `npx tsc --noEmit` passes' },
+      { type: 'feat', description: '[x] `pnpm test` — 195 tests pass' },
+      { type: 'feat', description: '[x] `pnpm build` succeeds' },
+      { type: 'feat', description: '[ ] Deploy → open on phone → start analysis → check Supabase `spectral_snapshots` table for new rows' },
+      { type: 'feat', description: '[ ] Open DevTools console → verify log sequence: `[DataCollection] Enabling collection` → `[DSP Worker] enableCollection received` → `[DSP Worker] Posting snapshot batch` → `[Uploader] Enqueued batch` → `[Uploader] Upload SUCCESS`' },
+    ],
+  },
+  {
     version: '0.88.0',
     date: '2026-03-13',
     changes: [
