@@ -11,5 +11,15 @@ export default defineConfig({
     include: ['lib/**/__tests__/**/*.test.ts', 'tests/**/*.test.ts'],
     environment: 'node',
     globals: true,
+    coverage: {
+      provider: 'v8',
+      include: ['lib/dsp/**/*.ts'],
+      exclude: ['lib/dsp/__tests__/**', 'lib/dsp/dspWorker.ts'],
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 70,
+      },
+    },
   },
 })

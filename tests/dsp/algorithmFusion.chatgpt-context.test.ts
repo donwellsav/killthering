@@ -7,7 +7,7 @@
  *    totalWeight drops to 0.92 (DEFAULT/MUSIC/COMPRESSED) or 0.95 (SPEECH).
  *    This silently amplifies the dominant algorithm:
  *      - SPEECH MSD: not 40%, actually 42.1%
- *      - COMPRESSED Phase: not 38%, actually 41.3%
+ *      - COMPRESSED Phase: not 38%, reduced to 30% (effective ~32.6%) by FIX-005
  *      - MUSIC Phase: not 35%, actually 38.0%
  *
  * 2. EXISTING DOUBLE-COUNTS: computeExistingScore() includes MSD-flavored
@@ -76,11 +76,12 @@ describe('Effective Weights (Comb Absent — Normal Operation)', () => {
     console.log(`[EFFECTIVE] DEFAULT MSD: nominal ${w.msd}, effective ${effectiveMsd.toFixed(3)} (${(effectiveMsd*100).toFixed(1)}%)`)
   })
 
-  it('SPEECH effective MSD share is ~42.1%, not 40%', () => {
+  it('SPEECH effective MSD share is ~34.7% (FIX-004: reduced from 42.1%)', () => {
     const w = FUSION_WEIGHTS.SPEECH
     const totalNoComb = w.msd + w.phase + w.spectral + w.ihr + w.ptmr + w.existing
     const effectiveMsd = w.msd / totalNoComb
-    expect(effectiveMsd).toBeCloseTo(0.421, 2)
+    // FIX-004: MSD reduced from 0.40→0.33, effective 42.1% → 34.7%
+    expect(effectiveMsd).toBeCloseTo(0.347, 2)
     console.log(`[EFFECTIVE] SPEECH MSD: nominal ${w.msd}, effective ${effectiveMsd.toFixed(3)} (${(effectiveMsd*100).toFixed(1)}%)`)
   })
 
@@ -92,19 +93,21 @@ describe('Effective Weights (Comb Absent — Normal Operation)', () => {
     console.log(`[EFFECTIVE] MUSIC Phase: nominal ${w.phase}, effective ${effectivePhase.toFixed(3)} (${(effectivePhase*100).toFixed(1)}%)`)
   })
 
-  it('COMPRESSED effective Phase share is ~41.3%, not 38%', () => {
+  it('COMPRESSED effective Phase share is ~32.6% (FIX-005: reduced from 41.3%)', () => {
     const w = FUSION_WEIGHTS.COMPRESSED
     const totalNoComb = w.msd + w.phase + w.spectral + w.ihr + w.ptmr + w.existing
     const effectivePhase = w.phase / totalNoComb
-    expect(effectivePhase).toBeCloseTo(0.413, 2)
+    // FIX-005: phase reduced from 0.38 → 0.30, effective 41.3% → 32.6%
+    expect(effectivePhase).toBeCloseTo(0.326, 2)
     console.log(`[EFFECTIVE] COMPRESSED Phase: nominal ${w.phase}, effective ${effectivePhase.toFixed(3)} (${(effectivePhase*100).toFixed(1)}%)`)
   })
 
-  it('MUSIC effective existing share is ~16.3%, not 15%', () => {
+  it('MUSIC effective existing share is ~5.4% (FIX-002: reduced from 16.3%)', () => {
     const w = FUSION_WEIGHTS.MUSIC
     const totalNoComb = w.msd + w.phase + w.spectral + w.ihr + w.ptmr + w.existing
     const effectiveExisting = w.existing / totalNoComb
-    expect(effectiveExisting).toBeCloseTo(0.163, 2)
+    // FIX-002: existing reduced from 0.15 → 0.05, effective 16.3% → 5.4%
+    expect(effectiveExisting).toBeCloseTo(0.054, 2)
     console.log(`[EFFECTIVE] MUSIC existing: nominal ${w.existing}, effective ${effectiveExisting.toFixed(3)} (${(effectiveExisting*100).toFixed(1)}%)`)
   })
 })
@@ -290,16 +293,14 @@ describe('Comb Verdict Flip (ChatGPT Discovery)', () => {
     expect(result.feedbackProbability).toBeGreaterThan(0.58)
   })
 
-  it('comb is excluded from confidence agreement list', () => {
+  it('comb participates in confidence agreement list (FIX-003)', () => {
     const withComb = fuse({ ...baseScores, comb: 0.80 }, 'unknown', 0.40)
     const withoutComb = fuse({ ...baseScores, comb: 0 }, 'unknown', 0.40)
 
-    // Confidence should be similar because comb doesn't participate
-    // in the agreement variance calculation
+    // FIX-003: comb now included in agreement list when active.
+    // Confidence difference reflects both probability shift AND agreement shift.
     const confDiff = Math.abs(withComb.confidence - withoutComb.confidence)
-    console.log(`[COMB FLIP] confidence diff: ${confDiff.toFixed(4)} (comb excluded from agreement)`)
-    // The confidence difference comes only from feedbackProbability changing,
-    // not from comb being in the agreement list
+    console.log(`[COMB FLIP] confidence diff: ${confDiff.toFixed(4)} (comb included in agreement)`)
   })
 })
 
@@ -414,7 +415,7 @@ describe('Three-Model Final Consensus', () => {
    *    - All models produced sustained-vowel false positives
    *
    * 3. Reduce Phase dominance in COMPRESSED
-   *    - Effective share is 41.3%, not 38%
+   *    - Effective share is ~32.6% (FIX-005: reduced from 41.3%)
    *    - Single-feature conviction is possible
    *
    * 4. Fix comb doubling asymmetry

@@ -295,8 +295,10 @@ describe('Architectural Insight: Fusion Override Threshold', () => {
 
   it('three strong algorithms needed for FEEDBACK verdict', () => {
     // MSD (0.30) + Phase (0.25) + Spectral (0.12) = 0.67 at score=1.0
+    // ADV-001: ptmr=0 triggers PTMR breadth gate (×0.80), so provide
+    // minimal PTMR support to avoid penalty
     const threeAlgo = fuse(
-      { msd: 1.0, phase: 1.0, spectral: 1.0, comb: 0, ihr: 0.0, ptmr: 0.0 },
+      { msd: 1.0, phase: 1.0, spectral: 1.0, comb: 0, ihr: 0.0, ptmr: 0.3 },
       'unknown',
       0.0
     )
