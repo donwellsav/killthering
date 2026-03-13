@@ -506,13 +506,15 @@ export function fuseAlgorithmResults(
     ? Math.min(weightedSum / totalWeight, 1)
     : 0
 
+  // ChatGPT-CTX finding: existing was inflating confidence via agreement list
+  // while containing correlated MSD-flavored evidence (double-counting)
+  // Removed from confidence to prevent correlated double-vote
   const algorithmScoresList = [
     scores.msd?.feedbackScore,
     scores.phase?.feedbackScore,
     scores.spectral?.feedbackScore,
     scores.ihr?.feedbackScore,
     scores.ptmr?.feedbackScore,
-    existingScore,
   ].filter((s): s is number => s !== undefined && s !== null)
 
   const mean     = algorithmScoresList.reduce((a, b) => a + b, 0) / algorithmScoresList.length
