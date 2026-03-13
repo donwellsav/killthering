@@ -44,6 +44,12 @@ const nextConfig = {
     return [{ source: '/(.*)', headers: securityHeaders }]
   },
   turbopack: {},
+  webpack(config) {
+    // OpenSSL 3.x (Node 18+) disables md4. Webpack's WASM fallback crashes
+    // on Windows. Use sha256 instead — universally supported.
+    config.output.hashFunction = 'sha256'
+    return config
+  },
   env: {
     NEXT_PUBLIC_APP_VERSION: pkg.version,
   },
