@@ -1,13 +1,18 @@
 /**
- * Consent state machine for anonymous spectral data collection.
+ * Consent state for anonymous spectral data collection.
+ *
+ * Collection is ON by default (opt-out model). The data is truly
+ * anonymous: magnitude spectrum only, random session IDs, no PII.
+ *
+ * Users can disable collection in Settings → Advanced at any time.
+ * The opt-out is persisted in localStorage and respected across sessions.
  *
  * State transitions:
- *   NOT_ASKED → PROMPTED → ACCEPTED | DECLINED
+ *   (new user) → ACCEPTED (auto)
+ *   ACCEPTED → DECLINED (user toggles off in Settings)
+ *   DECLINED → ACCEPTED (user toggles back on)
  *
- * A declined user can re-consent later via settings.
- * Version field enables re-consent when terms change.
- *
- * Privacy: consent is stored locally only, never transmitted.
+ * Privacy: consent state is stored locally only, never transmitted.
  */
 
 import type { ConsentState, ConsentStatus } from '@/types/data'
@@ -25,7 +30,7 @@ export function loadConsent(): ConsentState {
 
     const stored: ConsentState = JSON.parse(raw)
 
-    // Re-prompt if consent version is outdated
+    // Version bump → reset to default (accepted)
     if (stored.version < CONSENT_VERSION) {
       return defaultState()
     }
@@ -41,7 +46,7 @@ function saveConsent(state: ConsentState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   } catch {
-    // localStorage full or blocked — fail silently
+    // localStorage full or blocked — fail silently, collection still works
   }
 }
 
@@ -55,7 +60,7 @@ function defaultState(): ConsentState {
 
 // ─── State transitions ──────────────────────────────────────────────────────
 
-/** Mark that the consent prompt has been shown to the user */
+/** Mark that the consent prompt has been shown (kept for migration compat) */
 export function markPrompted(): ConsentState {
   const state: ConsentState = {
     status: 'prompted',
@@ -66,7 +71,7 @@ export function markPrompted(): ConsentState {
   return state
 }
 
-/** Record user's acceptance of data collection */
+/** Record acceptance of data collection */
 export function acceptConsent(): ConsentState {
   const state: ConsentState = {
     status: 'accepted',
@@ -77,7 +82,7 @@ export function acceptConsent(): ConsentState {
   return state
 }
 
-/** Record user's decline of data collection */
+/** Record decline of data collection (kept for compat) */
 export function declineConsent(): ConsentState {
   const state: ConsentState = {
     status: 'declined',
@@ -88,7 +93,7 @@ export function declineConsent(): ConsentState {
   return state
 }
 
-/** Revoke consent (user changed mind in settings) */
+/** Opt out of collection (user toggled off in Settings) */
 export function revokeConsent(): ConsentState {
   const state: ConsentState = {
     status: 'declined',
@@ -102,7 +107,8 @@ export function revokeConsent(): ConsentState {
 /** Check if collection is currently authorized */
 export function isConsentGiven(): boolean {
   const state = loadConsent()
-  return state.status === 'accepted' && state.version === CONSENT_VERSION
+  // In opt-out model: collection is on unless explicitly declined
+  return state.status !== 'declined'
 }
 
 /** Check if user has been asked but hasn't responded yet */

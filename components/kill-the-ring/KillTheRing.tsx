@@ -13,7 +13,7 @@ import { DesktopLayout } from './DesktopLayout'
 import { PortalContainerProvider } from '@/contexts/PortalContainerContext'
 
 const LazyOnboardingOverlay = lazy(() => import('./OnboardingOverlay').then(m => ({ default: m.OnboardingOverlay })))
-const LazyDataConsentDialog = lazy(() => import('./DataConsentDialog').then(m => ({ default: m.DataConsentDialog })))
+// Consent dialog removed — collection is opt-out via Settings → Advanced
 import { useDataCollection } from '@/hooks/useDataCollection'
 import { AudioStateProvider } from '@/contexts/AudioStateContext'
 import { DetectionProvider } from '@/contexts/DetectionContext'
@@ -398,13 +398,7 @@ export const KillTheRing = memo(function KillTheRingComponent() {
         <LazyOnboardingOverlay />
       </Suspense>
 
-      <Suspense fallback={null}>
-        <LazyDataConsentDialog
-          visible={dataCollection.showConsentDialog}
-          onAccept={dataCollection.handleAccept}
-          onDecline={dataCollection.handleDecline}
-        />
-      </Suspense>
+      {/* Consent dialog removed — collection is opt-out via Settings → Advanced */}
       </PortalContainerProvider>
     </div>
   )
