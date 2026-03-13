@@ -14,6 +14,13 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '0.89.1',
+    date: '2026-03-13',
+    changes: [
+      { type: 'fix', description: 'fix: load uploader before worker collection + stale comment cleanup (#90)' },
+    ],
+  },
+  {
     version: '0.89.0',
     date: '2026-03-13',
     changes: [
