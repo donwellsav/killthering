@@ -10,6 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { FeedbackDetector } from '../feedbackDetector'
 import { DEFAULT_CONFIG } from '@/types/advisory'
+import { PERSISTENCE_SCORING } from '../constants'
 
 describe('FeedbackDetector', () => {
   // ── Constructor ──────────────────────────────────────────────────
@@ -181,6 +182,115 @@ describe('FeedbackDetector', () => {
       const state = detector.getState()
       expect(state.algorithmMode).toBe('msd')
       expect(state.contentType).toBe('music')
+    })
+  })
+
+  // ── FUTURE-002: Frame-rate-independent persistence scoring ─────
+
+  describe('persistence scoring — frame-rate independence', () => {
+    /** Helper: get persistence thresholds from getState() */
+    function getThresholds(intervalMs: number) {
+      const detector = new FeedbackDetector({ analysisIntervalMs: intervalMs })
+      const state = detector.getState()
+      return state.persistenceThresholds!
+    }
+
+    describe('frame threshold computation', () => {
+      it('at 50fps (20ms) matches original hardcoded values', () => {
+        const t = getThresholds(20)
+        // Original constants were: MIN=5, HIGH=15, VERY_HIGH=30, LOW=3, HISTORY=32
+        expect(t.minFrames).toBe(5)
+        expect(t.highFrames).toBe(15)
+        expect(t.veryHighFrames).toBe(30)
+        expect(t.lowFrames).toBe(3)
+        expect(t.historyFrames).toBe(32)
+      })
+
+      it('at 30fps (33.3ms) computes correct frame counts', () => {
+        const t = getThresholds(33.3)
+        // ceil(100/33.3)=ceil(3.003)=4, ceil(300/33.3)=ceil(9.009)=10,
+        // ceil(600/33.3)=ceil(18.018)=19, ceil(60/33.3)=ceil(1.8)=2
+        expect(t.minFrames).toBe(Math.ceil(PERSISTENCE_SCORING.MIN_PERSISTENCE_MS / 33.3))
+        expect(t.highFrames).toBe(Math.ceil(PERSISTENCE_SCORING.HIGH_PERSISTENCE_MS / 33.3))
+        expect(t.veryHighFrames).toBe(Math.ceil(PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_MS / 33.3))
+        expect(t.lowFrames).toBe(Math.ceil(PERSISTENCE_SCORING.LOW_PERSISTENCE_MS / 33.3))
+      })
+
+      it('at 60fps (16.67ms) computes correct frame counts', () => {
+        const t = getThresholds(16.67)
+        // ceil(100/16.67)=ceil(5.999)=6, ceil(300/16.67)=ceil(17.996)=18,
+        // ceil(600/16.67)=ceil(35.993)=36, ceil(60/16.67)=ceil(3.6)=4
+        expect(t.minFrames).toBe(Math.ceil(PERSISTENCE_SCORING.MIN_PERSISTENCE_MS / 16.67))
+        expect(t.highFrames).toBe(Math.ceil(PERSISTENCE_SCORING.HIGH_PERSISTENCE_MS / 16.67))
+        expect(t.veryHighFrames).toBe(Math.ceil(PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_MS / 16.67))
+        expect(t.lowFrames).toBe(Math.ceil(PERSISTENCE_SCORING.LOW_PERSISTENCE_MS / 16.67))
+      })
+
+      it('at 25fps (40ms mobile) computes correct frame counts', () => {
+        const t = getThresholds(40)
+        // ceil(100/40)=3, ceil(300/40)=8, ceil(600/40)=15, ceil(60/40)=2
+        expect(t.minFrames).toBe(3)
+        expect(t.highFrames).toBe(8)
+        expect(t.veryHighFrames).toBe(15)
+        expect(t.lowFrames).toBe(2)
+        expect(t.historyFrames).toBe(16)
+      })
+    })
+
+    describe('time equivalence across frame rates', () => {
+      it('MIN threshold represents ~100ms regardless of frame rate', () => {
+        // At 20ms/frame: 5 frames = 100ms
+        // At 40ms/frame: 3 frames = 120ms (ceil rounds up, so ≥ 100ms)
+        // At 16.67ms/frame: 6 frames = 100ms
+        for (const interval of [16.67, 20, 33.3, 40]) {
+          const t = getThresholds(interval)
+          const actualMs = t.minFrames * interval
+          expect(actualMs).toBeGreaterThanOrEqual(PERSISTENCE_SCORING.MIN_PERSISTENCE_MS)
+          // Should not exceed 1 frame's worth of rounding
+          expect(actualMs).toBeLessThan(PERSISTENCE_SCORING.MIN_PERSISTENCE_MS + interval)
+        }
+      })
+
+      it('HIGH threshold represents ~300ms regardless of frame rate', () => {
+        for (const interval of [16.67, 20, 33.3, 40]) {
+          const t = getThresholds(interval)
+          const actualMs = t.highFrames * interval
+          expect(actualMs).toBeGreaterThanOrEqual(PERSISTENCE_SCORING.HIGH_PERSISTENCE_MS)
+          expect(actualMs).toBeLessThan(PERSISTENCE_SCORING.HIGH_PERSISTENCE_MS + interval)
+        }
+      })
+
+      it('VERY_HIGH threshold represents ~600ms regardless of frame rate', () => {
+        for (const interval of [16.67, 20, 33.3, 40]) {
+          const t = getThresholds(interval)
+          const actualMs = t.veryHighFrames * interval
+          expect(actualMs).toBeGreaterThanOrEqual(PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_MS)
+          expect(actualMs).toBeLessThan(PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_MS + interval)
+        }
+      })
+    })
+
+    describe('updateConfig recomputes thresholds', () => {
+      it('changing analysisIntervalMs updates persistence thresholds', () => {
+        const detector = new FeedbackDetector({ analysisIntervalMs: 20 })
+        expect(detector.getState().persistenceThresholds!.minFrames).toBe(5)
+
+        detector.updateConfig({ analysisIntervalMs: 40 })
+        expect(detector.getState().persistenceThresholds!.minFrames).toBe(3)
+      })
+    })
+
+    describe('getState exposes persistenceThresholds', () => {
+      it('includes persistenceThresholds in state snapshot', () => {
+        const detector = new FeedbackDetector()
+        const state = detector.getState()
+        expect(state.persistenceThresholds).toBeDefined()
+        expect(state.persistenceThresholds).toHaveProperty('minFrames')
+        expect(state.persistenceThresholds).toHaveProperty('highFrames')
+        expect(state.persistenceThresholds).toHaveProperty('veryHighFrames')
+        expect(state.persistenceThresholds).toHaveProperty('lowFrames')
+        expect(state.persistenceThresholds).toHaveProperty('historyFrames')
+      })
     })
   })
 })

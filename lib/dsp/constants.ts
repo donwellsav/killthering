@@ -779,27 +779,29 @@ export const MSD_SETTINGS = {
   POOL_SIZE: 256,
 } as const
 
-// Peak Persistence Scoring - Phase 2 Enhancement
-// Feedback is persistent over time, transients are short-lived
+// Peak Persistence Scoring - Phase 2 Enhancement (FUTURE-002: frame-rate-independent)
+// Feedback is persistent over time, transients are short-lived.
+// Thresholds are in milliseconds — frame equivalents computed at runtime
+// from analysisIntervalMs so behaviour is identical at 25fps, 50fps, 60fps.
 export const PERSISTENCE_SCORING = {
-  /** Maximum frames to track persistence (ring buffer size) */
-  HISTORY_FRAMES: 32,
+  /** Maximum persistence tracking window (ms) — runtime frames = ceil(ms / interval) */
+  HISTORY_MS: 640,
   /** dB tolerance for counting a frame as "same peak still present" */
   AMPLITUDE_TOLERANCE_DB: 6,
-  /** Minimum consecutive frames to consider a peak persistent */
-  MIN_PERSISTENCE_FRAMES: 5,
-  /** Frames for high persistence classification */
-  HIGH_PERSISTENCE_FRAMES: 15,
-  /** Frames for very high persistence classification */
-  VERY_HIGH_PERSISTENCE_FRAMES: 30,
+  /** Minimum persistence time to consider a peak persistent (ms) */
+  MIN_PERSISTENCE_MS: 100,
+  /** Time for high persistence classification (ms) */
+  HIGH_PERSISTENCE_MS: 300,
+  /** Time for very high persistence classification (ms) */
+  VERY_HIGH_PERSISTENCE_MS: 600,
   /** Confidence boost for minimally persistent peaks */
   MIN_PERSISTENCE_BOOST: 0.05,
   /** Confidence boost for highly persistent peaks */
   HIGH_PERSISTENCE_BOOST: 0.12,
   /** Confidence boost for very highly persistent peaks */
   VERY_HIGH_PERSISTENCE_BOOST: 0.20,
-  /** Frame count below which a penalty is applied (transient peak) */
-  LOW_PERSISTENCE_FRAMES: 3,
+  /** Time below which a penalty is applied — transient peak (ms) */
+  LOW_PERSISTENCE_MS: 60,
   /** Confidence penalty for transient peaks */
   LOW_PERSISTENCE_PENALTY: 0.05,
 } as const

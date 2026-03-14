@@ -16,7 +16,7 @@
 - **Audio:** Web Audio API (AnalyserNode, Web Workers for DSP)
 - **Visualization:** HTML5 Canvas
 - **State:** React 19 hooks (no external state library)
-- **Testing:** Vitest (326 DSP unit tests across 14 test files)
+- **Testing:** Vitest (323 DSP unit tests across 14 test files)
 - **Error Reporting:** Sentry (browser + server + edge runtime, source maps)
 - **PWA:** Serwist (service worker, offline caching, installable)
 - **Package Manager:** pnpm
@@ -28,7 +28,7 @@ pnpm dev              # Start Next.js dev server on :3000 (Turbopack, no SW)
 pnpm build            # Production build (webpack, generates SW)
 pnpm start            # Start production server
 pnpm lint             # Run ESLint (flat config, eslint.config.mjs)
-pnpm test             # Run Vitest tests (326 DSP unit tests)
+pnpm test             # Run Vitest tests (323 DSP unit tests)
 pnpm test:watch       # Vitest in watch mode
 pnpm test:coverage    # Vitest with V8 coverage
 npx tsc --noEmit      # Type-check without emitting (run before pnpm build)
@@ -38,6 +38,12 @@ npx tsc --noEmit      # Type-check without emitting (run before pnpm build)
 
 ```
 app/                        # Next.js App Router pages + API routes
+  layout.tsx                #   Root layout with metadata + Sentry
+  page.tsx                  #   Entry point — renders KillTheRing
+  global-error.tsx          #   Global error boundary (Sentry)
+  sw.ts                     #   Serwist service worker
+  ~offline/page.tsx         #   Offline fallback page
+  api/v1/ingest/route.ts    #   Spectral snapshot ingest endpoint
 components/
   kill-the-ring/            # Domain components (23 files + barrel index.ts)
     settings/               # Settings panel tab components (7 files)
@@ -57,6 +63,11 @@ lib/
   canvas/                   # Pure canvas drawing helpers (no React dependency)
     spectrumDrawing.ts      #   Spectrum/GEQ canvas render functions
   changelog.ts              # Version history (auto-updated by CI, rendered in About tab)
+  data/                     # Anonymous spectral data collection (4 files):
+    consent.ts              #   Opt-out consent management (localStorage)
+    snapshotCollector.ts    #   Spectrum snapshot ring buffer
+    uploader.ts             #   Batch upload to /api/v1/ingest
+    index.ts                #   Barrel export
   dsp/                      # DSP engine (17 modules + tests):
     feedbackDetector.ts     #   Core peak detection + persistence scoring
     advancedDetection.ts    #   Barrel re-export for msdAnalysis, phaseCoherence, compressionDetection, algorithmFusion
@@ -73,9 +84,9 @@ lib/
     workerFft.ts            #   FFT processing, peak extraction, processFrame entry point
     advisoryManager.ts      #   Advisory lifecycle: creation, updates, resolution, pruning
     decayAnalyzer.ts        #   Frequency decay analysis + recentDecays management
-    dspWorker.ts            #   Web Worker thin orchestrator (~200 lines)
+    dspWorker.ts            #   Web Worker orchestrator (~430 lines)
     constants.ts            #   All DSP tuning constants + operation mode presets
-    __tests__/              #   Vitest unit tests (7 files, ~195 tests):
+    __tests__/              #   Vitest unit tests (7 files, ~188 tests):
       feedbackDetector.test.ts
       classifier.test.ts
       eqAdvisor.test.ts
@@ -83,7 +94,7 @@ lib/
       compressionDetection.test.ts
       phaseCoherence.test.ts
       msdConsistency.test.ts
-tests/dsp/                  #   Integration/scenario tests (7 files, ~131 tests):
+tests/dsp/                  #   Integration/scenario tests (7 files, ~135 tests):
   algorithmFusion.test.ts
   algorithmFusion.gpt.test.ts
   algorithmFusion.chatgpt.test.ts
@@ -100,12 +111,13 @@ tests/dsp/                  #   Integration/scenario tests (7 files, ~131 tests)
 types/                      # TypeScript interfaces:
   advisory.ts               #   Core DSP types (Advisory, DetectorSettings, Track, etc.)
   calibration.ts            #   Room profile, session data, export formats, stats
+  data.ts                   #   Data collection types (ConsentState, SnapshotBatch, worker messages)
 ```
 
 ## Architecture
 
 - **Main thread:** AudioContext + AnalyserNode, FFT capture, requestAnimationFrame loop (60fps), React rendering
-- **Web Worker** (`lib/dsp/dspWorker.ts`): Thin orchestrator (~200 lines) importing `workerFft`, `advisoryManager`, `decayAnalyzer` — offloaded to keep UI at 60fps
+- **Web Worker** (`lib/dsp/dspWorker.ts`): Orchestrator (~430 lines) importing `workerFft`, `advisoryManager`, `decayAnalyzer` — offloaded to keep UI at 60fps
 - **Data flow:** Mic → GainNode → AnalyserNode → FFT data → Worker (classify) → React state → Canvas render
 - **State management:** Three focused contexts — `AudioAnalyzerContext` (engine, settings, devices, spectrum, detection), `AdvisoryContext` (advisory state, dismiss/clear actions), `UIContext` (mobile tab, freeze, fullscreen, layout) — eliminate prop drilling through layouts
 - Components in `components/kill-the-ring/` use barrel export via `index.ts`
@@ -118,13 +130,14 @@ types/                      # TypeScript interfaces:
 - **Mic Calibration:** ECM8000 frequency response compensation (CSL #746) applied per FFT bin in `feedbackDetector.ts` hot loop alongside A-weighting; toggle in Calibrate tab; curve data in `lib/dsp/constants.ts` (`ECM8000_CALIBRATION`)
 - **Export:** `lib/export/` provides multi-format export (PDF via jsPDF dynamic import, TXT, CSV, JSON) with browser download trigger
 - **Mobile:** MobileLayout uses WAI-ARIA tabs pattern (roving tabindex, ArrowLeft/Right/Home/End keyboard nav); DesktopLayout uses `landscape:flex` CSS toggle — never modify DesktopLayout for mobile-specific changes
+- **Data collection:** Anonymous spectral snapshots (opt-out, no PII) collected via `lib/data/` → `useDataCollection` hook → `/api/v1/ingest` endpoint. Consent managed in localStorage. Types in `types/data.ts`.
 - **Accessibility:** Touch targets ≥44×44px (`min-h-[44px] min-w-[44px]`), `role="status"` sr-only spans for clipboard announcements
 
 ## Coding Conventions
 
 - **Components:** PascalCase, wrapped in `memo()`, explicit `'use client'` directive when needed
 - **Hooks:** `use` prefix, camelCase (e.g., `useAudioAnalyzer`)
-- **Types:** PascalCase; interfaces for objects, type aliases for unions; core DSP types in `types/advisory.ts`, calibration types in `types/calibration.ts`
+- **Types:** PascalCase; interfaces for objects, type aliases for unions; core DSP types in `types/advisory.ts`, calibration types in `types/calibration.ts`, data collection types in `types/data.ts`
 - **Constants:** SCREAMING_SNAKE_CASE, centralized in `lib/dsp/constants.ts`
 - **Functions/variables:** camelCase
 - **Private class members:** `_prefixed`
@@ -132,7 +145,7 @@ types/                      # TypeScript interfaces:
 - **Code splitting:** Large modules use barrel re-exports (`export * from './subModule'`); dialogs/panels use `React.lazy()` with `.then(m => ({ default: m.X }))` for named exports
 - **Canvas functions:** Pure drawing helpers in `lib/canvas/` — use `{ current: T }` params, not `React.RefObject`
 - **Styling:** Tailwind utility classes + `cn()` from `lib/utils.ts` for conditional classes
-- **Testing:** Vitest for DSP unit tests (`pnpm test`); 326 tests across 14 files (7 unit in `lib/dsp/__tests__/`, 7 integration/scenario in `tests/dsp/`)
+- **Testing:** Vitest for DSP unit tests (`pnpm test`); 323 tests across 14 files (7 unit in `lib/dsp/__tests__/`, 7 integration/scenario in `tests/dsp/`)
 - **ESLint:** Flat config (`eslint.config.mjs`) with `eslint-config-next` core-web-vitals + typescript + `@typescript-eslint/no-explicit-any` error; React 19 experimental rules (`set-state-in-effect`, `refs`, `purity`) downgraded to warn
 - **Build verification:** `npx tsc --noEmit && pnpm test && pnpm build` — must all pass before PRs
 - **Export formats:** PDF uses dynamic `import()` to avoid bundling jsPDF unless needed; CSV/JSON/TXT are synchronous

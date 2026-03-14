@@ -22,7 +22,7 @@ Built by [Don Wells AV](https://donwellsav.com).
 - `lib/calibration/calibrationSession.ts` - Session data collector
 - `hooks/useCalibrationSession.ts` - React hook for calibration state
 
-**Current default values (as of v0.76):**
+**Current default values (as of v0.95):**
 - Input Gain: **0 dB**
 - Confidence Threshold: **35%**
 - Algorithm Mode: **Auto** (content-adaptive)
@@ -134,8 +134,12 @@ Open [http://localhost:3000](http://localhost:3000), grant microphone permission
 ```
 kill-the-ring/
 ├── app/
-│   ├── layout.tsx                    # Root layout with metadata
-│   └── page.tsx                      # Entry point - renders KillTheRing
+│   ├── layout.tsx                    # Root layout with metadata + Sentry
+│   ├── page.tsx                      # Entry point — renders KillTheRing
+│   ├── global-error.tsx              # Global error boundary (Sentry)
+│   ├── sw.ts                         # Serwist service worker
+│   ├── ~offline/page.tsx             # Offline fallback page
+│   └── api/v1/ingest/route.ts        # Spectral snapshot ingest endpoint
 │
 ├── components/
 │   ├── kill-the-ring/
@@ -177,8 +181,9 @@ kill-the-ring/
 │   ├── useFpsMonitor.ts             # Real-time FPS counter
 │   ├── useFullscreen.ts             # Fullscreen API wrapper
 │   ├── useAudioDevices.ts           # Enumerate/select audio inputs
-│   ├── use-mobile.ts               # Responsive breakpoint hook
-│   └── use-toast.ts                 # Toast notification hook (shadcn)
+│   ├── useAdvisoryMap.ts           # Advisory Map state management
+│   ├── useDataCollection.ts        # Anonymous data collection lifecycle
+│   └── use-mobile.ts               # Responsive breakpoint hook
 │
 ├── lib/
 │   ├── audio/
@@ -190,6 +195,11 @@ kill-the-ring/
 │   ├── canvas/
 │   │   └── spectrumDrawing.ts        # Pure canvas drawing helpers (spectrum/GEQ render)
 │   ├── changelog.ts                  # Version history (auto-updated by CI, rendered in About tab)
+│   ├── data/
+│   │   ├── consent.ts              # Opt-out consent management (localStorage)
+│   │   ├── snapshotCollector.ts    # Spectrum snapshot ring buffer
+│   │   ├── uploader.ts             # Batch upload to /api/v1/ingest
+│   │   └── index.ts                # Barrel export
 │   ├── dsp/
 │   │   ├── feedbackDetector.ts       # Core FFT analysis engine
 │   │   ├── advancedDetection.ts      # Barrel re-export for MSD, Phase, Compression, Fusion
@@ -203,6 +213,9 @@ kill-the-ring/
 │   │   ├── acousticUtils.ts          # Room acoustics (RT60, Schroeder, air absorption)
 │   │   ├── feedbackHistory.ts        # Repeat offender tracking (localStorage)
 │   │   ├── severityUtils.ts          # Shared severity/urgency calculation
+│   │   ├── workerFft.ts              # FFT processing, peak extraction, processFrame
+│   │   ├── advisoryManager.ts       # Advisory lifecycle: creation, updates, resolution
+│   │   ├── decayAnalyzer.ts         # Frequency decay analysis + recentDecays
 │   │   ├── dspWorker.ts              # Web Worker entry point
 │   │   └── constants.ts              # All tunable parameters and mode presets
 │   ├── export/
@@ -216,7 +229,8 @@ kill-the-ring/
 │
 ├── types/
 │   ├── advisory.ts                   # Core DSP types (Advisory, DetectorSettings, Track, etc.)
-│   └── calibration.ts               # Room profile, session data, export formats
+│   ├── calibration.ts               # Room profile, session data, export formats
+│   └── data.ts                       # Data collection types (ConsentState, SnapshotBatch)
 │
 └── public/                           # Static files (icons, manifest)
 ```
@@ -456,7 +470,7 @@ Score_feedback = w₁·S_MSD + w₂·S_phase + w₃·S_spectral + w₄·S_comb +
 
 Location: `lib/dsp/feedbackDetector.ts`
 
-The core class wrapping `AnalyserNode`. Contains 800+ lines of DSP code.
+The core class wrapping `AnalyserNode`. Contains 1800+ lines of DSP code.
 
 #### Key Parameters
 

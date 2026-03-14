@@ -51,6 +51,14 @@ export interface FeedbackDetectorState {
   compressionRatio?: number
   // Performance instrumentation (only populated when debugPerf is enabled)
   perfTimings?: PerfTimings | null
+  // FUTURE-002: Computed persistence thresholds (frame-rate-independent)
+  persistenceThresholds?: {
+    minFrames: number
+    highFrames: number
+    veryHighFrames: number
+    lowFrames: number
+    historyFrames: number
+  }
 }
 
 export class FeedbackDetector {
@@ -92,11 +100,18 @@ export class FeedbackDetector {
   private _msdFrameCounter: number = 0                 // Global frame counter for LRU
   private msdMinFrames: number = MSD_SETTINGS.DEFAULT_MIN_FRAMES // Content-adaptive (synced with worker)
 
-  // Peak Persistence Scoring - Phase 2 Enhancement
+  // Peak Persistence Scoring - Phase 2 Enhancement (FUTURE-002: frame-rate-independent)
   // Tracks consecutive frames where a peak persists at the same frequency
   // Feedback = persistent (vertical streak), transient = short-lived
   private persistenceCount: Uint16Array | null = null // Consecutive frames at this bin
   private persistenceLastDb: Float32Array | null = null // Last amplitude for comparison
+
+  // Frame-rate-independent persistence thresholds — computed from ms constants / analysisIntervalMs
+  private _persistMinFrames = 5
+  private _persistHighFrames = 15
+  private _persistVeryHighFrames = 30
+  private _persistLowFrames = 3
+  private _persistHistoryFrames = 32
 
   // A-weighting lookup
   private aWeightingTable: Float32Array | null = null
@@ -182,6 +197,7 @@ export class FeedbackDetector {
     this.callbacks = callbacks
     this.maxAnalysisGapMs = Math.max(2 * this.config.analysisIntervalMs, 120)
     this.updateMsdMinFrames()
+    this._recomputePersistenceFrames(this.config.analysisIntervalMs)
     this.rafLoop = this.rafLoop.bind(this)
   }
 
@@ -261,6 +277,9 @@ export class FeedbackDetector {
     this._autoGainReleaseCoeff = 1 - Math.exp(-1 / (1.0 * fps))
     // Auto-gain state is NOT touched here — managed entirely by updateSettings()
     // when user clicks LOUD/MED/QUIET calibration buttons
+
+    // FUTURE-002: Frame-rate-independent persistence thresholds
+    this._recomputePersistenceFrames(this.config.analysisIntervalMs)
 
     // Connect source (PASSIVE - no output routing)
     if (this.source) {
@@ -376,6 +395,7 @@ export class FeedbackDetector {
 
     if (config.analysisIntervalMs !== undefined) {
       this.maxAnalysisGapMs = Math.max(2 * this.config.analysisIntervalMs, 120)
+      this._recomputePersistenceFrames(this.config.analysisIntervalMs)
     }
 
     if (needsReset) {
@@ -544,6 +564,14 @@ export class FeedbackDetector {
       isCompressed: this._isCompressed,
       compressionRatio: this._compressionRatio,
       perfTimings: this._debugPerf ? this._perfTimings : undefined,
+      // FUTURE-002: Expose computed persistence thresholds for testing
+      persistenceThresholds: {
+        minFrames: this._persistMinFrames,
+        highFrames: this._persistHighFrames,
+        veryHighFrames: this._persistVeryHighFrames,
+        lowFrames: this._persistLowFrames,
+        historyFrames: this._persistHistoryFrames,
+      },
     }
   }
 
@@ -1689,7 +1717,19 @@ export class FeedbackDetector {
   }
 
   // ==================== Persistence Scoring (Phase 2) ====================
-  
+
+  /**
+   * FUTURE-002: Recompute frame-based persistence thresholds from ms constants.
+   * Called when analysisIntervalMs changes (initAudioContext, updateConfig).
+   */
+  private _recomputePersistenceFrames(intervalMs: number): void {
+    this._persistMinFrames = Math.ceil(PERSISTENCE_SCORING.MIN_PERSISTENCE_MS / intervalMs)
+    this._persistHighFrames = Math.ceil(PERSISTENCE_SCORING.HIGH_PERSISTENCE_MS / intervalMs)
+    this._persistVeryHighFrames = Math.ceil(PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_MS / intervalMs)
+    this._persistLowFrames = Math.ceil(PERSISTENCE_SCORING.LOW_PERSISTENCE_MS / intervalMs)
+    this._persistHistoryFrames = Math.ceil(PERSISTENCE_SCORING.HISTORY_MS / intervalMs)
+  }
+
   /**
    * Update persistence count for a frequency bin
    * Tracks consecutive frames where a peak persists at similar amplitude
@@ -1702,10 +1742,10 @@ export class FeedbackDetector {
     
     // Check if amplitude is within tolerance (peak is "persisting")
     if (dbDiff <= PERSISTENCE_SCORING.AMPLITUDE_TOLERANCE_DB && lastDb > -150) {
-      // Increment persistence (cap at HISTORY_FRAMES)
+      // Increment persistence (cap at history window)
       this.persistenceCount[binIndex] = Math.min(
         this.persistenceCount[binIndex] + 1,
-        PERSISTENCE_SCORING.HISTORY_FRAMES
+        this._persistHistoryFrames
       )
     } else {
       // Amplitude changed too much, reset persistence
@@ -1736,23 +1776,23 @@ export class FeedbackDetector {
     let boost = 0
     let penalty = 0
     
-    if (frames >= PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_FRAMES) {
+    if (frames >= this._persistVeryHighFrames) {
       boost = PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_BOOST
-    } else if (frames >= PERSISTENCE_SCORING.HIGH_PERSISTENCE_FRAMES) {
+    } else if (frames >= this._persistHighFrames) {
       boost = PERSISTENCE_SCORING.HIGH_PERSISTENCE_BOOST
-    } else if (frames >= PERSISTENCE_SCORING.MIN_PERSISTENCE_FRAMES) {
+    } else if (frames >= this._persistMinFrames) {
       boost = PERSISTENCE_SCORING.MIN_PERSISTENCE_BOOST
-    } else if (frames < PERSISTENCE_SCORING.LOW_PERSISTENCE_FRAMES) {
+    } else if (frames < this._persistLowFrames) {
       penalty = PERSISTENCE_SCORING.LOW_PERSISTENCE_PENALTY
     }
-    
+
     return {
       frames,
       boost,
       penalty,
-      isPersistent: frames >= PERSISTENCE_SCORING.MIN_PERSISTENCE_FRAMES,
-      isHighlyPersistent: frames >= PERSISTENCE_SCORING.HIGH_PERSISTENCE_FRAMES,
-      isVeryHighlyPersistent: frames >= PERSISTENCE_SCORING.VERY_HIGH_PERSISTENCE_FRAMES,
+      isPersistent: frames >= this._persistMinFrames,
+      isHighlyPersistent: frames >= this._persistHighFrames,
+      isVeryHighlyPersistent: frames >= this._persistVeryHighFrames,
     }
   }
 }
